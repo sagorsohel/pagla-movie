@@ -12,6 +12,8 @@ export async function updateMovieAction(prevState: any, formData: FormData) {
   const modalImage = formData.get("modalImage") as string
   const redirectUrl = formData.get("redirectUrl") as string
   const redirectTimeStr = formData.get("redirectTime") as string
+  const topAds = formData.get("topAds") as string
+  const modalAds = formData.get("modalAds") as string
   
   // Get all checked tag IDs from the form
   const selectedTagIds = formData.getAll("tagIds").map(Number)
@@ -30,6 +32,8 @@ export async function updateMovieAction(prevState: any, formData: FormData) {
       .set({
         referralUrl: referralUrl || null,
         modalImage: modalImage || null,
+        topAds: topAds || null,
+        modalAds: modalAds || null,
         redirectUrl: redirectUrl || null,
         redirectTime: isNaN(redirectTime) ? 5 : redirectTime,
       })

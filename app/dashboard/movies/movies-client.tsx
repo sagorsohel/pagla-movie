@@ -3,6 +3,7 @@
 import * as React from "react"
 import { useActionState, useState, useTransition } from "react"
 import { updateMovieAction, runMovieImportAction } from "./actions"
+import { uploadImageAction } from "@/lib/upload-action"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import {
@@ -11,6 +12,7 @@ import {
   Edit3Icon,
   ExternalLinkIcon,
   XIcon,
+  UploadIcon,
 } from "lucide-react"
 
 type MovieData = {
@@ -24,6 +26,8 @@ type MovieData = {
   voteAverage: string | null
   referralUrl: string | null
   modalImage: string | null
+  topAds: string | null
+  modalAds: string | null
   redirectUrl: string | null
   redirectTime: number | null
   categories?: { id: number; name: string }[]
@@ -55,6 +59,9 @@ export function MoviesClient({
   const [isImportPending, startImportTransition] = useTransition()
   const [importStatus, setImportStatus] = useState<string | null>(null)
 
+  const [modalImageUrl, setModalImageUrl] = useState("")
+  const [isUploading, setIsUploading] = useState(false)
+
   // Pagination states
   const totalPages = Math.ceil(totalCount / 10)
 
@@ -63,10 +70,40 @@ export function MoviesClient({
   }, [initialMovies])
 
   React.useEffect(() => {
+    if (selectedMovie) {
+      setModalImageUrl(selectedMovie.modalImage || "")
+    } else {
+      setModalImageUrl("")
+    }
+  }, [selectedMovie])
+
+  React.useEffect(() => {
     if (editState?.success) {
       setSelectedMovie(null)
     }
   }, [editState])
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setIsUploading(true)
+    const formData = new FormData()
+    formData.append("image", file)
+
+    try {
+      const res = await uploadImageAction(formData)
+      if (res.success && res.url) {
+        setModalImageUrl(res.url)
+      } else {
+        alert(res.error || "Failed to upload image")
+      }
+    } catch (err) {
+      alert("Error uploading image")
+    } finally {
+      setIsUploading(false)
+    }
+  }
 
   const handleImport = () => {
     if (confirm("Import movies from the last 30 days from TMDB? This may take a few seconds.")) {
@@ -295,7 +332,7 @@ export function MoviesClient({
               Edit Custom Parameters: <span className="text-violet-400">{selectedMovie.title}</span>
             </h3>
             <p className="text-xs text-slate-500 mt-1 mb-4">
-              Add links, popups, and custom tags associated with this specific film page.
+              Add links, popups, ads, and custom tags associated with this specific film page.
             </p>
 
             <form action={updateAction} className="space-y-4">
@@ -307,6 +344,7 @@ export function MoviesClient({
                 </div>
               )}
 
+              {/* Referral URL */}
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-slate-400">Referral/Affiliate URL</label>
                 <Input
@@ -317,16 +355,68 @@ export function MoviesClient({
                 />
               </div>
 
+              {/* Upload image input */}
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-400">Modal Promotional Image URL</label>
-                <Input
-                  name="modalImage"
-                  defaultValue={selectedMovie.modalImage || ""}
-                  placeholder="https://image-hosting.com/banner.jpg"
-                  className="bg-slate-900 border-slate-800 text-slate-100 placeholder:text-slate-600 focus-visible:ring-violet-500"
+                <label className="text-xs font-semibold text-slate-400 block">Modal Promotional Image</label>
+                <div className="flex gap-2 items-center">
+                  <Input
+                    name="modalImage"
+                    value={modalImageUrl}
+                    onChange={(e) => setModalImageUrl(e.target.value)}
+                    placeholder="https://image-hosting.com/banner.jpg"
+                    className="bg-slate-900 border-slate-800 text-slate-100 placeholder:text-slate-600 focus-visible:ring-violet-500 flex-1"
+                  />
+                  <label className="bg-slate-850 hover:bg-slate-800 text-slate-300 text-xs font-semibold px-3 py-2 rounded-lg cursor-pointer border border-slate-800 transition whitespace-nowrap h-9 flex items-center gap-1.5">
+                    {isUploading ? (
+                      <>
+                        <Loader2Icon className="w-3.5 h-3.5 animate-spin" /> Uploading...
+                      </>
+                    ) : (
+                      <>
+                        <UploadIcon className="w-3.5 h-3.5" /> Upload
+                      </>
+                    )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      disabled={isUploading}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+                {modalImageUrl && (
+                  <div className="mt-2.5 relative w-full h-28 rounded-lg overflow-hidden border border-slate-850 bg-slate-950/80 p-1 flex items-center justify-center">
+                    <img src={modalImageUrl} alt="Preview" className="max-h-full max-w-full object-contain rounded" />
+                  </div>
+                )}
+              </div>
+
+              {/* Top Ads Script */}
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-slate-400">Top Ads Script / HTML</label>
+                <textarea
+                  name="topAds"
+                  defaultValue={selectedMovie.topAds || ""}
+                  placeholder="<!-- Insert top banner ad script here -->"
+                  rows={3}
+                  className="w-full rounded-md bg-slate-900 border border-slate-800 text-slate-100 placeholder:text-slate-655 focus:outline-hidden focus:ring-1 focus:ring-violet-500 p-3 text-sm font-mono"
                 />
               </div>
 
+              {/* Modal Ads Script */}
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-slate-400">Modal Ads Script / HTML</label>
+                <textarea
+                  name="modalAds"
+                  defaultValue={selectedMovie.modalAds || ""}
+                  placeholder="<!-- Insert modal/popunder ad script here -->"
+                  rows={3}
+                  className="w-full rounded-md bg-slate-900 border border-slate-800 text-slate-100 placeholder:text-slate-655 focus:outline-hidden focus:ring-1 focus:ring-violet-500 p-3 text-sm font-mono"
+                />
+              </div>
+
+              {/* Redirect Url */}
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-slate-400">Direct Redirect URL</label>
                 <Input
@@ -337,6 +427,7 @@ export function MoviesClient({
                 />
               </div>
 
+              {/* Redirect Time */}
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-slate-400">Redirect Delay (Seconds)</label>
                 <Input
@@ -387,7 +478,7 @@ export function MoviesClient({
                 </Button>
                 <Button
                   type="submit"
-                  disabled={isUpdatePending}
+                  disabled={isUpdatePending || isUploading}
                   className="bg-violet-600 hover:bg-violet-500 text-white font-semibold"
                 >
                   {isUpdatePending ? (

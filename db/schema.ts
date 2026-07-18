@@ -52,6 +52,8 @@ export const movies = mysqlTable("movies", {
   videos: json("videos"), // Array: [{name, key, site, type}]
   referralUrl: text("referral_url"),
   modalImage: text("modal_image"),
+  topAds: text("top_ads"),
+  modalAds: text("modal_ads"),
   redirectUrl: text("redirect_url"),
   redirectTime: int("redirect_time").default(5),
   createdAt: timestamp("created_at").defaultNow().notNull(),

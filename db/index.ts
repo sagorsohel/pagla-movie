@@ -126,11 +126,21 @@ async function initializeDatabase() {
         \`videos\` JSON NULL,
         \`referral_url\` TEXT NULL,
         \`modal_image\` TEXT NULL,
+        \`top_ads\` TEXT NULL,
+        \`modal_ads\` TEXT NULL,
         \`redirect_url\` TEXT NULL,
         \`redirect_time\` INT DEFAULT 5,
         \`created_at\` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     `)
+
+    // Safe columns addition for existing database instances
+    try {
+      await connection.execute("ALTER TABLE `movies` ADD COLUMN `top_ads` TEXT NULL;")
+    } catch (e) {}
+    try {
+      await connection.execute("ALTER TABLE `movies` ADD COLUMN `modal_ads` TEXT NULL;")
+    } catch (e) {}
 
     // 6. Create movie_categories table
     await connection.execute(`
