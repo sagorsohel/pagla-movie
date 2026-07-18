@@ -3,6 +3,7 @@
 import * as React from "react"
 import { useState, useMemo } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { HeroCarousel } from "@/components/hero-carousel"
 import { MovieRow } from "@/components/movie-row"
 import {
@@ -10,12 +11,8 @@ import {
   BellIcon,
   ChevronDownIcon,
   XIcon,
-  PlayIcon,
-  InfoIcon,
-  SparklesIcon,
   FilmIcon,
   FolderIcon,
-  ExternalLinkIcon,
 } from "lucide-react"
 
 type Movie = {
@@ -35,6 +32,8 @@ type Movie = {
   redirectTime: number | null
   categories: { id: number; name: string }[]
   videos?: any
+  cast?: any
+  crew?: any
 }
 
 type Category = {
@@ -52,12 +51,17 @@ export function HomeClient({
   movies: Movie[]
   categories: Category[]
 }) {
+  const router = useRouter()
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null)
   const [filterType, setFilterType] = useState<"todays-top" | "top-rated" | "upcoming" | null>(null)
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false)
-  const [activeMovie, setActiveMovie] = useState<Movie | null>(null)
   const [isProfileOpen, setIsProfileOpen] = useState(false)
+
+  // Redirect to standalone single movie detail page
+  const handleMovieClick = (movie: Movie) => {
+    router.push(`/movie/${movie.id}`)
+  }
 
   // Select a hero movie (highest rated or first one)
   const heroMovie = useMemo(() => {
@@ -87,7 +91,7 @@ export function HomeClient({
       .slice(0, 15)
   }, [movies])
 
-  // upcoming releases list (newest releases first)
+  // upcoming releases list
   const upcomingMovies = useMemo(() => {
     return [...movies]
       .sort((a, b) => {
@@ -262,7 +266,7 @@ export function HomeClient({
         <HeroCarousel
           movies={movies}
           onPlay={handlePlayMovie}
-          onInfo={setActiveMovie}
+          onInfo={handleMovieClick}
         />
       )}
 
@@ -307,7 +311,7 @@ export function HomeClient({
                 {filteredMovies.map((movie) => (
                   <div
                     key={movie.id}
-                    onClick={() => setActiveMovie(movie)}
+                    onClick={() => handleMovieClick(movie)}
                     className="group relative bg-card border border-slate-900/60 rounded-xl overflow-hidden shadow-lg hover:shadow-red-600/10 cursor-pointer transform hover:-translate-y-2 hover:scale-103 transition-all duration-300"
                   >
                     {/* Poster */}
@@ -351,7 +355,7 @@ export function HomeClient({
             <MovieRow
               title="Today's Top Hits"
               movies={todaysTopMovies}
-              onMovieClick={setActiveMovie}
+              onMovieClick={handleMovieClick}
               onSeeMore={() => setFilterType("todays-top")}
             />
 
@@ -359,7 +363,7 @@ export function HomeClient({
             <MovieRow
               title="Top Rated Movies"
               movies={topRatedMovies}
-              onMovieClick={setActiveMovie}
+              onMovieClick={handleMovieClick}
               onSeeMore={() => setFilterType("top-rated")}
             />
 
@@ -367,7 +371,7 @@ export function HomeClient({
             <MovieRow
               title="Upcoming Releases"
               movies={upcomingMovies}
-              onMovieClick={setActiveMovie}
+              onMovieClick={handleMovieClick}
               onSeeMore={() => setFilterType("upcoming")}
             />
 
@@ -381,7 +385,7 @@ export function HomeClient({
                   key={cat.id}
                   title={cat.name}
                   movies={catMovies}
-                  onMovieClick={setActiveMovie}
+                  onMovieClick={handleMovieClick}
                   onSeeMore={() => setSelectedCategoryId(cat.id)}
                 />
               )
@@ -446,117 +450,6 @@ export function HomeClient({
                   </button>
                 )
               })}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Movie Details Modal Overlay */}
-      {activeMovie && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-xs p-4 animate-in fade-in duration-200">
-          <div className="relative w-full max-w-3xl rounded-2xl border border-slate-900 bg-popover overflow-hidden shadow-2xl max-h-[90vh] overflow-y-auto">
-            <button
-              onClick={() => setActiveMovie(null)}
-              className="absolute right-4 top-4 z-10 bg-black/60 hover:bg-black/90 text-slate-300 hover:text-white transition p-2 rounded-full focus:outline-hidden cursor-pointer"
-            >
-              <XIcon className="w-5 h-5" />
-            </button>
-
-            {/* Poster / Backdrop Header */}
-            <div className="relative w-full h-[220px] sm:h-[320px] bg-slate-950 flex items-end">
-              {activeMovie.backdropPath ? (
-                <img
-                  src={`https://image.tmdb.org/t/p/original${activeMovie.backdropPath}`}
-                  alt={activeMovie.title}
-                  className="w-full h-full object-cover absolute inset-0"
-                />
-              ) : (
-                <div className="w-full h-full bg-slate-900 flex items-center justify-center text-slate-655 font-bold">
-                  No Backdrop
-                </div>
-              )}
-              <div className="absolute inset-0 bg-linear-to-t from-popover via-popover/45 to-transparent" />
-              <div className="relative z-10 p-6 space-y-2">
-                <div className="flex flex-wrap items-center gap-2">
-                  {activeMovie.categories.map((c) => (
-                    <span
-                      key={c.id}
-                      className="px-2 py-0.5 rounded bg-red-650/80 border border-red-500/20 text-white text-[9px] font-bold uppercase tracking-wider"
-                    >
-                      {c.name}
-                    </span>
-                  ))}
-                </div>
-                <h2 className="text-2xl sm:text-3xl font-black text-white drop-shadow-md leading-tight uppercase font-heading">
-                  {activeMovie.title}
-                </h2>
-              </div>
-            </div>
-
-            {/* Info details */}
-            <div className="p-6 md:p-8 space-y-6">
-              
-              {/* Top Ads Slot */}
-              {activeMovie.topAds && (
-                <div className="p-3 bg-slate-900/60 rounded-xl border border-slate-800 text-xs font-mono text-center text-slate-400 overflow-x-auto select-all max-h-16">
-                  <div dangerouslySetInnerHTML={{ __html: activeMovie.topAds }} />
-                </div>
-              )}
-
-              <div className="grid md:grid-cols-3 gap-6">
-                <div className="md:col-span-2 space-y-4">
-                  <div className="flex items-center gap-4 text-xs font-medium text-slate-400">
-                    <span className="text-yellow-500 font-bold text-sm">★ {activeMovie.voteAverage}/10</span>
-                    <span className="font-mono">{activeMovie.releaseDate || "Release Date N/A"}</span>
-                  </div>
-                  <p className="text-sm text-slate-300 leading-relaxed font-medium">
-                    {activeMovie.overview || "No overview descriptions available for this title."}
-                  </p>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="space-y-1">
-                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Watch Options</span>
-                    <button
-                      onClick={() => handlePlayMovie(activeMovie)}
-                      className="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-500 text-white font-bold py-2.5 rounded-lg text-xs cursor-pointer shadow-lg shadow-red-600/10 transition"
-                    >
-                      <PlayIcon className="w-3.5 h-3.5 fill-current" /> Watch Link
-                    </button>
-                  </div>
-
-                  {activeMovie.referralUrl && (
-                    <div className="space-y-1 pt-1 border-t border-slate-900">
-                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Referral/Sponsored Link</span>
-                      <a
-                        href={activeMovie.referralUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="w-full flex items-center justify-center gap-1.5 bg-slate-900/40 hover:bg-slate-900 text-cyan-400 hover:text-cyan-300 border border-slate-800 font-bold py-2.5 rounded-lg text-xs cursor-pointer transition"
-                      >
-                        Visit Offer <ExternalLinkIcon className="w-3.5 h-3.5" />
-                      </a>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Modal Banner Ad Image */}
-              {activeMovie.modalImage && (
-                <div className="pt-4 border-t border-slate-900">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-2">Promotional Banner</span>
-                  <div className="rounded-xl overflow-hidden border border-slate-900 bg-slate-950 aspect-[21/9] flex items-center justify-center p-1">
-                    <img src={activeMovie.modalImage} alt="Promotion" className="max-h-full max-w-full object-contain rounded-lg" />
-                  </div>
-                </div>
-              )}
-
-              {/* Modal Ads Script Code */}
-              {activeMovie.modalAds && (
-                <div className="p-3 bg-slate-950/80 rounded-xl border border-slate-900 text-[10px] font-mono text-slate-500 overflow-x-auto select-all max-h-16">
-                  <div dangerouslySetInnerHTML={{ __html: activeMovie.modalAds }} />
-                </div>
-              )}
             </div>
           </div>
         </div>
