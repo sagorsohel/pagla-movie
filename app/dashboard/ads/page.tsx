@@ -20,6 +20,8 @@ export default function AdsControlPage() {
   const [globalBg, setGlobalBg] = useState("")
   const [floatingAds, setFloatingAds] = useState("")
   const [floatingAdsStatus, setFloatingAdsStatus] = useState("on")
+  const [floatingDesktopAds, setFloatingDesktopAds] = useState("")
+  const [floatingDesktopAdsStatus, setFloatingDesktopAdsStatus] = useState("on")
   
   const [adsSaving, setAdsSaving] = useState(false)
   const [adsMessage, setAdsMessage] = useState({ text: "", type: "success" })
@@ -39,6 +41,8 @@ export default function AdsControlPage() {
           setGlobalBg(data.ads.globalBg || "")
           setFloatingAds(data.ads.floatingAds || "")
           setFloatingAdsStatus(data.ads.floatingAdsStatus || "on")
+          setFloatingDesktopAds(data.ads.floatingDesktopAds || "")
+          setFloatingDesktopAdsStatus(data.ads.floatingDesktopAdsStatus || "on")
         }
       })
       .catch(() => { })
@@ -103,7 +107,9 @@ export default function AdsControlPage() {
           signinRefLink: safeBtoa(signinRefLink),
           globalBg: safeBtoa(globalBg),
           floatingAds: safeBtoa(floatingAds),
-          floatingAdsStatus: safeBtoa(floatingAdsStatus)
+          floatingAdsStatus: safeBtoa(floatingAdsStatus),
+          floatingDesktopAds: safeBtoa(floatingDesktopAds),
+          floatingDesktopAdsStatus: safeBtoa(floatingDesktopAdsStatus)
         })
       })
       if (res.ok) {
@@ -324,6 +330,66 @@ export default function AdsControlPage() {
             />
             <p className="text-[9px] text-slate-500 leading-relaxed">
               This script renders as a floating overlay banner at the bottom of mobile screens.
+            </p>
+          </div>
+        </div>
+
+        {/* Floating Desktop Ads Input */}
+        <div className="space-y-4 border-t border-slate-900/60 pt-6">
+          <div className="space-y-2">
+            <label className="text-[10px] uppercase tracking-wider font-bold text-slate-400 flex items-center gap-1.5 font-mono">
+              Floating Desktop Ads Status (Desktop Only)
+            </label>
+            <div className="flex gap-4">
+              <label className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all cursor-pointer text-xs font-bold ${
+                floatingDesktopAdsStatus === "on"
+                  ? "bg-cyan-500/10 border-cyan-500/30 text-cyan-400"
+                  : "bg-slate-950 border-slate-900 text-slate-400 hover:border-slate-800"
+              }`}>
+                <input
+                  type="radio"
+                  name="floatingDesktopAdsStatus"
+                  value="on"
+                  checked={floatingDesktopAdsStatus === "on"}
+                  onChange={() => setFloatingDesktopAdsStatus("on")}
+                  className="sr-only"
+                />
+                <span>ON (Enabled)</span>
+              </label>
+              <label className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all cursor-pointer text-xs font-bold ${
+                floatingDesktopAdsStatus === "off"
+                  ? "bg-red-500/10 border-red-500/30 text-red-400"
+                  : "bg-slate-950 border-slate-900 text-slate-400 hover:border-slate-800"
+              }`}>
+                <input
+                  type="radio"
+                  name="floatingDesktopAdsStatus"
+                  value="off"
+                  checked={floatingDesktopAdsStatus === "off"}
+                  onChange={() => setFloatingDesktopAdsStatus("off")}
+                  className="sr-only"
+                />
+                <span>OFF (Disabled)</span>
+              </label>
+            </div>
+            <p className="text-[9px] text-slate-500 leading-relaxed">
+              Enable or disable the floating desktop overlay ads.
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[10px] uppercase tracking-wider font-bold text-slate-400 flex items-center gap-1.5 font-mono">
+              Floating Desktop Ads (Script / HTML Code)
+            </label>
+            <textarea
+              value={floatingDesktopAds}
+              onChange={(e) => setFloatingDesktopAds(e.target.value)}
+              placeholder="<!-- Paste floating desktop overlay banner scripts here -->"
+              rows={6}
+              className="w-full bg-slate-955 border border-slate-900 rounded-xl px-4 py-3 text-xs text-slate-200 placeholder-slate-600 focus:outline-hidden focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 font-mono transition-all"
+            />
+            <p className="text-[9px] text-slate-500 leading-relaxed">
+              This script renders as a floating overlay banner (e.g. left/right sidebar, or bottom sticky bar) on desktop viewports only.
             </p>
           </div>
         </div>

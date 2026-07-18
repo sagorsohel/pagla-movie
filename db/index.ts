@@ -176,9 +176,19 @@ async function initializeDatabase() {
         \`signin_ref_link\` TEXT NULL,
         \`global_bg\` TEXT NULL,
         \`floating_ads\` TEXT NULL,
-        \`floating_ads_status\` VARCHAR(10) DEFAULT 'on'
+        \`floating_ads_status\` VARCHAR(10) DEFAULT 'on',
+        \`floating_desktop_ads\` TEXT NULL,
+        \`floating_desktop_ads_status\` VARCHAR(10) DEFAULT 'on'
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     `)
+
+    // Safe columns addition for existing database instances
+    try {
+      await connection.execute("ALTER TABLE `ads` ADD COLUMN `floating_desktop_ads` TEXT NULL;")
+    } catch (e) {}
+    try {
+      await connection.execute("ALTER TABLE `ads` ADD COLUMN `floating_desktop_ads_status` VARCHAR(10) DEFAULT 'on';")
+    } catch (e) {}
 
     // Seed default global ads configurations
     const [adRows] = await connection.execute(
@@ -187,7 +197,7 @@ async function initializeDatabase() {
     if ((adRows as any[]).length === 0) {
       console.log("Seeding default global ads configs...")
       await connection.execute(
-        "INSERT INTO ads (id, hero_ads, hero2_ads, modal_ads, header_ads, membership_ref_link, signin_ref_link, global_bg, floating_ads, floating_ads_status) VALUES ('global', '', '', '', '', '', '', '', '', 'on')"
+        "INSERT INTO ads (id, hero_ads, hero2_ads, modal_ads, header_ads, membership_ref_link, signin_ref_link, global_bg, floating_ads, floating_ads_status, floating_desktop_ads, floating_desktop_ads_status) VALUES ('global', '', '', '', '', '', '', '', '', 'on', '', 'on')"
       )
     }
 

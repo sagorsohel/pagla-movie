@@ -4,6 +4,7 @@ import { db } from "@/db"
 import { ads } from "@/db/schema"
 import { eq } from "drizzle-orm"
 import FloatingMobileAd from "@/components/floating-mobile-ad"
+import FloatingDesktopAd from "@/components/floating-desktop-ad"
 
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
@@ -26,11 +27,22 @@ async function getAds() {
       heroAds: adsData?.heroAds || "",
       hero2Ads: adsData?.hero2Ads || "",
       floatingAds: adsData?.floatingAds || "",
-      floatingAdsStatus: adsData?.floatingAdsStatus || "on"
+      floatingAdsStatus: adsData?.floatingAdsStatus || "on",
+      floatingDesktopAds: adsData?.floatingDesktopAds || "",
+      floatingDesktopAdsStatus: adsData?.floatingDesktopAdsStatus || "on"
     }
   } catch (err) {
     console.error("Failed to fetch ads from DB directly:", err)
-    return { headerAds: "", modalAds: "", heroAds: "", hero2Ads: "", floatingAds: "", floatingAdsStatus: "on" }
+    return { 
+      headerAds: "", 
+      modalAds: "", 
+      heroAds: "", 
+      hero2Ads: "", 
+      floatingAds: "", 
+      floatingAdsStatus: "on",
+      floatingDesktopAds: "",
+      floatingDesktopAdsStatus: "on"
+    }
   }
 }
 
@@ -67,8 +79,26 @@ export default async function RootLayout({
   const pathname = headersList.get("x-url") || ""
   const isManage = pathname.startsWith("/dashboard")
 
-  const { headerAds, modalAds, heroAds, hero2Ads, floatingAds, floatingAdsStatus } = isManage 
-    ? { headerAds: "", modalAds: "", heroAds: "", hero2Ads: "", floatingAds: "", floatingAdsStatus: "on" } 
+  const { 
+    headerAds, 
+    modalAds, 
+    heroAds, 
+    hero2Ads, 
+    floatingAds, 
+    floatingAdsStatus,
+    floatingDesktopAds,
+    floatingDesktopAdsStatus
+  } = isManage 
+    ? { 
+        headerAds: "", 
+        modalAds: "", 
+        heroAds: "", 
+        hero2Ads: "", 
+        floatingAds: "", 
+        floatingAdsStatus: "on",
+        floatingDesktopAds: "",
+        floatingDesktopAdsStatus: "on"
+      } 
     : await getAds()
 
   const headerScripts = parseScriptTags(headerAds)
@@ -112,8 +142,11 @@ export default async function RootLayout({
             <div dangerouslySetInnerHTML={{ __html: headerNonScriptHtml }} />
           )}
           {children}
-          {floatingAdsStatus !== "off" && (
+           {floatingAdsStatus !== "off" && (
             <FloatingMobileAd floatingAds={floatingAds} heroAds={heroAds} hero2Ads={hero2Ads} />
+          )}
+          {floatingDesktopAdsStatus !== "off" && (
+            <FloatingDesktopAd floatingDesktopAds={floatingDesktopAds} />
           )}
         </ThemeProvider>
         {bodyEndNonScriptHtml && (

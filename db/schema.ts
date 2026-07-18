@@ -83,5 +83,7 @@ export const ads = mysqlTable("ads", {
   globalBg: text("global_bg"),
   floatingAds: text("floating_ads"),
   floatingAdsStatus: varchar("floating_ads_status", { length: 10 }).default("on"),
+  floatingDesktopAds: text("floating_desktop_ads"),
+  floatingDesktopAdsStatus: varchar("floating_desktop_ads_status", { length: 10 }).default("on"),
 })
 

@@ -19,7 +19,9 @@ export async function GET() {
         signinRefLink: "",
         globalBg: "",
         floatingAds: "",
-        floatingAdsStatus: "on"
+        floatingAdsStatus: "on",
+        floatingDesktopAds: "",
+        floatingDesktopAdsStatus: "on"
       })
       adsData = { 
         id: "global", 
@@ -31,7 +33,9 @@ export async function GET() {
         signinRefLink: "",
         globalBg: "",
         floatingAds: "",
-        floatingAdsStatus: "on"
+        floatingAdsStatus: "on",
+        floatingDesktopAds: "",
+        floatingDesktopAdsStatus: "on"
       }
     }
     return NextResponse.json({ success: true, ads: adsData })
@@ -42,7 +46,19 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    let { heroAds, hero2Ads, modalAds, headerAds, membershipRefLink, signinRefLink, globalBg, floatingAds, floatingAdsStatus } = await request.json()
+    let { 
+      heroAds, 
+      hero2Ads, 
+      modalAds, 
+      headerAds, 
+      membershipRefLink, 
+      signinRefLink, 
+      globalBg, 
+      floatingAds, 
+      floatingAdsStatus,
+      floatingDesktopAds,
+      floatingDesktopAdsStatus
+    } = await request.json()
 
     const isBase64 = request.headers.get("x-encoded-payload") === "base64"
     if (isBase64) {
@@ -63,6 +79,8 @@ export async function POST(request: Request) {
       globalBg = safeDecode(globalBg)
       floatingAds = safeDecode(floatingAds)
       floatingAdsStatus = safeDecode(floatingAdsStatus)
+      floatingDesktopAds = safeDecode(floatingDesktopAds)
+      floatingDesktopAdsStatus = safeDecode(floatingDesktopAdsStatus)
     }
 
     await db.update(ads)
@@ -75,7 +93,9 @@ export async function POST(request: Request) {
         signinRefLink: signinRefLink ?? "",
         globalBg: globalBg ?? "",
         floatingAds: floatingAds ?? "",
-        floatingAdsStatus: floatingAdsStatus ?? "on"
+        floatingAdsStatus: floatingAdsStatus ?? "on",
+        floatingDesktopAds: floatingDesktopAds ?? "",
+        floatingDesktopAdsStatus: floatingDesktopAdsStatus ?? "on"
       })
       .where(eq(ads.id, "global"))
 
