@@ -24,6 +24,8 @@ export const categories = mysqlTable("categories", {
   slug: varchar("slug", { length: 100 }).notNull().unique(),
   referralUrl: text("referral_url"),
   modalImage: text("modal_image"),
+  topAds: text("top_ads"),
+  modalAds: text("modal_ads"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 })
 

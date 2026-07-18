@@ -41,11 +41,13 @@ export function MoviesClient({
   totalCount,
   currentPage,
   allTags = [],
+  filterCategoryName = "",
 }: {
   initialMovies: MovieData[]
   totalCount: number
   currentPage: number
   allTags?: TagOption[]
+  filterCategoryName?: string
 }) {
   const [moviesList, setMoviesList] = useState<MovieData[]>(initialMovies)
   const [selectedMovie, setSelectedMovie] = useState<MovieData | null>(null)
@@ -93,8 +95,25 @@ export function MoviesClient({
     <div className="space-y-6">
       {/* Header controls */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-900/20 border border-slate-900 p-4 rounded-xl">
-        <div className="text-sm text-slate-400">
-          Total Movies: <span className="font-semibold text-slate-100">{totalCount}</span>
+        <div className="flex items-center gap-3">
+          <div className="text-sm text-slate-400">
+            Total Movies: <span className="font-semibold text-slate-100">{totalCount}</span>
+          </div>
+          {filterCategoryName && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const searchParams = new URLSearchParams(window.location.search)
+                searchParams.delete("categoryId")
+                searchParams.delete("page") // Reset page
+                window.location.search = searchParams.toString()
+              }}
+              className="border-slate-800 bg-slate-900/40 text-xs hover:bg-slate-900 text-red-400 hover:text-red-300 h-7"
+            >
+              Clear Category Filter
+            </Button>
+          )}
         </div>
         <Button
           onClick={handleImport}

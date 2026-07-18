@@ -9,24 +9,70 @@ export const dynamic = "force-dynamic"
 export default async function MoviesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string }>
+  searchParams: Promise<{ page?: string; categoryId?: string }>
 }) {
   const params = await searchParams
   const currentPage = params.page ? parseInt(params.page) : 1
+  const categoryId = params.categoryId ? parseInt(params.categoryId) : undefined
   const limit = 10
   const offset = (currentPage - 1) * limit
 
-  // Get total count
-  const countResult = await db.select({ count: sql<number>`count(*)` }).from(movies)
-  const totalCount = countResult[0]?.count || 0
+  let totalCount = 0
+  let paginatedMovies: any[] = []
+  let filterCategoryName = ""
 
-  // Fetch movies with pagination
-  const paginatedMovies = await db
-    .select()
-    .from(movies)
-    .orderBy(desc(movies.createdAt))
-    .limit(limit)
-    .offset(offset)
+  if (categoryId) {
+    // 1. Get Category Name
+    const [cat] = await db.select().from(categories).where(eq(categories.id, categoryId)).limit(1)
+    if (cat) {
+      filterCategoryName = cat.name
+    }
+
+    // 2. Get Count for Category
+    const countResult = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(movieCategories)
+      .where(eq(movieCategories.categoryId, categoryId))
+    totalCount = countResult[0]?.count || 0
+
+    // 3. Get Movies for Category
+    if (totalCount > 0) {
+      paginatedMovies = await db
+        .select({
+          id: movies.id,
+          tmdbId: movies.tmdbId,
+          title: movies.title,
+          overview: movies.overview,
+          posterPath: movies.posterPath,
+          backdropPath: movies.backdropPath,
+          releaseDate: movies.releaseDate,
+          voteAverage: movies.voteAverage,
+          referralUrl: movies.referralUrl,
+          modalImage: movies.modalImage,
+          redirectUrl: movies.redirectUrl,
+          redirectTime: movies.redirectTime,
+          createdAt: movies.createdAt,
+        })
+        .from(movies)
+        .innerJoin(movieCategories, eq(movieCategories.movieId, movies.id))
+        .where(eq(movieCategories.categoryId, categoryId))
+        .orderBy(desc(movies.createdAt))
+        .limit(limit)
+        .offset(offset)
+    }
+  } else {
+    // 1. Get total count for all movies
+    const countResult = await db.select({ count: sql<number>`count(*)` }).from(movies)
+    totalCount = countResult[0]?.count || 0
+
+    // 2. Fetch movies with pagination
+    paginatedMovies = await db
+      .select()
+      .from(movies)
+      .orderBy(desc(movies.createdAt))
+      .limit(limit)
+      .offset(offset)
+  }
 
   const movieIds = paginatedMovies.map((m) => m.id)
 
@@ -78,15 +124,18 @@ export default async function MoviesPage({
     tags: tagsMap[movie.id] || [],
   }))
 
-  // Fetch all tags so they can be managed/assigned in the edit modal if needed
   const allTags = await db.select().from(tags)
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-100">Movies Database</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-100">
+          Movies Database {filterCategoryName && <span className="text-violet-400">({filterCategoryName})</span>}
+        </h1>
         <p className="text-sm text-slate-400 mt-1">
-          Manage movies, custom affiliate referral URLs, redirect routes, categories, and tags.
+          {filterCategoryName 
+            ? `Viewing movies categorized under ${filterCategoryName}.`
+            : "Manage movies, custom affiliate referral URLs, redirect routes, categories, and tags."}
         </p>
       </div>
 
@@ -95,6 +144,7 @@ export default async function MoviesPage({
         totalCount={totalCount}
         currentPage={currentPage}
         allTags={allTags}
+        filterCategoryName={filterCategoryName}
       />
     </div>
   )

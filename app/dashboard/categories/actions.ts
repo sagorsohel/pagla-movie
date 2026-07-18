@@ -9,6 +9,8 @@ export async function updateCategoryAction(prevState: any, formData: FormData) {
   const idStr = formData.get("id") as string
   const referralUrl = formData.get("referralUrl") as string
   const modalImage = formData.get("modalImage") as string
+  const topAds = formData.get("topAds") as string
+  const modalAds = formData.get("modalAds") as string
 
   if (!idStr) {
     return { error: "Category ID is required" }
@@ -22,6 +24,8 @@ export async function updateCategoryAction(prevState: any, formData: FormData) {
       .set({
         referralUrl: referralUrl || null,
         modalImage: modalImage || null,
+        topAds: topAds || null,
+        modalAds: modalAds || null,
       })
       .where(eq(categories.id, id))
 

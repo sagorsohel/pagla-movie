@@ -1,9 +1,8 @@
 import * as React from "react"
 import { db } from "@/db"
-import { categories } from "@/db/schema"
-import { sql } from "drizzle-orm"
+import { categories, movies, movieCategories } from "@/db/schema"
+import { sql, desc, eq, inArray } from "drizzle-orm"
 import { CategoriesClient } from "./categories-client"
-import { desc } from "drizzle-orm"
 
 export const dynamic = "force-dynamic"
 
@@ -29,6 +28,39 @@ export default async function CategoriesPage({
     .limit(limit)
     .offset(offset)
 
+  const categoryIds = paginatedCategories.map((c) => c.id)
+  let moviesMap: Record<number, { id: number; title: string; releaseDate: string | null }[]> = {}
+
+  if (categoryIds.length > 0) {
+    const moviesInCategories = await db
+      .select({
+        categoryId: movieCategories.categoryId,
+        movieId: movies.id,
+        movieTitle: movies.title,
+        releaseDate: movies.releaseDate,
+      })
+      .from(movieCategories)
+      .innerJoin(movies, eq(movieCategories.movieId, movies.id))
+      .where(inArray(movieCategories.categoryId, categoryIds))
+
+    moviesInCategories.forEach((m) => {
+      if (!moviesMap[m.categoryId]) {
+        moviesMap[m.categoryId] = []
+      }
+      moviesMap[m.categoryId].push({
+        id: m.movieId,
+        title: m.movieTitle,
+        releaseDate: m.releaseDate,
+      })
+    })
+  }
+
+  // Combine categories with their movies
+  const categoriesWithMovies = paginatedCategories.map((cat) => ({
+    ...cat,
+    movies: moviesMap[cat.id] || [],
+  }))
+
   return (
     <div className="space-y-6">
       <div>
@@ -39,7 +71,7 @@ export default async function CategoriesPage({
       </div>
 
       <CategoriesClient
-        initialCategories={paginatedCategories}
+        initialCategories={categoriesWithMovies as any}
         totalCount={totalCount}
         currentPage={currentPage}
       />

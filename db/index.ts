@@ -84,9 +84,19 @@ async function initializeDatabase() {
         \`slug\` VARCHAR(100) NOT NULL UNIQUE,
         \`referral_url\` TEXT NULL,
         \`modal_image\` TEXT NULL,
+        \`top_ads\` TEXT NULL,
+        \`modal_ads\` TEXT NULL,
         \`created_at\` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     `)
+
+    // Add columns if they do not exist for existing database installations
+    try {
+      await connection.execute("ALTER TABLE `categories` ADD COLUMN `top_ads` TEXT NULL;")
+    } catch (e) {}
+    try {
+      await connection.execute("ALTER TABLE `categories` ADD COLUMN `modal_ads` TEXT NULL;")
+    } catch (e) {}
 
     // 4. Create tags table
     await connection.execute(`
