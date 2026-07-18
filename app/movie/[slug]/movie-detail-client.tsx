@@ -163,6 +163,53 @@ export function MovieDetailClient({
       })
       .catch(() => {})
   }, [])
+  const [topAdHtml, setTopAdHtml] = useState<string>("")
+
+  useEffect(() => {
+    // If movie has topAds, use it directly (no loop)
+    if (movie.topAds && movie.topAds.trim() !== "") {
+      setTopAdHtml(movie.topAds)
+      return
+    }
+
+    // Otherwise, check for global hero ads
+    if (!adsConfig) return
+
+    const hero = adsConfig.heroAds || ""
+    const hero2 = adsConfig.hero2Ads || ""
+
+    if (!hero && !hero2) {
+      setTopAdHtml("")
+      return
+    }
+    if (hero && !hero2) {
+      setTopAdHtml(hero)
+      return
+    }
+    if (!hero && hero2) {
+      setTopAdHtml(hero2)
+      return
+    }
+
+    // Both exist, run the loop: hero for 40s, hero2 for 20s
+    let isHeroActive = true
+    setTopAdHtml(hero)
+
+    let timeoutId: any
+
+    const tick = () => {
+      isHeroActive = !isHeroActive
+      setTopAdHtml(isHeroActive ? hero : hero2)
+      const duration = isHeroActive ? 40000 : 20000
+      timeoutId = setTimeout(tick, duration)
+    }
+
+    timeoutId = setTimeout(tick, 40000) // Start with 40s for hero
+
+    return () => {
+      clearTimeout(timeoutId)
+    }
+  }, [movie.topAds, adsConfig])
 
   // Find related movies
   const relatedMovies = useMemo(() => {
@@ -380,6 +427,13 @@ export function MovieDetailClient({
         ) : (
           /* Normal Backdrop and Movie Details Header view */
           <>
+            {/* Navbar Ad Slot (Immediately below navbar) */}
+            {topAdHtml && (
+              <div className="absolute top-16 left-0 right-0 z-35 flex justify-center px-4 select-none">
+                <AdScriptContainer scriptHtml={topAdHtml} className="w-full max-w-4xl" />
+              </div>
+            )}
+
             {/* Backdrop on the right */}
             <div className="absolute inset-y-0 right-0 w-full md:w-[65%] h-full opacity-55 md:opacity-90 z-0">
               {movie.backdropPath ? (
@@ -406,7 +460,7 @@ export function MovieDetailClient({
             
             {/* Main Content inside wide container */}
             <div className="relative z-10 w-full max-w-[1400px] mx-auto px-6 md:px-12 lg:px-16 pt-28 pb-12 flex flex-col justify-end min-h-[80vh] md:min-h-[85vh] space-y-6">
-              <div className="space-y-4 max-w-3xl">
+                <div className="space-y-4 max-w-3xl">
                 <div className="flex flex-wrap items-center gap-2">
                   {movie.categories.map((c) => (
                     <span
