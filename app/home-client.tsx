@@ -3,6 +3,7 @@
 import * as React from "react"
 import { useState, useMemo } from "react"
 import Link from "next/link"
+import { HeroCarousel } from "@/components/hero-carousel"
 import {
   SearchIcon,
   BellIcon,
@@ -32,6 +33,7 @@ type Movie = {
   redirectUrl: string | null
   redirectTime: number | null
   categories: { id: number; name: string }[]
+  videos?: any
 }
 
 type Category = {
@@ -189,48 +191,13 @@ export function HomeClient({
         </div>
       </nav>
 
-      {/* Hero Billboard Banner */}
-      {heroMovie && !selectedCategoryId && !searchQuery && (
-        <div className="relative w-full h-[70vh] md:h-[85vh] flex items-end">
-          {/* Backdrop Image */}
-          <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(https://image.tmdb.org/t/p/original${heroMovie.backdropPath})` }}>
-            <div className="absolute inset-0 bg-linear-to-t from-[#0f0f0f] via-[#0f0f0f]/30 to-black/60" />
-            <div className="absolute inset-0 bg-linear-to-r from-[#0f0f0f] via-transparent to-transparent" />
-          </div>
-
-          {/* Billboard Info */}
-          <div className="relative z-10 max-w-2xl px-4 md:px-12 pb-16 md:pb-24 space-y-4">
-            <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 rounded bg-red-600/90 text-white font-extrabold text-[9px] uppercase tracking-wider flex items-center gap-1 shadow-lg">
-                <SparklesIcon className="w-3 h-3" /> Billboard Hit
-              </span>
-              <span className="text-xs text-slate-300 font-semibold font-mono">Rating: {heroMovie.voteAverage}/10</span>
-            </div>
-            
-            <h1 className="text-4xl md:text-6xl font-black tracking-tight text-white drop-shadow-lg leading-tight uppercase font-heading">
-              {heroMovie.title}
-            </h1>
-            
-            <p className="text-sm md:text-base text-slate-300 line-clamp-3 md:line-clamp-4 drop-shadow-md font-medium max-w-xl leading-relaxed">
-              {heroMovie.overview}
-            </p>
-
-            <div className="flex items-center gap-3 pt-2">
-              <button
-                onClick={() => handlePlayMovie(heroMovie)}
-                className="flex items-center gap-2 bg-white hover:bg-slate-200 text-black font-bold px-6 py-2.5 rounded-lg shadow-lg hover:scale-102 active:scale-98 transition cursor-pointer text-sm"
-              >
-                <PlayIcon className="w-4 h-4 fill-current" /> Watch Trailer
-              </button>
-              <button
-                onClick={() => setActiveMovie(heroMovie)}
-                className="flex items-center gap-2 bg-slate-500/30 hover:bg-slate-500/40 text-white font-bold px-5 py-2.5 rounded-lg backdrop-blur-xs hover:scale-102 transition cursor-pointer text-sm"
-              >
-                <InfoIcon className="w-4 h-4" /> More Info
-              </button>
-            </div>
-          </div>
-        </div>
+      {/* Hero Billboard Banner (Carousel) */}
+      {!selectedCategoryId && !searchQuery && (
+        <HeroCarousel
+          movies={movies}
+          onPlay={handlePlayMovie}
+          onInfo={setActiveMovie}
+        />
       )}
 
       {/* Main Movies Grid */}
