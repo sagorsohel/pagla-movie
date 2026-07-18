@@ -144,6 +144,7 @@ export async function scrapeLastMonthMovies() {
         const movieValues = {
           tmdbId: movieData.id,
           title: movieData.title,
+          slug: slugify(movieData.title),
           overview: movieData.overview,
           posterPath: movieData.poster_path,
           backdropPath: movieData.backdrop_path,
@@ -168,8 +169,14 @@ export async function scrapeLastMonthMovies() {
             .where(eq(movies.id, existingMovie.id))
           movieId = existingMovie.id
         } else {
-          const [inserted] = await db.insert(movies).values(movieValues) as any
-          movieId = inserted.insertId
+          try {
+            const [inserted] = await db.insert(movies).values(movieValues) as any
+            movieId = inserted.insertId
+          } catch (err) {
+            movieValues.slug = `${movieValues.slug}-${movieData.id}`
+            const [inserted] = await db.insert(movies).values(movieValues) as any
+            movieId = inserted.insertId
+          }
         }
 
         // 5. Connect Movie <-> Categories

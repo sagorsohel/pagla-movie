@@ -3,27 +3,35 @@ import { db } from "@/db"
 import { movies, categories, movieCategories } from "@/db/schema"
 import { eq, desc } from "drizzle-orm"
 import { notFound } from "next/navigation"
-import { MovieDetailClient } from "@/app/movie/[id]/movie-detail-client"
+import { MovieDetailClient } from "@/app/movie/[slug]/movie-detail-client"
 
 export const dynamic = "force-dynamic"
 
 export default async function MovieDetailPage({
   params,
 }: {
-  params: Promise<{ id: string }>
+  params: Promise<{ slug: string }>
 }) {
-  const { id } = await params
-  const movieId = parseInt(id)
+  const { slug } = await params
 
-  if (isNaN(movieId)) {
+  if (!slug) {
     notFound()
   }
 
-  // 1. Fetch the movie details
-  const [movieData] = await db.select().from(movies).where(eq(movies.id, movieId)).limit(1)
+  // 1. Fetch the movie details by slug (fallback to ID if not found)
+  let [movieData] = await db.select().from(movies).where(eq(movies.slug, slug)).limit(1)
+  if (!movieData) {
+    const movieId = parseInt(slug)
+    if (!isNaN(movieId)) {
+      ;[movieData] = await db.select().from(movies).where(eq(movies.id, movieId)).limit(1)
+    }
+  }
+
   if (!movieData) {
     notFound()
   }
+
+  const movieId = movieData.id
 
   // 2. Fetch categories for this movie
   const movieCats = await db

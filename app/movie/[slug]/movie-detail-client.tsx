@@ -4,6 +4,8 @@ import * as React from "react"
 import { useState, useMemo, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import AdCard from "@/components/ad-card"
+import { getImageUrl } from "@/lib/utils"
 import {
   PlayIcon,
   ChevronLeftIcon,
@@ -20,6 +22,7 @@ type Movie = {
   id: number
   tmdbId: number
   title: string
+  slug?: string | null
   overview: string | null
   posterPath: string | null
   backdropPath: string | null
@@ -35,6 +38,58 @@ type Movie = {
   videos?: any
   cast?: any
   crew?: any
+}
+
+function AdScriptContainer({ scriptHtml, className }: { scriptHtml?: string; className?: string }) {
+  if (!scriptHtml) return null
+
+  let width = "100%"
+  let height = "60px"
+  if (scriptHtml.includes("atOptions")) {
+    const widthMatch = scriptHtml.match(/'width'\s*:\s*(\d+)/)
+    const heightMatch = scriptHtml.match(/'height'\s*:\s*(\d+)/)
+    if (widthMatch && widthMatch[1]) width = `${widthMatch[1]}px`
+    if (heightMatch && heightMatch[1]) height = `${heightMatch[1]}px`
+  }
+
+  const iframeSrcDoc = `
+    <!DOCTYPE html>
+    <html style="color-scheme: dark;">
+      <head>
+        <meta name="color-scheme" content="dark">
+        <style>
+          html, body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: transparent !important;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+          }
+        </style>
+      </head>
+      <body>
+        ${scriptHtml}
+      </body>
+    </html>
+  `
+
+  return (
+    <div className={`${className} flex justify-center items-center overflow-hidden bg-transparent w-full`}>
+      <iframe
+        srcDoc={iframeSrcDoc}
+        width={width}
+        height={height}
+        style={{ border: "none", overflow: "hidden", background: "transparent" }}
+        scrolling="no"
+        title="Ad Space"
+        allowTransparency={true}
+      />
+    </div>
+  )
 }
 
 export function MovieDetailClient({
@@ -95,6 +150,19 @@ export function MovieDetailClient({
       clearInterval(interval)
     }
   }, [isPlaying, movie])
+
+  const [adsConfig, setAdsConfig] = useState<any>(null)
+
+  useEffect(() => {
+    fetch("/api/manage/ads")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.ads) {
+          setAdsConfig(data.ads)
+        }
+      })
+      .catch(() => {})
+  }, [])
 
   // Find related movies
   const relatedMovies = useMemo(() => {
@@ -196,10 +264,10 @@ export function MovieDetailClient({
               /* Inline Signup Locker Overlay */
               <div className="absolute inset-0 flex items-center justify-center bg-zinc-950/95 p-6 z-25">
                 {/* Background image fade */}
-                {movie.backdropPath && (
+                {(movie.backdropPath || adsConfig?.globalBg) && (
                   <div className="absolute inset-0 select-none pointer-events-none z-0">
                     <img
-                      src={`https://image.tmdb.org/t/p/original${movie.backdropPath}`}
+                      src={movie.backdropPath ? `https://image.tmdb.org/t/p/original${movie.backdropPath}` : getImageUrl(adsConfig.globalBg)}
                       alt=""
                       className="w-full h-full object-cover opacity-10"
                     />
@@ -239,6 +307,11 @@ export function MovieDetailClient({
                   >
                     Sign Up and Watch Now
                   </button>
+
+                  {/* Modal Ad in Player Locker */}
+                  {(movie.modalAds || adsConfig?.modalAds) && (
+                    <AdScriptContainer scriptHtml={movie.modalAds || adsConfig?.modalAds} className="w-full max-w-sm flex justify-center my-1 shrink-0" />
+                  )}
 
                   {/* Bullet badges */}
                   <div className="grid grid-cols-2 gap-2 text-[8px] sm:text-[9px] text-left pt-2">
@@ -312,6 +385,12 @@ export function MovieDetailClient({
               {movie.backdropPath ? (
                 <img
                   src={`https://image.tmdb.org/t/p/original${movie.backdropPath}`}
+                  alt={movie.title}
+                  className="w-full h-full object-cover object-center md:object-right-top scale-102"
+                />
+              ) : adsConfig?.globalBg ? (
+                <img
+                  src={getImageUrl(adsConfig.globalBg)}
                   alt={movie.title}
                   className="w-full h-full object-cover object-center md:object-right-top scale-102"
                 />
@@ -610,7 +689,7 @@ export function MovieDetailClient({
                   {relatedMovies.map((m) => (
                     <div
                       key={m.id}
-                      onClick={() => router.push(`/movie/${m.id}`)}
+                      onClick={() => router.push(`/movie/${m.slug || m.id}`)}
                       className="group relative bg-card border border-slate-900/65 rounded-lg overflow-hidden cursor-pointer transform hover:scale-102 transition duration-200"
                     >
                       <div className="aspect-[2/3] w-full bg-slate-950">
@@ -637,6 +716,11 @@ export function MovieDetailClient({
               ) : (
                 <p className="text-xs text-slate-655 italic">No related movies available.</p>
               )}
+
+              {/* Ad Card inside related view at the bottom of the list */}
+              <div className="w-full pt-4">
+                <AdCard scriptHtml={adsConfig?.heroAds} scriptHtml2={adsConfig?.hero2Ads} />
+              </div>
             </div>
           )}
 
@@ -655,7 +739,7 @@ export function MovieDetailClient({
             {/* Modal Ads Script Code */}
             {movie.modalAds && (
               <div className="p-3 bg-slate-950/80 rounded-xl border border-slate-900 text-[10px] font-mono text-slate-500 overflow-x-auto select-all max-h-16">
-                <div dangerouslySetInnerHTML={{ __html: movie.modalAds }} />
+                <AdScriptContainer scriptHtml={movie.modalAds} />
               </div>
             )}
           </div>

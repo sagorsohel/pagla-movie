@@ -13,7 +13,7 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar"
-import { GalleryVerticalEndIcon, TerminalSquareIcon, FilmIcon, FolderOpenIcon, TagIcon } from "lucide-react"
+import { GalleryVerticalEndIcon, TerminalSquareIcon, FilmIcon, FolderOpenIcon, TagIcon, MegaphoneIcon } from "lucide-react"
 
 // This is sample data.
 const data = {
@@ -85,6 +85,20 @@ const data = {
         {
           title: "Manage Tags",
           url: "/dashboard/tags",
+        },
+      ],
+    },
+    {
+      title: "Ads Settings",
+      url: "/dashboard/ads",
+      icon: (
+        <MegaphoneIcon />
+      ),
+      isActive: true,
+      items: [
+        {
+          title: "Configure Ads",
+          url: "/dashboard/ads",
         },
       ],
     },

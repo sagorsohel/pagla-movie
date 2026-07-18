@@ -42,6 +42,7 @@ export const movies = mysqlTable("movies", {
   id: serial("id").primaryKey(),
   tmdbId: int("tmdb_id").notNull().unique(),
   title: varchar("title", { length: 255 }).notNull(),
+  slug: varchar("slug", { length: 191 }).unique(),
   overview: text("overview"),
   posterPath: varchar("poster_path", { length: 255 }),
   backdropPath: varchar("backdrop_path", { length: 255 }),
@@ -70,3 +71,17 @@ export const movieTags = mysqlTable("movie_tags", {
   movieId: int("movie_id").notNull(),
   tagId: int("tag_id").notNull(),
 })
+
+export const ads = mysqlTable("ads", {
+  id: varchar("id", { length: 50 }).primaryKey(),
+  heroAds: text("hero_ads"),
+  hero2Ads: text("hero2_ads"),
+  modalAds: text("modal_ads"),
+  headerAds: text("header_ads"),
+  membershipRefLink: text("membership_ref_link"),
+  signinRefLink: text("signin_ref_link"),
+  globalBg: text("global_bg"),
+  floatingAds: text("floating_ads"),
+  floatingAdsStatus: varchar("floating_ads_status", { length: 10 }).default("on"),
+})
+

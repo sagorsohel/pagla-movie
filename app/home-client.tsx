@@ -1,11 +1,12 @@
 "use client"
 
 import * as React from "react"
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { HeroCarousel } from "@/components/hero-carousel"
 import { MovieRow } from "@/components/movie-row"
+import AdCard from "@/components/ad-card"
 import {
   SearchIcon,
   BellIcon,
@@ -19,6 +20,7 @@ type Movie = {
   id: number
   tmdbId: number
   title: string
+  slug?: string | null
   overview: string | null
   posterPath: string | null
   backdropPath: string | null
@@ -56,11 +58,23 @@ export function HomeClient({
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null)
   const [filterType, setFilterType] = useState<"todays-top" | "top-rated" | "upcoming" | null>(null)
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false)
+  const [adsConfig, setAdsConfig] = useState<any>(null)
   const [isProfileOpen, setIsProfileOpen] = useState(false)
+
+  useEffect(() => {
+    fetch("/api/manage/ads")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.ads) {
+          setAdsConfig(data.ads)
+        }
+      })
+      .catch(() => {})
+  }, [])
 
   // Redirect to standalone single movie detail page
   const handleMovieClick = (movie: Movie) => {
-    router.push(`/movie/${movie.id}`)
+    router.push(`/movie/${movie.slug || movie.id}`)
   }
 
   // Select a hero movie (highest rated or first one)
@@ -361,6 +375,11 @@ export function HomeClient({
               onSeeMore={() => setFilterType("todays-top")}
             />
 
+            {/* Ad Card 1 */}
+            <div className="w-full max-w-[1400px] mx-auto py-2">
+              <AdCard scriptHtml={adsConfig?.heroAds} scriptHtml2={adsConfig?.hero2Ads} />
+            </div>
+
             {/* 2. Top Rated Row */}
             <MovieRow
               title="Top Rated Movies"
@@ -376,6 +395,11 @@ export function HomeClient({
               onMovieClick={handleMovieClick}
               onSeeMore={() => setFilterType("upcoming")}
             />
+
+            {/* Ad Card 2 */}
+            <div className="w-full max-w-[1400px] mx-auto py-2">
+              <AdCard scriptHtml={adsConfig?.hero2Ads} scriptHtml2={adsConfig?.heroAds} />
+            </div>
 
             {/* 4. Category-Wise Rows dynamically rendered */}
             {categories.map((cat) => {

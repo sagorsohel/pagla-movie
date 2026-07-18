@@ -9,6 +9,9 @@ const JWT_SECRET = new TextEncoder().encode(
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
+  const requestHeaders = new Headers(request.headers)
+  requestHeaders.set("x-url", pathname)
+
   // Protected paths
   if (pathname.startsWith("/dashboard")) {
     const token = request.cookies.get("admin_token")?.value
@@ -20,7 +23,11 @@ export async function middleware(request: NextRequest) {
 
     try {
       await jose.jwtVerify(token, JWT_SECRET)
-      return NextResponse.next()
+      return NextResponse.next({
+        request: {
+          headers: requestHeaders,
+        },
+      })
     } catch (error) {
       const loginUrl = new URL("/login", request.url)
       const response = NextResponse.redirect(loginUrl)
@@ -43,9 +50,13 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  return NextResponse.next()
+  return NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  })
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/login"],
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 }

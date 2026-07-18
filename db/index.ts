@@ -116,6 +116,7 @@ async function initializeDatabase() {
         \`id\` INT AUTO_INCREMENT PRIMARY KEY,
         \`tmdb_id\` INT NOT NULL UNIQUE,
         \`title\` VARCHAR(255) NOT NULL,
+        \`slug\` VARCHAR(191) NULL UNIQUE,
         \`overview\` TEXT NULL,
         \`poster_path\` VARCHAR(255) NULL,
         \`backdrop_path\` VARCHAR(255) NULL,
@@ -135,6 +136,9 @@ async function initializeDatabase() {
     `)
 
     // Safe columns addition for existing database instances
+    try {
+      await connection.execute("ALTER TABLE `movies` ADD COLUMN `slug` VARCHAR(191) NULL UNIQUE;")
+    } catch (e) {}
     try {
       await connection.execute("ALTER TABLE `movies` ADD COLUMN `top_ads` TEXT NULL;")
     } catch (e) {}
@@ -160,6 +164,33 @@ async function initializeDatabase() {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     `)
 
+    // 8. Create ads table
+    await connection.execute(`
+      CREATE TABLE IF NOT EXISTS \`ads\` (
+        \`id\` VARCHAR(50) PRIMARY KEY,
+        \`hero_ads\` TEXT NULL,
+        \`hero2_ads\` TEXT NULL,
+        \`modal_ads\` TEXT NULL,
+        \`header_ads\` TEXT NULL,
+        \`membership_ref_link\` TEXT NULL,
+        \`signin_ref_link\` TEXT NULL,
+        \`global_bg\` TEXT NULL,
+        \`floating_ads\` TEXT NULL,
+        \`floating_ads_status\` VARCHAR(10) DEFAULT 'on'
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `)
+
+    // Seed default global ads configurations
+    const [adRows] = await connection.execute(
+      "SELECT id FROM ads WHERE id = 'global'"
+    )
+    if ((adRows as any[]).length === 0) {
+      console.log("Seeding default global ads configs...")
+      await connection.execute(
+        "INSERT INTO ads (id, hero_ads, hero2_ads, modal_ads, header_ads, membership_ref_link, signin_ref_link, global_bg, floating_ads, floating_ads_status) VALUES ('global', '', '', '', '', '', '', '', '', 'on')"
+      )
+    }
+
     // 3. Seed admin user
     const adminEmail = "admin@gmail.com"
     const adminPass = "sohoj@sohoj"
@@ -177,6 +208,34 @@ async function initializeDatabase() {
         [adminEmail, hashedPassword, "admin"]
       )
       console.log("Admin user seeded successfully!")
+    }
+
+    // 9. Populate movie slugs for any existing records that lack them
+    const [movieRows] = await connection.execute(
+      "SELECT id, title FROM movies WHERE slug IS NULL OR slug = ''"
+    )
+    for (const movieRow of movieRows as any[]) {
+      const baseSlug = movieRow.title
+        .toString()
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, "-")
+        .replace(/[^\w\-]+/g, "")
+        .replace(/\-\-+/g, "-")
+        .replace(/^-+/, "")
+        .replace(/-+$/, "") || `movie-${movieRow.id}`
+
+      try {
+        await connection.execute(
+          "UPDATE movies SET slug = ? WHERE id = ?",
+          [baseSlug, movieRow.id]
+        )
+      } catch (err) {
+        await connection.execute(
+          "UPDATE movies SET slug = ? WHERE id = ?",
+          [`${baseSlug}-${movieRow.id}`, movieRow.id]
+        )
+      }
     }
 
     connection.release()
