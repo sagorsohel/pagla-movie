@@ -3,7 +3,7 @@ import { db } from "@/db"
 import { movies, categories, movieCategories } from "@/db/schema"
 import { eq, desc } from "drizzle-orm"
 import { notFound } from "next/navigation"
-import { MovieDetailClient } from "./movie-detail-client"
+import { MovieDetailClient } from "@/app/movie/[id]/movie-detail-client"
 
 export const dynamic = "force-dynamic"
 

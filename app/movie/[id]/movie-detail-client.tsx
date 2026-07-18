@@ -183,17 +183,17 @@ export function MovieDetailClient({
               ))}
             </div>
             
-            <h1 className="text-4xl sm:text-6xl md:text-7xl font-black text-white drop-shadow-lg leading-tight uppercase font-heading tracking-tight">
+            <h1 className="text-3xl sm:text-5xl md:text-7xl font-black text-white drop-shadow-lg leading-tight sm:leading-tight uppercase font-heading tracking-tight">
               {movie.title}
             </h1>
           </div>
 
           {/* Action Row */}
-          <div className="flex flex-wrap items-center gap-3 pt-2 select-none">
+          <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 pt-2 select-none">
             {/* Play Button */}
             <button
               onClick={handlePlayMovie}
-              className="flex items-center justify-center gap-2 bg-white hover:bg-slate-200 text-black font-extrabold py-3 px-8 rounded-full text-xs sm:text-sm cursor-pointer shadow-lg transition transform hover:scale-105 active:scale-95 duration-150"
+              className="flex items-center justify-center gap-2 bg-white hover:bg-slate-200 text-black font-extrabold py-2.5 px-6 sm:py-3 sm:px-8 rounded-full text-xs sm:text-sm cursor-pointer shadow-lg transition transform hover:scale-105 active:scale-95 duration-150"
             >
               <PlayIcon className="w-4 h-4 fill-current" /> Watch Now
             </button>
@@ -204,7 +204,7 @@ export function MovieDetailClient({
                 href={movie.referralUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center justify-center gap-1.5 bg-slate-900/60 hover:bg-slate-900 text-cyan-400 hover:text-cyan-300 border border-slate-800 font-bold py-3 px-6 rounded-full text-xs sm:text-sm cursor-pointer transition backdrop-blur-xs transform hover:scale-105 active:scale-95 duration-150"
+                className="flex items-center justify-center gap-1.5 bg-slate-900/60 hover:bg-slate-900 text-cyan-400 hover:text-cyan-300 border border-slate-800 font-bold py-2.5 px-5 sm:py-3 sm:px-6 rounded-full text-xs sm:text-sm cursor-pointer transition backdrop-blur-xs transform hover:scale-105 active:scale-95 duration-150"
               >
                 Visit Offer <ExternalLinkIcon className="w-3.5 h-3.5" />
               </a>
@@ -214,41 +214,41 @@ export function MovieDetailClient({
             <button
               onClick={handlePlayMovie}
               title="Watch Trailer"
-              className="flex items-center justify-center w-11 h-11 rounded-full border border-slate-700/60 bg-slate-900/40 hover:bg-slate-850 hover:border-slate-500 text-white cursor-pointer transition transform hover:scale-105 active:scale-95"
+              className="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-slate-700/60 bg-slate-900/40 hover:bg-slate-850 hover:border-slate-500 text-white cursor-pointer transition transform hover:scale-105 active:scale-95"
             >
-              <PlayIcon className="w-4 h-4" />
+              <PlayIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
 
             {/* Plus Icon */}
             <button
               title="Add to Watchlist"
-              className="flex items-center justify-center w-11 h-11 rounded-full border border-slate-700/60 bg-slate-900/40 hover:bg-slate-850 hover:border-slate-500 text-white cursor-pointer transition transform hover:scale-105 active:scale-95"
+              className="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-slate-700/60 bg-slate-900/40 hover:bg-slate-850 hover:border-slate-500 text-white cursor-pointer transition transform hover:scale-105 active:scale-95"
             >
-              <PlusIcon className="w-4 h-4" />
+              <PlusIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
 
             {/* Thumbs Up Icon */}
             <button
               title="Like"
-              className="flex items-center justify-center w-11 h-11 rounded-full border border-slate-700/60 bg-slate-900/40 hover:bg-slate-850 hover:border-slate-500 text-white cursor-pointer transition transform hover:scale-105 active:scale-95"
+              className="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-slate-700/60 bg-slate-900/40 hover:bg-slate-850 hover:border-slate-500 text-white cursor-pointer transition transform hover:scale-105 active:scale-95"
             >
-              <ThumbsUpIcon className="w-4 h-4" />
+              <ThumbsUpIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
 
             {/* Thumbs Down Icon */}
             <button
               title="Dislike"
-              className="flex items-center justify-center w-11 h-11 rounded-full border border-slate-700/60 bg-slate-900/40 hover:bg-slate-850 hover:border-slate-500 text-white cursor-pointer transition transform hover:scale-105 active:scale-95"
+              className="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-slate-700/60 bg-slate-900/40 hover:bg-slate-850 hover:border-slate-500 text-white cursor-pointer transition transform hover:scale-105 active:scale-95"
             >
-              <ThumbsDownIcon className="w-4 h-4" />
+              <ThumbsDownIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
 
             {/* Share Icon */}
             <button
               title="Share"
-              className="flex items-center justify-center w-11 h-11 rounded-full border border-slate-700/60 bg-slate-900/40 hover:bg-slate-850 hover:border-slate-500 text-white cursor-pointer transition transform hover:scale-105 active:scale-95"
+              className="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-slate-700/60 bg-slate-900/40 hover:bg-slate-850 hover:border-slate-500 text-white cursor-pointer transition transform hover:scale-105 active:scale-95"
             >
-              <Share2Icon className="w-4 h-4" />
+              <Share2Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
           </div>
 
@@ -275,7 +275,7 @@ export function MovieDetailClient({
             </div>
 
             {/* Cast & Advisory Info */}
-            <div className="space-y-3 text-xs sm:text-sm border-l border-slate-900/40 pl-0 md:pl-8">
+            <div className="space-y-3 text-xs sm:text-sm md:border-l border-slate-900/40 pl-0 md:pl-8">
               {directors.length > 0 && (
                 <div>
                   <span className="text-slate-500 font-semibold mr-2">Director:</span>
