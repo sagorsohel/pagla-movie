@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import {
@@ -47,20 +47,54 @@ export function MovieDetailClient({
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<"related" | "details">("related")
   const [isProfileOpen, setIsProfileOpen] = useState(false)
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [showInlineSignup, setShowInlineSignup] = useState(false)
+  const [countdown, setCountdown] = useState(movie.redirectTime || 5)
 
   const handlePlayMovie = () => {
-    if (movie.redirectUrl) {
-      const delay = (movie.redirectTime || 5) * 1000
-      alert(`Redirecting to movie player in ${movie.redirectTime || 5} seconds...`)
-      setTimeout(() => {
-        window.open(movie.redirectUrl!, "_blank")
-      }, delay)
-    } else if (movie.referralUrl) {
-      window.open(movie.referralUrl, "_blank")
+    setIsPlaying(true)
+    setShowInlineSignup(false)
+    setCountdown(movie.redirectTime || 5)
+  }
+
+  const handleSignUpClick = () => {
+    const url = movie.redirectUrl || movie.referralUrl
+    if (url) {
+      window.open(url, "_blank")
     } else {
-      alert(`Playing: ${movie.title} (No external stream link configured)`)
+      alert("Playing: " + movie.title)
     }
   }
+
+  useEffect(() => {
+    if (!isPlaying) return
+
+    // Show signup locker after 2 seconds
+    const signupTimer = setTimeout(() => {
+      setShowInlineSignup(true)
+    }, 2000)
+
+    // Countdown to redirect
+    const interval = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval)
+          // Redirect when countdown finishes
+          const url = movie.redirectUrl || movie.referralUrl
+          if (url) {
+            window.open(url, "_blank")
+          }
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+
+    return () => {
+      clearTimeout(signupTimer)
+      clearInterval(interval)
+    }
+  }, [isPlaying, movie])
 
   // Find related movies
   const relatedMovies = useMemo(() => {
@@ -149,163 +183,287 @@ export function MovieDetailClient({
         </div>
       </nav>
 
-      {/* Billboard Header (Full Page Style) */}
+      {/* Billboard Header (Full Page Style / Player) */}
       <div className="relative w-full min-h-[90vh] md:min-h-screen bg-slate-950 flex items-center overflow-hidden border-b border-slate-900/50">
-        {/* Backdrop on the right */}
-        <div className="absolute inset-y-0 right-0 w-full md:w-[65%] h-full opacity-55 md:opacity-90 z-0">
-          {movie.backdropPath ? (
-            <img
-              src={`https://image.tmdb.org/t/p/original${movie.backdropPath}`}
-              alt={movie.title}
-              className="w-full h-full object-cover object-center md:object-right-top scale-102"
-            />
-          ) : (
-            <div className="w-full h-full bg-slate-900 flex items-center justify-center text-slate-600 font-bold">
-              No Backdrop Available
-            </div>
-          )}
-          {/* Linear gradients to blend into background */}
-          <div className="absolute inset-0 bg-linear-to-r from-background via-background/60 to-transparent" />
-          <div className="absolute inset-0 bg-linear-to-t from-background via-transparent to-transparent" />
-        </div>
         
-        {/* Main Content inside wide container */}
-        <div className="relative z-10 w-full max-w-[1400px] mx-auto px-6 md:px-12 lg:px-16 pt-28 pb-12 flex flex-col justify-end min-h-[80vh] md:min-h-[85vh] space-y-6">
-          <div className="space-y-4 max-w-3xl">
-            <div className="flex flex-wrap items-center gap-2">
-              {movie.categories.map((c) => (
-                <span
-                  key={c.id}
-                  className="px-2.5 py-0.5 rounded bg-red-600/90 text-white text-[9px] font-bold uppercase tracking-wider animate-pulse"
-                >
-                  {c.name}
-                </span>
-              ))}
-            </div>
-            
-            <h1 className="text-3xl sm:text-5xl md:text-7xl font-black text-white drop-shadow-lg leading-tight sm:leading-tight uppercase font-heading tracking-tight">
-              {movie.title}
-            </h1>
-          </div>
+        {isPlaying ? (
+          /* Video Player View */
+          <div className="absolute inset-0 w-full h-full flex flex-col justify-between bg-black z-20 select-none">
+            {/* Shifting Gradient Colors (movie projection light) */}
+            <div className="absolute inset-0 bg-gradient-to-tr from-amber-600 via-red-700 to-zinc-900 opacity-20 blur-3xl pointer-events-none animate-pulse duration-[6000ms]" />
 
-          {/* Action Row */}
-          <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 pt-2 select-none">
-            {/* Play Button */}
-            <button
-              onClick={handlePlayMovie}
-              className="flex items-center justify-center gap-2 bg-white hover:bg-slate-200 text-black font-extrabold py-2.5 px-6 sm:py-3 sm:px-8 rounded-full text-xs sm:text-sm cursor-pointer shadow-lg transition transform hover:scale-105 active:scale-95 duration-150"
-            >
-              <PlayIcon className="w-4 h-4 fill-current" /> Watch Now
-            </button>
+            {showInlineSignup ? (
+              /* Inline Signup Locker Overlay */
+              <div className="absolute inset-0 flex items-center justify-center bg-zinc-950/95 p-6 z-25">
+                {/* Background image fade */}
+                {movie.backdropPath && (
+                  <div className="absolute inset-0 select-none pointer-events-none z-0">
+                    <img
+                      src={`https://image.tmdb.org/t/p/original${movie.backdropPath}`}
+                      alt=""
+                      className="w-full h-full object-cover opacity-10"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/90 to-zinc-950/40" />
+                  </div>
+                )}
 
-            {/* Visit Offer Button (if redirect/referral available) */}
-            {movie.referralUrl && (
-              <a
-                href={movie.referralUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center justify-center gap-1.5 bg-slate-900/60 hover:bg-slate-900 text-cyan-400 hover:text-cyan-300 border border-slate-800 font-bold py-2.5 px-5 sm:py-3 sm:px-6 rounded-full text-xs sm:text-sm cursor-pointer transition backdrop-blur-xs transform hover:scale-105 active:scale-95 duration-150"
-              >
-                Visit Offer <ExternalLinkIcon className="w-3.5 h-3.5" />
-              </a>
+                {/* Locker Card */}
+                <div className="relative z-10 w-full max-w-md bg-black/60 border border-slate-800 rounded-3xl p-6 text-center shadow-2xl backdrop-blur-md space-y-4 animate-in fade-in zoom-in-95 duration-300">
+                  <div className="flex justify-center">
+                    <div className="p-3 bg-red-600/10 rounded-full border border-red-500/20 text-red-500 animate-bounce">
+                      <PlayIcon className="w-6 h-6 fill-current" />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <h3 className="text-lg font-black text-white tracking-tight uppercase">
+                      Create a Free Account
+                    </h3>
+                    <p className="text-xs text-slate-455 font-semibold leading-relaxed">
+                      Sign up to unlock the high-speed 4K UHD streaming server for <span className="text-red-500 font-bold">{movie.title}</span>.
+                    </p>
+                  </div>
+
+                  {/* Countdown Status */}
+                  <div className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">
+                    {countdown > 0 ? (
+                      <span>Redirecting in <span className="text-red-500 font-bold">{countdown}s</span>...</span>
+                    ) : (
+                      <span className="text-green-500 font-bold">Redirecting...</span>
+                    )}
+                  </div>
+
+                  <button
+                    onClick={handleSignUpClick}
+                    className="w-full py-3 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-white font-extrabold text-xs tracking-widest rounded-xl shadow-lg shadow-red-650/30 transition-all duration-300 hover:scale-102 cursor-pointer uppercase"
+                  >
+                    Sign Up and Watch Now
+                  </button>
+
+                  {/* Bullet badges */}
+                  <div className="grid grid-cols-2 gap-2 text-[8px] sm:text-[9px] text-left pt-2">
+                    <div className="flex items-center gap-1.5 p-1.5 bg-slate-900/40 border border-slate-800/40 rounded-lg">
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                      <span className="font-bold text-slate-350 truncate">4K UHD Quality</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 p-1.5 bg-slate-900/40 border border-slate-800/40 rounded-lg">
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                      <span className="font-bold text-slate-350 truncate">No Ads Stream</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              /* Loading secure tunnel view */
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 z-25">
+                {/* Visualizer bars */}
+                <div className="flex items-end gap-1.5 h-16 pointer-events-none">
+                  {Array.from({ length: 15 }).map((_, i) => {
+                    const heights = ["15%", "40%", "60%", "30%", "50%", "75%", "35%", "55%", "70%", "20%", "45%", "65%", "40%", "60%", "30%"]
+                    return (
+                      <div
+                        key={i}
+                        className="w-1 bg-red-600 rounded-full transition-all duration-300 animate-pulse"
+                        style={{
+                          height: heights[i % heights.length],
+                          opacity: 0.7,
+                          animationDelay: `${i * 100}ms`
+                        }}
+                      />
+                    )
+                  })}
+                </div>
+                <div className="text-slate-300 font-bold text-xs tracking-wider uppercase animate-pulse bg-black/50 px-5 py-2 rounded-full backdrop-blur-md border border-white/5 flex items-center gap-2">
+                  <svg className="animate-spin -ml-1 mr-1 h-3.5 w-3.5 text-red-500" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  Connecting Secure Stream Tunnel...
+                </div>
+              </div>
             )}
 
-            {/* Watch Trailer / Play Icon */}
-            <button
-              onClick={handlePlayMovie}
-              title="Watch Trailer"
-              className="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-slate-700/60 bg-slate-900/40 hover:bg-slate-850 hover:border-slate-500 text-white cursor-pointer transition transform hover:scale-105 active:scale-95"
-            >
-              <PlayIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            </button>
-
-            {/* Plus Icon */}
-            <button
-              title="Add to Watchlist"
-              className="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-slate-700/60 bg-slate-900/40 hover:bg-slate-850 hover:border-slate-500 text-white cursor-pointer transition transform hover:scale-105 active:scale-95"
-            >
-              <PlusIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            </button>
-
-            {/* Thumbs Up Icon */}
-            <button
-              title="Like"
-              className="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-slate-700/60 bg-slate-900/40 hover:bg-slate-850 hover:border-slate-500 text-white cursor-pointer transition transform hover:scale-105 active:scale-95"
-            >
-              <ThumbsUpIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            </button>
-
-            {/* Thumbs Down Icon */}
-            <button
-              title="Dislike"
-              className="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-slate-700/60 bg-slate-900/40 hover:bg-slate-850 hover:border-slate-500 text-white cursor-pointer transition transform hover:scale-105 active:scale-95"
-            >
-              <ThumbsDownIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            </button>
-
-            {/* Share Icon */}
-            <button
-              title="Share"
-              className="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-slate-700/60 bg-slate-900/40 hover:bg-slate-850 hover:border-slate-500 text-white cursor-pointer transition transform hover:scale-105 active:scale-95"
-            >
-              <Share2Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            </button>
-          </div>
-
-          {/* Metadata Grid */}
-          <div className="grid md:grid-cols-3 gap-8 pt-6 border-t border-slate-900/40 z-10">
-            {/* Description & Genres */}
-            <div className="md:col-span-2 space-y-4">
-              <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-sans font-light max-w-4xl drop-shadow-md">
-                {movie.overview || "No overview description available for this title."}
-              </p>
-
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs sm:text-sm font-medium">
-                <span className="text-red-500 font-bold uppercase tracking-wider">
-                  {movie.categories.map((c) => c.name).join(" • ")}
-                </span>
-                <span className="text-slate-750">•</span>
-                <span className="text-yellow-500 font-bold bg-black/40 px-2 py-0.5 rounded backdrop-blur-xs">★ {movie.voteAverage}/10</span>
-                <span className="text-slate-750">•</span>
-                <span className="font-mono text-slate-350 bg-black/40 px-2 py-0.5 rounded backdrop-blur-xs">{movie.releaseDate || "Release Date N/A"}</span>
-                <span className="text-slate-750">•</span>
-                <span className="px-1.5 py-0.2 rounded bg-slate-900 text-[10px] text-slate-400 font-bold border border-slate-800">UHD</span>
-                <span className="px-1.5 py-0.2 rounded bg-slate-900 text-[10px] text-slate-440 font-bold border border-slate-800">HDR</span>
+            {/* Bottom mini controls overlay inside player */}
+            <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/90 via-black/45 to-transparent flex items-center justify-between z-25 text-xs text-slate-400">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setIsPlaying(false)}
+                  className="p-1.5 bg-red-600/90 text-white rounded-full hover:bg-red-500 shadow-md cursor-pointer transition"
+                >
+                  <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                    <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+                  </svg>
+                </button>
+                <span className="font-mono text-[10px]">LIVE STREAMING • {movie.title} (4K UHD)</span>
               </div>
-            </div>
-
-            {/* Cast & Advisory Info */}
-            <div className="space-y-3 text-xs sm:text-sm md:border-l border-slate-900/40 pl-0 md:pl-8">
-              {directors.length > 0 && (
-                <div>
-                  <span className="text-slate-500 font-semibold mr-2">Director:</span>
-                  <span className="text-slate-300 hover:text-white transition cursor-pointer">
-                    {directors.map((d: any) => d.name).join(", ")}
-                  </span>
-                </div>
-              )}
-              {castList.length > 0 && (
-                <div>
-                  <span className="text-slate-500 font-semibold mr-2">Cast:</span>
-                  <span className="text-slate-300 hover:text-white transition cursor-pointer">
-                    {castList.slice(0, 4).map((actor: any) => actor.name).join(", ")}
-                  </span>
-                </div>
-              )}
-              <div className="flex gap-2 items-center pt-2">
-                <span className="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-400 font-bold text-[10px]">
-                  16+
-                </span>
-                <span className="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-400 font-bold text-[10px]">
-                  Subtitles
-                </span>
-                <span className="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-400 font-bold text-[10px]">
-                  AD
-                </span>
-              </div>
+              <button
+                onClick={() => setIsPlaying(false)}
+                className="hover:text-white transition cursor-pointer font-bold"
+              >
+                Close Player
+              </button>
             </div>
           </div>
-        </div>
+        ) : (
+          /* Normal Backdrop and Movie Details Header view */
+          <>
+            {/* Backdrop on the right */}
+            <div className="absolute inset-y-0 right-0 w-full md:w-[65%] h-full opacity-55 md:opacity-90 z-0">
+              {movie.backdropPath ? (
+                <img
+                  src={`https://image.tmdb.org/t/p/original${movie.backdropPath}`}
+                  alt={movie.title}
+                  className="w-full h-full object-cover object-center md:object-right-top scale-102"
+                />
+              ) : (
+                <div className="w-full h-full bg-slate-900 flex items-center justify-center text-slate-600 font-bold">
+                  No Backdrop Available
+                </div>
+              )}
+              {/* Linear gradients to blend into background */}
+              <div className="absolute inset-0 bg-linear-to-r from-background via-background/60 to-transparent" />
+              <div className="absolute inset-0 bg-linear-to-t from-background via-transparent to-transparent" />
+            </div>
+            
+            {/* Main Content inside wide container */}
+            <div className="relative z-10 w-full max-w-[1400px] mx-auto px-6 md:px-12 lg:px-16 pt-28 pb-12 flex flex-col justify-end min-h-[80vh] md:min-h-[85vh] space-y-6">
+              <div className="space-y-4 max-w-3xl">
+                <div className="flex flex-wrap items-center gap-2">
+                  {movie.categories.map((c) => (
+                    <span
+                      key={c.id}
+                      className="px-2.5 py-0.5 rounded bg-red-600/90 text-white text-[9px] font-bold uppercase tracking-wider animate-pulse"
+                    >
+                      {c.name}
+                    </span>
+                  ))}
+                </div>
+                
+                <h1 className="text-3xl sm:text-5xl md:text-7xl font-black text-white drop-shadow-lg leading-tight sm:leading-tight uppercase font-heading tracking-tight">
+                  {movie.title}
+                </h1>
+              </div>
+
+              {/* Action Row */}
+              <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 pt-2 select-none">
+                {/* Play Button */}
+                <button
+                  onClick={handlePlayMovie}
+                  className="flex items-center justify-center gap-2 bg-white hover:bg-slate-200 text-black font-extrabold py-2.5 px-6 sm:py-3 sm:px-8 rounded-full text-xs sm:text-sm cursor-pointer shadow-lg transition transform hover:scale-105 active:scale-95 duration-150"
+                >
+                  <PlayIcon className="w-4 h-4 fill-current" /> Watch Now
+                </button>
+
+                {/* Visit Offer Button (if redirect/referral available) */}
+                {movie.referralUrl && (
+                  <a
+                    href={movie.referralUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center justify-center gap-1.5 bg-slate-900/60 hover:bg-slate-900 text-cyan-400 hover:text-cyan-300 border border-slate-800 font-bold py-2.5 px-5 sm:py-3 sm:px-6 rounded-full text-xs sm:text-sm cursor-pointer transition backdrop-blur-xs transform hover:scale-105 active:scale-95 duration-150"
+                  >
+                    Visit Offer <ExternalLinkIcon className="w-3.5 h-3.5" />
+                  </a>
+                )}
+
+                {/* Watch Trailer / Play Icon */}
+                <button
+                  onClick={handlePlayMovie}
+                  title="Watch Trailer"
+                  className="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-slate-700/60 bg-slate-900/40 hover:bg-slate-850 hover:border-slate-500 text-white cursor-pointer transition transform hover:scale-105 active:scale-95"
+                >
+                  <PlayIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                </button>
+
+                {/* Plus Icon */}
+                <button
+                  title="Add to Watchlist"
+                  className="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-slate-700/60 bg-slate-900/40 hover:bg-slate-850 hover:border-slate-500 text-white cursor-pointer transition transform hover:scale-105 active:scale-95"
+                >
+                  <PlusIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                </button>
+
+                {/* Thumbs Up Icon */}
+                <button
+                  title="Like"
+                  className="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-slate-700/60 bg-slate-900/40 hover:bg-slate-850 hover:border-slate-500 text-white cursor-pointer transition transform hover:scale-105 active:scale-95"
+                >
+                  <ThumbsUpIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                </button>
+
+                {/* Thumbs Down Icon */}
+                <button
+                  title="Dislike"
+                  className="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-slate-700/60 bg-slate-900/40 hover:bg-slate-850 hover:border-slate-500 text-white cursor-pointer transition transform hover:scale-105 active:scale-95"
+                >
+                  <ThumbsDownIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                </button>
+
+                {/* Share Icon */}
+                <button
+                  title="Share"
+                  className="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-slate-700/60 bg-slate-900/40 hover:bg-slate-850 hover:border-slate-500 text-white cursor-pointer transition transform hover:scale-105 active:scale-95"
+                >
+                  <Share2Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                </button>
+              </div>
+
+              {/* Metadata Grid */}
+              <div className="grid md:grid-cols-3 gap-8 pt-6 border-t border-slate-900/40 z-10">
+                {/* Description & Genres */}
+                <div className="md:col-span-2 space-y-4">
+                  <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-sans font-light max-w-4xl drop-shadow-md">
+                    {movie.overview || "No overview description available for this title."}
+                  </p>
+
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs sm:text-sm font-medium">
+                    <span className="text-red-500 font-bold uppercase tracking-wider">
+                      {movie.categories.map((c) => c.name).join(" • ")}
+                    </span>
+                    <span className="text-slate-750">•</span>
+                    <span className="text-yellow-500 font-bold bg-black/40 px-2 py-0.5 rounded backdrop-blur-xs">★ {movie.voteAverage}/10</span>
+                    <span className="text-slate-750">•</span>
+                    <span className="font-mono text-slate-350 bg-black/40 px-2 py-0.5 rounded backdrop-blur-xs">{movie.releaseDate || "Release Date N/A"}</span>
+                    <span className="text-slate-750">•</span>
+                    <span className="px-1.5 py-0.2 rounded bg-slate-900 text-[10px] text-slate-400 font-bold border border-slate-800">UHD</span>
+                    <span className="px-1.5 py-0.2 rounded bg-slate-900 text-[10px] text-slate-440 font-bold border border-slate-800">HDR</span>
+                  </div>
+                </div>
+
+                {/* Cast & Advisory Info */}
+                <div className="space-y-3 text-xs sm:text-sm md:border-l border-slate-900/40 pl-0 md:pl-8">
+                  {directors.length > 0 && (
+                    <div>
+                      <span className="text-slate-500 font-semibold mr-2">Director:</span>
+                      <span className="text-slate-300 hover:text-white transition cursor-pointer">
+                        {directors.map((d: any) => d.name).join(", ")}
+                      </span>
+                    </div>
+                  )}
+                  {castList.length > 0 && (
+                    <div>
+                      <span className="text-slate-500 font-semibold mr-2">Cast:</span>
+                      <span className="text-slate-300 hover:text-white transition cursor-pointer">
+                        {castList.slice(0, 4).map((actor: any) => actor.name).join(", ")}
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex gap-2 items-center pt-2">
+                    <span className="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-400 font-bold text-[10px]">
+                      16+
+                    </span>
+                    <span className="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-400 font-bold text-[10px]">
+                      Subtitles
+                    </span>
+                    <span className="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-400 font-bold text-[10px]">
+                      AD
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Main Container */}
