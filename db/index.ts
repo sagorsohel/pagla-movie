@@ -75,6 +75,71 @@ async function initializeDatabase() {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     `)
 
+    // 3. Create categories table
+    await connection.execute(`
+      CREATE TABLE IF NOT EXISTS \`categories\` (
+        \`id\` INT AUTO_INCREMENT PRIMARY KEY,
+        \`tmdb_genre_id\` INT UNIQUE,
+        \`name\` VARCHAR(100) NOT NULL,
+        \`slug\` VARCHAR(100) NOT NULL UNIQUE,
+        \`referral_url\` TEXT NULL,
+        \`modal_image\` TEXT NULL,
+        \`created_at\` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `)
+
+    // 4. Create tags table
+    await connection.execute(`
+      CREATE TABLE IF NOT EXISTS \`tags\` (
+        \`id\` INT AUTO_INCREMENT PRIMARY KEY,
+        \`name\` VARCHAR(100) NOT NULL,
+        \`slug\` VARCHAR(100) NOT NULL UNIQUE,
+        \`referral_url\` TEXT NULL,
+        \`modal_image\` TEXT NULL,
+        \`created_at\` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `)
+
+    // 5. Create movies table
+    await connection.execute(`
+      CREATE TABLE IF NOT EXISTS \`movies\` (
+        \`id\` INT AUTO_INCREMENT PRIMARY KEY,
+        \`tmdb_id\` INT NOT NULL UNIQUE,
+        \`title\` VARCHAR(255) NOT NULL,
+        \`overview\` TEXT NULL,
+        \`poster_path\` VARCHAR(255) NULL,
+        \`backdrop_path\` VARCHAR(255) NULL,
+        \`release_date\` VARCHAR(50) NULL,
+        \`vote_average\` DECIMAL(3,1) DEFAULT '0.0',
+        \`cast\` JSON NULL,
+        \`crew\` JSON NULL,
+        \`videos\` JSON NULL,
+        \`referral_url\` TEXT NULL,
+        \`modal_image\` TEXT NULL,
+        \`redirect_url\` TEXT NULL,
+        \`redirect_time\` INT DEFAULT 5,
+        \`created_at\` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `)
+
+    // 6. Create movie_categories table
+    await connection.execute(`
+      CREATE TABLE IF NOT EXISTS \`movie_categories\` (
+        \`id\` INT AUTO_INCREMENT PRIMARY KEY,
+        \`movie_id\` INT NOT NULL,
+        \`category_id\` INT NOT NULL
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `)
+
+    // 7. Create movie_tags table
+    await connection.execute(`
+      CREATE TABLE IF NOT EXISTS \`movie_tags\` (
+        \`id\` INT AUTO_INCREMENT PRIMARY KEY,
+        \`movie_id\` INT NOT NULL,
+        \`tag_id\` INT NOT NULL
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `)
+
     // 3. Seed admin user
     const adminEmail = "admin@gmail.com"
     const adminPass = "sohoj@sohoj"

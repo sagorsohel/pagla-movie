@@ -1,0 +1,168 @@
+{
+  "description": "This schema lists all the fields, data types, and structures that you can fetch from TMDB and store in your database for movies/TV shows, categories (genres), and tags.",
+  
+  "movie_or_tv_details": {
+    "description": "Information about a single Movie or TV Show, including cast, crew, and video links.",
+    "fields_to_store": {
+      "id": {
+        "type": "INTEGER",
+        "description": "TMDB ID of the content. Use this to prevent duplicates and reference TMDB API.",
+        "example": 550
+      },
+      "title": {
+        "type": "VARCHAR(255)",
+        "description": "The title of the movie (TMDB: 'title') or TV show name (TMDB: 'name').",
+        "example": "Fight Club"
+      },
+      "original_title": {
+        "type": "VARCHAR(255)",
+        "description": "Original title in the original language.",
+        "example": "Fight Club"
+      },
+      "overview": {
+        "type": "TEXT",
+        "description": "A short summary or plot description.",
+        "example": "A ticking-time-bomb insomniac and a slippery soap salesman channel primal male aggression into a shocking new form of therapy..."
+      },
+      "tagline": {
+        "type": "VARCHAR(255)",
+        "description": "A brief catchphrase or slogan of the movie.",
+        "example": "Mischief. Mayhem. Soap."
+      },
+      "type": {
+        "type": "VARCHAR(50)",
+        "description": "Specifies whether it is a 'movie' or 'tv' show.",
+        "example": "movie"
+      },
+      "release_date": {
+        "type": "DATE or VARCHAR(50)",
+        "description": "The release date (TMDB: 'release_date' for movie, 'first_air_date' for TV show).",
+        "example": "1999-10-15"
+      },
+      "runtime": {
+        "type": "INTEGER",
+        "description": "Duration of the movie in minutes (or average episode runtime for TV shows).",
+        "example": 139
+      },
+      "vote_average": {
+        "type": "DECIMAL(3,1)",
+        "description": "Average rating of the movie (from 1 to 10).",
+        "example": 8.4
+      },
+      "vote_count": {
+        "type": "INTEGER",
+        "description": "Total number of users who rated it.",
+        "example": 28540
+      },
+      "poster_path": {
+        "type": "VARCHAR(255)",
+        "description": "Relative URL path to the poster image (e.g. /hE2B4HS23n.jpg). Append to Image Base URL.",
+        "example": "/bptfVGE2vT9855joG8Ccw24J4zM.jpg"
+      },
+      "backdrop_path": {
+        "type": "VARCHAR(255)",
+        "description": "Relative URL path to the banner image (backdrop).",
+        "example": "/hZ3Jy3EQ3pjVeJfm2gZ2BjB66cI.jpg"
+      },
+      "original_language": {
+        "type": "VARCHAR(10)",
+        "description": "The original language code (e.g. 'en', 'bn', 'es').",
+        "example": "en"
+      },
+      "categories": {
+        "type": "JSON or TEXT",
+        "description": "Array of category (genre) IDs associated with the movie.",
+        "example": [28, 18, 53]
+      },
+      "tags": {
+        "type": "JSON or TEXT",
+        "description": "Array of custom tags or keyword IDs.",
+        "example": ["Action", "Cult Classic", "Mind-bending"]
+      },
+      "cast": {
+        "type": "JSON or RELATIONAL TABLE",
+        "description": "List of main actors from the movie credits.",
+        "example": [
+          {
+            "id": 819,
+            "name": "Edward Norton",
+            "character": "The Narrator",
+            "profile_path": "/huo6yB9Q74uS2A3F6U0fXm2d1yE.jpg"
+          },
+          {
+            "id": 287,
+            "name": "Brad Pitt",
+            "character": "Tyler Durden",
+            "profile_path": "/ccDTsuxAfA27x24x5S9p12d3n4G.jpg"
+          }
+        ]
+      },
+      "crew": {
+        "type": "JSON or RELATIONAL TABLE",
+        "description": "List of key crew members (specifically Directors/Writers).",
+        "example": [
+          {
+            "id": 7467,
+            "name": "David Fincher",
+            "job": "Director",
+            "profile_path": "/z2o4hA4jS8d2J2S9t3G5f2W1p4A.jpg"
+          }
+        ]
+      },
+      "videos": {
+        "type": "JSON",
+        "description": "YouTube video trailer keys.",
+        "example": [
+          {
+            "name": "Fight Club - Trailer",
+            "key": "O1tVHs68cWc",
+            "site": "YouTube",
+            "type": "Trailer"
+          }
+        ]
+      }
+    }
+  },
+
+  "categories": {
+    "description": "Movie and TV show genres (mapped to 'categories').",
+    "fields_to_store": {
+      "id": {
+        "type": "INTEGER",
+        "description": "TMDB genre ID (e.g. 28 for Action, 35 for Comedy).",
+        "example": 28
+      },
+      "name": {
+        "type": "VARCHAR(100)",
+        "description": "Display name of the category.",
+        "example": "Action"
+      },
+      "slug": {
+        "type": "VARCHAR(100)",
+        "description": "URL-friendly slug generated from the name.",
+        "example": "action"
+      }
+    }
+  },
+
+  "tags": {
+    "description": "Custom hashtags or keywords used to filter movies (e.g. Superhero, Netflix Original).",
+    "fields_to_store": {
+      "id": {
+        "type": "INTEGER (AUTO_INCREMENT)",
+        "description": "Unique tag identifier inside your local database.",
+        "example": 1
+      },
+      "name": {
+        "type": "VARCHAR(100)",
+        "description": "Name of the tag.",
+        "example": "Marvel Cinematic Universe"
+      },
+      "slug": {
+        "type": "VARCHAR(100)",
+        "description": "URL-friendly slug.",
+        "example": "marvel-cinematic-universe"
+      }
+    }
+  }
+}

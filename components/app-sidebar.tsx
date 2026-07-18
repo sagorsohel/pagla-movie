@@ -13,7 +13,7 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar"
-import { GalleryVerticalEndIcon, AudioLinesIcon, TerminalIcon, TerminalSquareIcon, BotIcon, BookOpenIcon, Settings2Icon, FrameIcon, PieChartIcon, MapIcon } from "lucide-react"
+import { GalleryVerticalEndIcon, TerminalSquareIcon, FilmIcon, FolderOpenIcon, TagIcon } from "lucide-react"
 
 // This is sample data.
 const data = {
@@ -43,6 +43,48 @@ const data = {
         {
           title: "Overview",
           url: "/dashboard",
+        },
+      ],
+    },
+    {
+      title: "Movies",
+      url: "/dashboard/movies",
+      icon: (
+        <FilmIcon />
+      ),
+      isActive: true,
+      items: [
+        {
+          title: "Manage Movies",
+          url: "/dashboard/movies",
+        },
+      ],
+    },
+    {
+      title: "Categories",
+      url: "/dashboard/categories",
+      icon: (
+        <FolderOpenIcon />
+      ),
+      isActive: true,
+      items: [
+        {
+          title: "Manage Categories",
+          url: "/dashboard/categories",
+        },
+      ],
+    },
+    {
+      title: "Tags",
+      url: "/dashboard/tags",
+      icon: (
+        <TagIcon />
+      ),
+      isActive: true,
+      items: [
+        {
+          title: "Manage Tags",
+          url: "/dashboard/tags",
         },
       ],
     },
