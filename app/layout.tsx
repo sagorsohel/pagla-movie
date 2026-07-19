@@ -111,7 +111,7 @@ export default async function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={cn("antialiased", fontMono.variable, "font-sans", geist.variable)}
+      className={cn("dark antialiased", fontMono.variable, "font-sans", geist.variable)}
     >
       <head>
         {headerScripts.map((s, idx) => {
