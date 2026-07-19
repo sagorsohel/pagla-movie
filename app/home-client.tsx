@@ -396,6 +396,11 @@ export function HomeClient({
               onSeeMore={() => setFilterType("top-rated")}
             />
 
+            {/* Ad Card after Top Rated */}
+            <div className="w-full max-w-[1400px] mx-auto py-2">
+              <AdCard scriptHtml={adsConfig?.heroAds} scriptHtml2={adsConfig?.hero2Ads} />
+            </div>
+
             {/* 3. Upcoming Row */}
             <MovieRow
               title={t.upcoming}
@@ -404,24 +409,28 @@ export function HomeClient({
               onSeeMore={() => setFilterType("upcoming")}
             />
 
-            {/* Ad Card 2 */}
+            {/* Ad Card after Upcoming */}
             <div className="w-full max-w-[1400px] mx-auto py-2">
-              <AdCard scriptHtml={adsConfig?.hero2Ads} scriptHtml2={adsConfig?.heroAds} />
+              <AdCard scriptHtml={adsConfig?.heroAds} scriptHtml2={adsConfig?.hero2Ads} />
             </div>
 
-            {/* 4. Category-Wise Rows dynamically rendered */}
+            {/* 4. Category-Wise Rows dynamically rendered with AdCard after each row */}
             {categories.map((cat) => {
               const catMovies = movies.filter((m) =>
                 m.categories.some((c) => c.id === cat.id)
               )
               return (
-                <MovieRow
-                  key={cat.id}
-                  title={cat.name}
-                  movies={catMovies}
-                  onMovieClick={handleMovieClick}
-                  onSeeMore={() => setSelectedCategoryId(cat.id)}
-                />
+                <React.Fragment key={cat.id}>
+                  <MovieRow
+                    title={cat.name}
+                    movies={catMovies}
+                    onMovieClick={handleMovieClick}
+                    onSeeMore={() => setSelectedCategoryId(cat.id)}
+                  />
+                  <div className="w-full max-w-[1400px] mx-auto py-2">
+                    <AdCard scriptHtml={adsConfig?.heroAds} scriptHtml2={adsConfig?.hero2Ads} />
+                  </div>
+                </React.Fragment>
               )
             })}
           </div>

@@ -356,14 +356,7 @@ export function MovieDetailClient({
       {/* Navbar header */}
       <nav className="fixed top-0 left-0 right-0 z-40 bg-black/80 backdrop-blur-md border-b border-slate-900/60 py-3 px-4 md:px-12 flex items-center justify-between">
         <div className="flex items-center gap-6">
-          <button
-            onClick={() => router.push(`/${locale}`)}
-            className="text-slate-400 hover:text-white flex items-center gap-1.5 text-xs font-semibold cursor-pointer"
-          >
-            <ChevronLeftIcon className="w-4 h-4" /> {t.backToHome}
-          </button>
-          
-          <Link href={`/${locale}`} className="hidden sm:block">
+          <Link href={`/${locale}`} className="block">
             <CineMoviesLogo />
           </Link>
         </div>

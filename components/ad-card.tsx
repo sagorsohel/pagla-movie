@@ -56,18 +56,21 @@ function AdScriptContainer({ scriptHtml, className }: { scriptHtml?: string; cla
 
 export default function AdCard({ scriptHtml, scriptHtml2 }: { scriptHtml?: string; scriptHtml2?: string }) {
   const [currentAd, setCurrentAd] = useState<"ad1" | "ad2">(() => {
-    const cycleMs = 180000 // 3 minutes total cycle (2 min + 1 min)
-    const currentMs = Date.now() % cycleMs
-    return currentMs < 120000 ? "ad1" : "ad2"
+    const cycleSec = 120
+    const currentSec = Math.floor(Date.now() / 1000) % cycleSec
+    if (currentSec < 40) return "ad1"
+    if (currentSec < 60) return "ad2"
+    if (currentSec < 100) return "ad2"
+    return "ad1"
   })
 
   useEffect(() => {
     if (!scriptHtml || !scriptHtml2) return
 
     const interval = setInterval(() => {
-      const cycleMs = 180000
-      const currentMs = Date.now() % cycleMs
-      const nextAd = currentMs < 120000 ? "ad1" : "ad2"
+      const cycleSec = 120
+      const currentSec = Math.floor(Date.now() / 1000) % cycleSec
+      const nextAd = currentSec < 40 ? "ad1" : (currentSec < 60 ? "ad2" : (currentSec < 100 ? "ad2" : "ad1"))
       setCurrentAd(nextAd)
     }, 1000)
 
