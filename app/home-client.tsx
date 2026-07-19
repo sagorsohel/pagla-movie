@@ -49,6 +49,41 @@ type Category = {
   modalImage: string | null
 }
 
+const getCategoryGradient = (name: string) => {
+  const n = name.toLowerCase()
+  if (n.includes("action") || n.includes("adventure")) {
+    return "from-[#08203e]/80 via-[#0e1627] to-[#080a10]"
+  }
+  if (n.includes("comedy")) {
+    return "from-[#30210f]/80 via-[#191410] to-[#080a10]"
+  }
+  if (n.includes("documentary") || n.includes("history")) {
+    return "from-[#0d2a24]/80 via-[#091715] to-[#080a10]"
+  }
+  if (n.includes("drama") || n.includes("war")) {
+    return "from-[#3e0d12]/80 via-[#1f0e10] to-[#080a10]"
+  }
+  if (n.includes("fantasy") || n.includes("animation")) {
+    return "from-[#220d3e]/80 via-[#160d24] to-[#080a10]"
+  }
+  if (n.includes("horror") || n.includes("thriller")) {
+    return "from-[#0a2f1d]/80 via-[#0a1811] to-[#080a10]"
+  }
+  if (n.includes("family") || n.includes("kids")) {
+    return "from-[#3a1d0f]/80 via-[#1b120f] to-[#080a10]"
+  }
+  if (n.includes("mystery") || n.includes("crime")) {
+    return "from-[#0c2448]/80 via-[#0a1226] to-[#080a10]"
+  }
+  if (n.includes("romance")) {
+    return "from-[#3a0d1f]/80 via-[#1e0a13] to-[#080a10]"
+  }
+  if (n.includes("science fiction") || n.includes("sci-fi")) {
+    return "from-[#242c38]/70 via-[#11141b] to-[#080a10]"
+  }
+  return "from-[#1f2937]/50 via-slate-950 to-[#080a10]"
+}
+
 export function HomeClient({
   movies,
   categories,
@@ -469,41 +504,46 @@ export function HomeClient({
 
       {/* Browse by Category Modal */}
       {isCategoryModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 animate-in fade-in duration-200">
-          <div className="relative w-full max-w-2xl rounded-2xl border border-slate-900 bg-popover p-6 md:p-8 shadow-2xl max-h-[85vh] overflow-y-auto">
-            <button
-              onClick={() => setIsCategoryModalOpen(false)}
-              className="absolute right-4 top-4 text-slate-500 hover:text-white transition focus:outline-hidden cursor-pointer"
-            >
-              <XIcon className="w-6 h-6" />
-            </button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4 md:p-8 animate-in fade-in duration-200">
+          <div className="relative w-full max-w-5xl rounded-3xl border border-slate-900 bg-[#090b10] p-8 sm:p-10 shadow-2xl max-h-[90vh] overflow-y-auto space-y-8 select-none">
+            
+            {/* Header & Subtitle */}
+            <div className="space-y-1">
+              <h2 className="text-3xl font-extrabold text-white tracking-tight">
+                Categories
+              </h2>
+              <h3 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">
+                Genres
+              </h3>
+            </div>
 
-            <h3 className="text-xl font-extrabold text-white pr-8 tracking-tight flex items-center gap-2">
-              <FolderIcon className="w-6 h-6 text-violet-400" /> {t.browseCategory}
-            </h3>
-            <p className="text-xs text-slate-500 mt-1 mb-6">
-              Select a category to view matching movies and custom media content.
-            </p>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            {/* Grid of Prime-style Category cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+              
+              {/* All Genres Card */}
               <button
                 onClick={() => {
                   setSelectedCategoryId(null)
                   setFilterType(null)
                   setIsCategoryModalOpen(false)
                 }}
-                className={`p-4 rounded-xl text-left border font-semibold cursor-pointer transition ${
+                className={`group relative h-20 sm:h-24 p-5 rounded-2xl border text-left cursor-pointer transition-all duration-300 hover:scale-102 hover:border-slate-600/40 hover:shadow-2xl overflow-hidden bg-gradient-to-tr from-slate-900 via-slate-950 to-[#080a10] ${
                   selectedCategoryId === null && filterType === null
-                    ? "border-red-600 bg-red-600/10 text-white"
-                    : "border-slate-900 bg-slate-950/60 text-slate-300 hover:border-slate-800 hover:text-white"
+                    ? "border-red-600"
+                    : "border-slate-900/60"
                 }`}
               >
-                <div className="text-sm">{t.allGenres}</div>
-                <div className="text-[10px] text-slate-500 mt-0.5">{t.showAll} ({movies.length})</div>
+                <span className="font-extrabold text-sm sm:text-base text-white tracking-tight relative z-10 transition-colors group-hover:text-red-400">
+                  {t.allGenres}
+                </span>
+                <div className="absolute inset-0 bg-red-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
               </button>
 
+              {/* Dynamic Category Cards */}
               {categories.map((cat) => {
-                const count = movies.filter((m) => m.categories.some((c) => c.id === cat.id)).length
+                const gradientClasses = getCategoryGradient(cat.name)
+                const isSelected = selectedCategoryId === cat.id
+
                 return (
                   <button
                     key={cat.id}
@@ -512,18 +552,28 @@ export function HomeClient({
                       setFilterType(null)
                       setIsCategoryModalOpen(false)
                     }}
-                    className={`p-4 rounded-xl text-left border font-semibold cursor-pointer transition ${
-                      selectedCategoryId === cat.id
-                        ? "border-violet-600 bg-violet-600/10 text-white"
-                        : "border-slate-900 bg-slate-950/60 text-slate-300 hover:border-slate-800 hover:text-white"
+                    className={`group relative h-20 sm:h-24 p-5 rounded-2xl border text-left cursor-pointer transition-all duration-300 hover:scale-102 hover:border-slate-600/40 hover:shadow-2xl overflow-hidden bg-gradient-to-tr ${gradientClasses} ${
+                      isSelected ? "border-violet-600" : "border-slate-900/60"
                     }`}
                   >
-                    <div className="text-sm truncate">{cat.name}</div>
-                    <div className="text-[10px] text-slate-500 mt-0.5">{t.moviesCount} {count}</div>
+                    <span className="font-extrabold text-sm sm:text-base text-white tracking-tight leading-snug block relative z-10 transition-colors group-hover:text-violet-300">
+                      {cat.name}
+                    </span>
+                    <div className="absolute inset-0 bg-white/3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
                   </button>
                 )
               })}
+
             </div>
+
+            {/* Close button */}
+            <button
+              onClick={() => setIsCategoryModalOpen(false)}
+              className="absolute top-6 right-6 p-2 rounded-full bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition cursor-pointer"
+            >
+              <XIcon className="w-5 h-5" />
+            </button>
+
           </div>
         </div>
       )}
