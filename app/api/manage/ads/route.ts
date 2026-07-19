@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic"
 
 export async function GET() {
   try {
-    let adsData = await db.select().from(ads).where(eq(ads.id, "global")).then(r => r[0])
+    let adsData = await db.select().from(ads).where(eq(ads.id, "global")).then((r: any) => r[0])
     if (!adsData) {
       await db.insert(ads).values({ 
         id: "global", 

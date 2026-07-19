@@ -10,7 +10,12 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // 1. Identify if the pathname already starts with a locale
-  const locales = ["/en", "/bn", "/hi"]
+  const locales = [
+    "/en", "/ar", "/az", "/bn", "/cs", "/da", "/de", "/el", "/es", "/fr",
+    "/hi", "/hr", "/hu", "/id", "/it", "/nl", "/no", "/pl", "/pt", "/ro",
+    "/ru", "/sk", "/sl", "/sr", "/sv", "/tr", "/zh", "/jp", "/kr", "/vn",
+    "/he", "/th"
+  ]
   const pathnameIsMissingLocale = locales.every(
     (locale) => !pathname.startsWith(locale + "/") && pathname !== locale
   )
@@ -39,7 +44,12 @@ export async function proxy(request: NextRequest) {
 
   // 4. Resolve the locale for cookie setting/routing context
   let currentLocale = "en"
-  for (const loc of ["bn", "hi"]) {
+  const localeCodes = [
+    "ar", "az", "bn", "cs", "da", "de", "el", "es", "fr", "hi", "hr", "hu",
+    "id", "it", "nl", "no", "pl", "pt", "ro", "ru", "sk", "sl", "sr", "sv",
+    "tr", "zh", "jp", "kr", "vn", "he", "th"
+  ]
+  for (const loc of localeCodes) {
     if (pathname.startsWith(`/${loc}/`) || pathname === `/${loc}`) {
       currentLocale = loc
       break
@@ -99,9 +109,15 @@ export async function proxy(request: NextRequest) {
     })
   }
 
+  // Map custom URL codes to correct Google Translate codes
+  let translateLocale = currentLocale
+  if (currentLocale === "jp") translateLocale = "ja"
+  else if (currentLocale === "kr") translateLocale = "ko"
+  else if (currentLocale === "vn") translateLocale = "vi"
+
   // Set Google Translate cookie for auto-translation (ignores admin dashboard)
   if (!pathname.startsWith("/dashboard") && currentLocale !== "en") {
-    response.cookies.set("googtrans", `/en/${currentLocale}`, { path: "/" })
+    response.cookies.set("googtrans", `/en/${translateLocale}`, { path: "/" })
   } else if (currentLocale === "en") {
     response.cookies.delete("googtrans")
   }

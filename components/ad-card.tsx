@@ -49,7 +49,6 @@ function AdScriptContainer({ scriptHtml, className }: { scriptHtml?: string; cla
         style={{ border: "none", overflow: "hidden", background: "transparent" }}
         scrolling="no"
         title="Ad Space"
-        allowTransparency={true}
       />
     </div>
   )

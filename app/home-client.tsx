@@ -9,6 +9,7 @@ import { MovieRow } from "@/components/movie-row"
 import AdCard from "@/components/ad-card"
 import { CineMoviesLogo } from "@/components/logo"
 import { getTranslation, type Locale } from "@/lib/translations"
+import { LanguageSelector } from "@/components/language-selector"
 import {
   SearchIcon,
   BellIcon,
@@ -246,6 +247,9 @@ export function HomeClient({
               3
             </span>
           </button>
+
+          {/* Language Selector */}
+          <LanguageSelector currentLocale={locale} />
 
           {/* User Profile Avatar */}
           <div className="relative flex items-center">

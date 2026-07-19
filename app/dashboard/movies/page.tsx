@@ -91,7 +91,7 @@ export default async function MoviesPage({
       .innerJoin(categories, eq(movieCategories.categoryId, categories.id))
       .where(inArray(movieCategories.movieId, movieIds))
 
-    cats.forEach((c) => {
+    cats.forEach((c: any) => {
       if (!categoriesMap[c.movieId]) {
         categoriesMap[c.movieId] = []
       }
@@ -109,7 +109,7 @@ export default async function MoviesPage({
       .innerJoin(tags, eq(movieTags.tagId, tags.id))
       .where(inArray(movieTags.movieId, movieIds))
 
-    tg.forEach((t) => {
+    tg.forEach((t: any) => {
       if (!tagsMap[t.movieId]) {
         tagsMap[t.movieId] = []
       }
@@ -118,7 +118,7 @@ export default async function MoviesPage({
   }
 
   // Combine data to pass down
-  const moviesWithRelations = paginatedMovies.map((movie) => ({
+  const moviesWithRelations = paginatedMovies.map((movie: any) => ({
     ...movie,
     categories: categoriesMap[movie.id] || [],
     tags: tagsMap[movie.id] || [],

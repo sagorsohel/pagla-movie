@@ -28,7 +28,7 @@ export default async function CategoriesPage({
     .limit(limit)
     .offset(offset)
 
-  const categoryIds = paginatedCategories.map((c) => c.id)
+  const categoryIds = paginatedCategories.map((c: any) => c.id)
   let moviesMap: Record<number, { id: number; title: string; releaseDate: string | null }[]> = {}
 
   if (categoryIds.length > 0) {
@@ -43,7 +43,7 @@ export default async function CategoriesPage({
       .innerJoin(movies, eq(movieCategories.movieId, movies.id))
       .where(inArray(movieCategories.categoryId, categoryIds))
 
-    moviesInCategories.forEach((m) => {
+    moviesInCategories.forEach((m: any) => {
       if (!moviesMap[m.categoryId]) {
         moviesMap[m.categoryId] = []
       }
@@ -56,7 +56,7 @@ export default async function CategoriesPage({
   }
 
   // Combine categories with their movies
-  const categoriesWithMovies = paginatedCategories.map((cat) => ({
+  const categoriesWithMovies = paginatedCategories.map((cat: any) => ({
     ...cat,
     movies: moviesMap[cat.id] || [],
   }))

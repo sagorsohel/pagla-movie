@@ -4,7 +4,7 @@ import { movies, categories, movieCategories } from "@/db/schema"
 import { eq, desc } from "drizzle-orm"
 import { notFound } from "next/navigation"
 import { MovieDetailClient } from "../../../movie/[slug]/movie-detail-client"
-import { type Locale } from "@/lib/translations"
+import { type Locale, LANGUAGES } from "@/lib/translations"
 
 export const dynamic = "force-dynamic"
 
@@ -20,7 +20,7 @@ export default async function MovieDetailPage({
   }
 
   // Resolve language and fallback to en if not supported
-  const locale: Locale = (lang === "bn" || lang === "hi") ? lang : "en"
+  const locale: Locale = LANGUAGES.some(l => l.code === lang) ? (lang as Locale) : "en"
 
   // 1. Fetch the movie details by slug (fallback to ID if not found)
   let [movieData] = await db.select().from(movies).where(eq(movies.slug, slug)).limit(1)
@@ -61,7 +61,7 @@ export default async function MovieDetailPage({
     .innerJoin(categories, eq(movieCategories.categoryId, categories.id))
 
   const categoryMap: Record<number, { id: number; name: string }[]> = {}
-  allMovieCats.forEach((mc) => {
+  allMovieCats.forEach((mc: any) => {
     if (!categoryMap[mc.movieId]) {
       categoryMap[mc.movieId] = []
     }
@@ -69,7 +69,7 @@ export default async function MovieDetailPage({
   })
 
   // Format movies with their categories
-  const formattedMovies = allMovies.map((m) => ({
+  const formattedMovies = allMovies.map((m: any) => ({
     ...m,
     categories: categoryMap[m.id] || [],
   }))

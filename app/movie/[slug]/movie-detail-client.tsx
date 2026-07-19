@@ -8,6 +8,7 @@ import AdCard from "@/components/ad-card"
 import { CineMoviesLogo } from "@/components/logo"
 import { getTranslation, type Locale } from "@/lib/translations"
 import { getImageUrl } from "@/lib/utils"
+import { LanguageSelector } from "@/components/language-selector"
 import {
   PlayIcon,
   ChevronLeftIcon,
@@ -89,7 +90,6 @@ function AdScriptContainer({ scriptHtml, className }: { scriptHtml?: string; cla
         style={{ border: "none", overflow: "hidden", background: "transparent" }}
         scrolling="no"
         title="Ad Space"
-        allowTransparency={true}
       />
     </div>
   )
@@ -274,6 +274,9 @@ export function MovieDetailClient({
           <button className="text-slate-400 hover:text-white transition relative">
             <BellIcon className="w-5 h-5" />
           </button>
+
+          {/* Language Selector */}
+          <LanguageSelector currentLocale={locale} />
           
           <div className="relative">
             <button

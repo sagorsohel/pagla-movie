@@ -31,7 +31,7 @@ const fontMono = Geist_Mono({
 async function getAds() {
   try {
     await headers()
-    const adsData = await db.select().from(ads).where(eq(ads.id, "global")).then(r => r[0])
+    const adsData = await db.select().from(ads).where(eq(ads.id, "global")).then((r: any) => r[0])
     return {
       headerAds: adsData?.headerAds || "",
       modalAds: adsData?.modalAds || "",
@@ -132,8 +132,13 @@ export default async function RootLayout({
                 if (typeof window === 'undefined') return;
                 if (window.location.pathname.startsWith('/dashboard')) return;
 
-                const pathname = window.location.pathname;
-                const locales = ['/en', '/bn', '/hi'];
+                 const pathname = window.location.pathname;
+                 const locales = [
+                   '/en', '/ar', '/az', '/bn', '/cs', '/da', '/de', '/el', '/es', '/fr',
+                   '/hi', '/hr', '/hu', '/id', '/it', '/nl', '/no', '/pl', '/pt', '/ro',
+                   '/ru', '/sk', '/sl', '/sr', '/sv', '/tr', '/zh', '/jp', '/kr', '/vn',
+                   '/he', '/th'
+                 ];
                 
                 let pathLocale = '';
                 for (const loc of locales) {
@@ -143,9 +148,20 @@ export default async function RootLayout({
                   }
                 }
 
-                if (!pathLocale) return;
+                 if (!pathLocale) return;
 
-                const pref = localStorage.getItem('user_lang_pref');
+                 let translateLocale = pathLocale;
+                 if (pathLocale === 'jp') translateLocale = 'ja';
+                 else if (pathLocale === 'kr') translateLocale = 'ko';
+                 else if (pathLocale === 'vn') translateLocale = 'vi';
+
+                 if (translateLocale && translateLocale !== 'en') {
+                   document.cookie = 'googtrans=/en/' + translateLocale + '; path=/;';
+                 } else {
+                   document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+                 }
+
+                 const pref = localStorage.getItem('user_lang_pref');
                 if (!pref) {
                   const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
                   let detectedLocale = 'en';
@@ -198,27 +214,6 @@ export default async function RootLayout({
           }
           return null
         })}
-        <script
-          type="text/javascript"
-          dangerouslySetInnerHTML={{
-            __html: `
-              function googleTranslateElementInit() {
-                new google.translate.TranslateElement({
-                  pageLanguage: 'en',
-                  includedLanguages: 'bn,hi,en',
-                  layout: 0,
-                  autoDisplay: true
-                }, 'google_translate_element');
-              }
-            `
-          }}
-        />
-        <script
-          type="text/javascript"
-          src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
-          async
-          defer
-        />
       </head>
       <body>
         <div id="google_translate_element" style={{ display: "none" }} className="hidden" />

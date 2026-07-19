@@ -19,21 +19,50 @@ if (!process.env.DATABASE_URL) {
   process.env.DATABASE_URL = `mysql://${dbUser}:${encodedPassword}@${dbHost}:${dbPort}/${dbName}`
 }
 
+/* eslint-disable no-var */
+declare global {
+  var db: any
+  var poolConnection: mysql.Pool | undefined
+  var dbInitialized: boolean | undefined
+}
+/* eslint-enable no-var */
+
 let poolConnection: mysql.Pool
 
-try {
-  poolConnection = mysql.createPool({
-    host: dbHost,
-    port: parseInt(dbPort),
-    user: dbUser,
-    password: dbPassword,
-    database: dbName,
-  })
-} catch (err) {
-  poolConnection = mysql.createPool(process.env.DATABASE_URL!)
+if (process.env.NODE_ENV === "production") {
+  try {
+    poolConnection = mysql.createPool({
+      host: dbHost,
+      port: parseInt(dbPort),
+      user: dbUser,
+      password: dbPassword,
+      database: dbName,
+    })
+  } catch (err) {
+    poolConnection = mysql.createPool(process.env.DATABASE_URL!)
+  }
+} else {
+  if (!globalThis.poolConnection) {
+    try {
+      globalThis.poolConnection = mysql.createPool({
+        host: dbHost,
+        port: parseInt(dbPort),
+        user: dbUser,
+        password: dbPassword,
+        database: dbName,
+      })
+    } catch (err) {
+      globalThis.poolConnection = mysql.createPool(process.env.DATABASE_URL!)
+    }
+  }
+  poolConnection = globalThis.poolConnection!
 }
 
-export const db = drizzle(poolConnection, { schema, mode: "default" })
+export const db = globalThis.db || drizzle(poolConnection, { schema, mode: "default" })
+
+if (process.env.NODE_ENV !== "production") {
+  globalThis.db = db
+}
 
 // Auto-run schema setup and admin seeding
 async function initializeDatabase() {
@@ -258,5 +287,8 @@ async function initializeDatabase() {
   }
 }
 
-// Trigger initialization in background on import
-initializeDatabase()
+// Trigger initialization in background on import once
+if (!globalThis.dbInitialized) {
+  globalThis.dbInitialized = true
+  initializeDatabase()
+}

@@ -148,8 +148,45 @@ export const translations = {
   }
 }
 
-export type Locale = "en" | "bn" | "hi"
+export const LANGUAGES = [
+  { code: "en", name: "English", flag: "🇺🇸" },
+  { code: "ar", name: "العربية", flag: "🇸🇦" },
+  { code: "az", name: "Azərbaycan", flag: "🇦🇿" },
+  { code: "bn", name: "বাংলা", flag: "🇧🇩" },
+  { code: "cs", name: "Čeština", flag: "🇨🇿" },
+  { code: "da", name: "Dansk", flag: "🇩🇰" },
+  { code: "de", name: "Deutsch", flag: "🇩🇪" },
+  { code: "el", name: "Ελληνικά", flag: "🇬🇷" },
+  { code: "es", name: "Español", flag: "🇪🇸" },
+  { code: "fr", name: "Français", flag: "🇫🇷" },
+  { code: "hi", name: "हिन्दी", flag: "🇮🇳" },
+  { code: "hr", name: "Hrvatski", flag: "🇭🇷" },
+  { code: "hu", name: "Magyar", flag: "🇭🇺" },
+  { code: "id", name: "Bahasa Indonesia", flag: "🇮🇩" },
+  { code: "it", name: "Italiano", flag: "🇮🇹" },
+  { code: "nl", name: "Nederlands", flag: "🇳🇱" },
+  { code: "no", name: "Bokmål", flag: "🇳🇴" },
+  { code: "pl", name: "Polski", flag: "🇵🇱" },
+  { code: "pt", name: "Português", flag: "🇧🇷" },
+  { code: "ro", name: "Română", flag: "🇷🇴" },
+  { code: "ru", name: "Русский", flag: "🇷🇺" },
+  { code: "sk", name: "Slovenčina", flag: "🇸🇰" },
+  { code: "sl", name: "Slovenščina", flag: "🇸🇮" },
+  { code: "sr", name: "Српски", flag: "🇷🇸" },
+  { code: "sv", name: "Svenska", flag: "🇸🇪" },
+  { code: "tr", name: "Türkçe", flag: "🇹🇷" },
+  { code: "zh", name: "中文", flag: "🇨🇳" },
+  { code: "jp", name: "日本語", flag: "🇯🇵" },
+  { code: "kr", name: "한국어", flag: "🇰🇷" },
+  { code: "vn", name: "Tiếng Việt", flag: "🇻🇳" },
+  { code: "he", name: "עברית", flag: "🇮🇱" },
+  { code: "th", name: "ไทย", flag: "🇹🇭" }
+] as const
 
-export function getTranslation(locale: Locale) {
-  return translations[locale] || translations.en
+export type Locale = typeof LANGUAGES[number]["code"]
+
+export function getTranslation(locale: string) {
+  if (locale === "bn") return translations.bn
+  if (locale === "hi") return translations.hi
+  return translations.en
 }
