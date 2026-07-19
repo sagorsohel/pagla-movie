@@ -110,14 +110,99 @@ export function MovieDetailClient({
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
   const [showInlineSignup, setShowInlineSignup] = useState(false)
+  const [playerTime, setPlayerTime] = useState(0)
   const [countdown, setCountdown] = useState(movie.redirectTime || 5)
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [authModalReason, setAuthModalReason] = useState<"watch" | "download">("watch")
 
+  const [originUrl, setOriginUrl] = useState("")
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false)
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setOriginUrl(window.location.origin)
+    }
+  }, [])
+
+  useEffect(() => {
+    const handleYTMessage = (event: MessageEvent) => {
+      try {
+        if (!event.origin.includes("youtube.com")) return
+        const data = typeof event.data === "string" ? JSON.parse(event.data) : event.data
+        if (data.event === "infoDelivery" && data.info && data.info.playerState === 1) {
+          setIsVideoPlaying(true)
+        } else if (data.event === "onStateChange" && data.info === 1) {
+          setIsVideoPlaying(true)
+        }
+      } catch (e) {
+        // Ignore json errors
+      }
+    }
+    window.addEventListener("message", handleYTMessage)
+    return () => window.removeEventListener("message", handleYTMessage)
+  }, [])
+
+  const trailerKey = useMemo(() => {
+    try {
+      if (!movie.videos) return null
+      const videoList = typeof movie.videos === "string" ? JSON.parse(movie.videos) : movie.videos
+      if (Array.isArray(videoList) && videoList.length > 0) {
+        return videoList[0].key
+      }
+    } catch (e) {
+      console.error("Error parsing movie videos", e)
+    }
+    return null
+  }, [movie.videos])
+
+  const iframeRef = React.useRef<HTMLIFrameElement>(null)
+  const videoRef = React.useRef<HTMLVideoElement>(null)
+
   const handlePlayMovie = () => {
     setIsPlaying(true)
     setShowInlineSignup(false)
+    setIsVideoPlaying(false)
+    setPlayerTime(0)
     setCountdown(movie.redirectTime || 5)
+
+    // Trigger immediate playback on preloaded element
+    if (trailerKey && iframeRef.current) {
+      iframeRef.current.contentWindow?.postMessage(
+        JSON.stringify({ event: "command", func: "playVideo", args: "" }),
+        "*"
+      )
+    } else if (videoRef.current) {
+      videoRef.current.play().catch((e) => console.log("Failed autoplay video:", e))
+    }
+
+    // Fail-safe: if the video play event is not resolved in 3 seconds, force start the timer
+    const timer = setTimeout(() => {
+      setIsVideoPlaying(true)
+    }, 3000);
+    (window as any)._ytPlayTimeout = timer
+  }
+
+  const handleClosePlayer = () => {
+    setIsPlaying(false)
+    setIsVideoPlaying(false)
+    
+    if ((window as any)._ytPlayTimeout) {
+      clearTimeout((window as any)._ytPlayTimeout)
+    }
+
+    if (trailerKey && iframeRef.current) {
+      iframeRef.current.contentWindow?.postMessage(
+        JSON.stringify({ event: "command", func: "pauseVideo", args: "" }),
+        "*"
+      )
+      iframeRef.current.contentWindow?.postMessage(
+        JSON.stringify({ event: "command", func: "seekTo", args: [0, true] }),
+        "*"
+      )
+    } else if (videoRef.current) {
+      videoRef.current.pause()
+      videoRef.current.currentTime = 0
+    }
   }
 
   const handleSignUpClick = () => {
@@ -129,20 +214,37 @@ export function MovieDetailClient({
     }
   }
 
+  // Effect to handle the 5-second video preview play time
   useEffect(() => {
-    if (!isPlaying) return
+    if (!isPlaying || !isVideoPlaying) return
 
-    // Show signup locker after 2 seconds
-    const signupTimer = setTimeout(() => {
-      setShowInlineSignup(true)
-    }, 2000)
+    const interval = setInterval(() => {
+      setPlayerTime((prev) => {
+        if (prev >= 5) {
+          clearInterval(interval)
+          setAuthModalReason("watch")
+          setShowAuthModal(true)
+          handleClosePlayer()
+          return 5
+        }
+        return prev + 0.1
+      })
+    }, 100)
 
-    // Countdown to redirect
+    return () => clearInterval(interval)
+  }, [isPlaying, isVideoPlaying, movie])
+
+  // Effect to handle the redirect countdown AFTER the popup modal is shown
+  useEffect(() => {
+    if (!showAuthModal || authModalReason !== "watch") return
+
+    // Set initial countdown
+    setCountdown(movie.redirectTime || 5)
+
     const interval = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(interval)
-          // Redirect when countdown finishes
           const url = movie.redirectUrl || movie.referralUrl
           if (url) {
             window.open(url, "_blank")
@@ -153,11 +255,8 @@ export function MovieDetailClient({
       })
     }, 1000)
 
-    return () => {
-      clearTimeout(signupTimer)
-      clearInterval(interval)
-    }
-  }, [isPlaying, movie])
+    return () => clearInterval(interval)
+  }, [showAuthModal, authModalReason, movie])
 
   const [adsConfig, setAdsConfig] = useState<any>(null)
 
@@ -312,131 +411,114 @@ export function MovieDetailClient({
       {/* Billboard Header (Full Page Style / Player) */}
       <div className="relative w-full min-h-[90vh] md:min-h-screen bg-slate-950 flex items-center overflow-hidden border-b border-slate-900/50">
         
-        {isPlaying ? (
-          /* Video Player View */
-          <div className="absolute inset-0 w-full h-full flex flex-col justify-between bg-black z-20 select-none">
-            {/* Shifting Gradient Colors (movie projection light) */}
-            <div className="absolute inset-0 bg-gradient-to-tr from-amber-600 via-red-700 to-zinc-900 opacity-20 blur-3xl pointer-events-none animate-pulse duration-[6000ms]" />
+        {/* Preloaded Video Player Backdrop Container (Always Rendered, Toggled by CSS) */}
+        <div className={`absolute inset-0 w-full h-full bg-[#050505]/95 z-20 flex items-center justify-center p-4 select-none transition-all duration-300 ${
+          isPlaying ? "opacity-100 pointer-events-auto visible" : "opacity-0 pointer-events-none invisible -z-10"
+        }`}>
+          {/* Center Player Box (1280px max width, 16:9 ratio) */}
+          <div className="relative w-full max-w-[1280px] aspect-video bg-black flex flex-col justify-between shadow-2xl border border-slate-900 rounded-2xl overflow-hidden">
+            {/* Custom Video Player view playing 5s snippet (From User Screenshot 1) */}
+            <div className="absolute inset-0 w-full h-full bg-black select-none">
+              {trailerKey ? (
+                <iframe
+                  ref={iframeRef}
+                  src={`https://www.youtube.com/embed/${trailerKey}?autoplay=0&mute=0&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&enablejsapi=1&origin=${originUrl}`}
+                  className="w-full h-full object-cover"
+                  style={{ border: "none", width: "100%", height: "100%", pointerEvents: "none" }}
+                  allow="autoplay; encrypted-media"
+                  title="Movie Trailer"
+                />
+              ) : (
+                <video
+                  ref={videoRef}
+                  src="https://vjs.zencdn.net/v/oceans.mp4"
+                  className="w-full h-full object-cover"
+                  onPlay={() => setIsVideoPlaying(true)}
+                  onPlaying={() => setIsVideoPlaying(true)}
+                  onTimeUpdate={(e) => {
+                    if (e.currentTarget.currentTime > 0.1) {
+                      setIsVideoPlaying(true)
+                    }
+                  }}
+                  loop
+                  playsInline
+                  preload="auto"
+                  width="100%"
+                  height="100%"
+                  style={{ objectFit: "cover", width: "100%", height: "100%" }}
+                />
+              )}
 
-            {showInlineSignup ? (
-              /* Inline Signup Locker Overlay */
-              <div className="absolute inset-0 flex items-center justify-center bg-zinc-950/95 p-6 z-25">
-                {/* Background image fade */}
-                {(movie.backdropPath || adsConfig?.globalBg) && (
-                  <div className="absolute inset-0 select-none pointer-events-none z-0">
-                    <img
-                      src={movie.backdropPath ? `https://image.tmdb.org/t/p/original${movie.backdropPath}` : getImageUrl(adsConfig.globalBg)}
-                      alt=""
-                      className="w-full h-full object-cover opacity-10"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/90 to-zinc-950/40" />
-                  </div>
-                )}
+              {/* Top/Bottom gradients */}
+              <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-black/80 to-transparent pointer-events-none" />
+              <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/95 via-black/40 to-transparent pointer-events-none z-10" />
 
-                {/* Locker Card */}
-                <div className="relative z-10 w-full max-w-md bg-black/60 border border-slate-800 rounded-3xl p-6 text-center shadow-2xl backdrop-blur-md space-y-4 animate-in fade-in zoom-in-95 duration-300">
-                  <div className="flex justify-center">
-                    <div className="p-3 bg-red-600/10 rounded-full border border-red-500/20 text-red-500 animate-bounce">
-                      <PlayIcon className="w-6 h-6 fill-current" />
+              {/* Custom Video Controls Panel */}
+              <div className="absolute bottom-0 left-0 right-0 p-6 flex flex-col gap-4 z-25">
+                {/* 1. Progress Bar Slider */}
+                <div className="relative w-full h-1 bg-white/20 rounded-full overflow-hidden cursor-pointer">
+                  <div
+                    className="absolute top-0 left-0 h-full bg-red-600 transition-all duration-100"
+                    style={{ width: `${(playerTime / 5) * 100}%` }}
+                  />
+                </div>
+
+                  {/* 2. Controls Buttons */}
+                  <div className="flex items-center justify-between text-slate-300">
+                    {/* Left Side: Play/Pause, Volume, Live Status */}
+                    <div className="flex items-center gap-4">
+                      {/* Play/Pause icon */}
+                      <button className="text-white hover:text-red-500 transition cursor-pointer">
+                        <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" />
+                        </svg>
+                      </button>
+
+                      {/* Speaker/Volume icon */}
+                      <button className="text-white hover:text-red-500 transition cursor-pointer">
+                        <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                          <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+                        </svg>
+                      </button>
+
+                      <span className="text-[10px] sm:text-xs font-semibold text-slate-200 font-mono tracking-wide">
+                        -2:08:{59 - Math.floor(playerTime)}
+                      </span>
                     </div>
-                  </div>
 
-                  <div className="space-y-1.5">
-                    <h3 className="text-lg font-black text-white tracking-tight uppercase">
-                      Create a Free Account
-                    </h3>
-                    <p className="text-xs text-slate-455 font-semibold leading-relaxed">
-                      Sign up to unlock the high-speed 4K UHD streaming server for <span className="text-red-500 font-bold">{movie.title}</span>.
-                    </p>
-                  </div>
+                    {/* Right Side: CC, Fullscreen */}
+                    <div className="flex items-center gap-4">
+                      {/* CC button */}
+                      <button className="px-1.5 py-0.5 border border-slate-500 rounded text-[9px] font-extrabold text-slate-350 hover:text-white transition cursor-pointer">
+                        CC
+                      </button>
 
-                  {/* Countdown Status */}
-                  <div className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">
-                    {countdown > 0 ? (
-                      <span>{t.redirectingIn} <span className="text-red-500 font-bold">{countdown}s</span>...</span>
-                    ) : (
-                      <span className="text-green-500 font-bold">{t.redirecting}</span>
-                    )}
-                  </div>
-
-                  <button
-                    onClick={handleSignUpClick}
-                    className="w-full py-3 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-white font-extrabold text-xs tracking-widest rounded-xl shadow-lg shadow-red-650/30 transition-all duration-300 hover:scale-102 cursor-pointer uppercase"
-                  >
-                    {t.signUpWatchNow}
-                  </button>
-
-                  {/* Modal Ad in Player Locker */}
-                  {(movie.modalAds || adsConfig?.modalAds) && (
-                    <AdScriptContainer scriptHtml={movie.modalAds || adsConfig?.modalAds} className="w-full max-w-sm flex justify-center my-1 shrink-0" />
-                  )}
-
-                  {/* Bullet badges */}
-                  <div className="grid grid-cols-2 gap-2 text-[8px] sm:text-[9px] text-left pt-2">
-                    <div className="flex items-center gap-1.5 p-1.5 bg-slate-900/40 border border-slate-800/40 rounded-lg">
-                      <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-                      <span className="font-bold text-slate-350 truncate">{t.quality4K}</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 p-1.5 bg-slate-900/40 border border-slate-800/40 rounded-lg">
-                      <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-                      <span className="font-bold text-slate-350 truncate">{t.noAds}</span>
+                      {/* Fullscreen icon */}
+                      <button className="text-white hover:text-red-500 transition cursor-pointer">
+                        <svg className="w-4 h-4 fill-none stroke-current" strokeWidth="2.5" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M4 8V4h4M20 8V4h-4M4 16v4h4M20 16v4h-4" />
+                        </svg>
+                      </button>
                     </div>
                   </div>
                 </div>
               </div>
-            ) : (
-              /* Loading secure tunnel view */
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 z-25">
-                {/* Visualizer bars */}
-                <div className="flex items-end gap-1.5 h-16 pointer-events-none">
-                  {Array.from({ length: 15 }).map((_, i) => {
-                    const heights = ["15%", "40%", "60%", "30%", "50%", "75%", "35%", "55%", "70%", "20%", "45%", "65%", "40%", "60%", "30%"]
-                    return (
-                      <div
-                        key={i}
-                        className="w-1 bg-red-600 rounded-full transition-all duration-300 animate-pulse"
-                        style={{
-                          height: heights[i % heights.length],
-                          opacity: 0.7,
-                          animationDelay: `${i * 100}ms`
-                        }}
-                      />
-                    )
-                  })}
-                </div>
-                <div className="text-slate-300 font-bold text-xs tracking-wider uppercase animate-pulse bg-black/50 px-5 py-2 rounded-full backdrop-blur-md border border-white/5 flex items-center gap-2">
-                  <svg className="animate-spin -ml-1 mr-1 h-3.5 w-3.5 text-red-500" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                  </svg>
-                  {t.connectingStream}
-                </div>
-              </div>
-            )}
-
-            {/* Bottom mini controls overlay inside player */}
-            <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/90 via-black/45 to-transparent flex items-center justify-between z-25 text-xs text-slate-400">
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setIsPlaying(false)}
-                  className="p-1.5 bg-red-600/90 text-white rounded-full hover:bg-red-500 shadow-md cursor-pointer transition"
-                >
-                  <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-                    <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
-                  </svg>
-                </button>
-                <span className="font-mono text-[10px]">{t.liveStreaming} • {movie.title} (4K UHD)</span>
-              </div>
-              <button
-                onClick={() => setIsPlaying(false)}
-                className="px-4 py-2 bg-slate-900 hover:bg-slate-850 border border-slate-850 hover:border-slate-700 text-slate-300 hover:text-white text-xs font-bold rounded-xl cursor-pointer transition transform active:scale-95 duration-100"
-              >
-                {t.closePlayer}
-              </button>
             </div>
-          </div>
-        ) : (
-          /* Normal Backdrop and Movie Details Header view */
+
+          {/* Top close button to exit player mode easily */}
+          <button
+            onClick={handleClosePlayer}
+            className="absolute top-4 right-4 p-2 bg-black/60 hover:bg-black/90 text-white rounded-full border border-slate-800 transition cursor-pointer z-30 shadow-lg"
+            title="Close Player"
+          >
+            <svg className="w-5 h-5 fill-none stroke-current" strokeWidth="2.5" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Backdrop details header is shown when player is inactive */}
+        {!isPlaying && (
           <>
             {/* Navbar Ad Slot (Immediately below navbar) */}
             {topAdHtml && (
@@ -1003,6 +1085,15 @@ export function MovieDetailClient({
                   : "You must create an account to start downloading"
                 }
               </p>
+              {authModalReason === "watch" && (
+                <div className="text-[10px] font-mono text-slate-500 uppercase tracking-wider pt-1.5">
+                  {countdown > 0 ? (
+                    <span>Redirecting in <span className="text-red-500 font-bold">{countdown}s</span>...</span>
+                  ) : (
+                    <span className="text-red-500 font-bold">Redirecting...</span>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Button link */}
