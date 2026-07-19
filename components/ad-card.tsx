@@ -17,12 +17,15 @@ function AdScriptContainer({ scriptHtml, className }: { scriptHtml?: string; cla
 
   const iframeSrcDoc = `
     <!DOCTYPE html>
-    <html>
+    <html style="color-scheme: dark;">
       <head>
+        <meta name="color-scheme" content="dark">
         <style>
-          body {
+          html, body {
             margin: 0;
             padding: 0;
+            overflow: hidden;
+            background: transparent !important;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -38,7 +41,7 @@ function AdScriptContainer({ scriptHtml, className }: { scriptHtml?: string; cla
   `
 
   return (
-    <div className={`${className} flex justify-center items-center overflow-hidden`}>
+    <div className={`${className} flex justify-center items-center overflow-hidden w-full bg-transparent`}>
       <iframe
         srcDoc={iframeSrcDoc}
         width={width}
@@ -46,6 +49,7 @@ function AdScriptContainer({ scriptHtml, className }: { scriptHtml?: string; cla
         style={{ border: "none", overflow: "hidden", background: "transparent" }}
         scrolling="no"
         title="Ad Space"
+        allowTransparency={true}
       />
     </div>
   )
@@ -78,9 +82,9 @@ export default function AdCard({ scriptHtml, scriptHtml2 }: { scriptHtml?: strin
   })()
 
   return (
-    <div className="bg-slate-900/30 border-slate-700/60 border rounded-2xl p-5 flex flex-col justify-center items-center h-full min-h-[180px] shadow-xs relative overflow-hidden">
+    <div className={activeHtml ? "w-full flex justify-center items-center bg-transparent py-2" : "bg-slate-900/30 border-slate-700/60 border rounded-2xl p-5 flex flex-col justify-center items-center h-full min-h-[180px] shadow-xs relative overflow-hidden"}>
       {activeHtml ? (
-        <AdScriptContainer scriptHtml={activeHtml} className="w-full h-full flex justify-center items-center" />
+        <AdScriptContainer scriptHtml={activeHtml} className="w-full flex justify-center items-center bg-transparent" />
       ) : (
         <div className="text-center text-slate-600 font-bold uppercase tracking-wider text-[10px]">
           <span className="block text-xl mb-1">📢</span>

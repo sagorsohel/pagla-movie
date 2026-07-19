@@ -74,7 +74,7 @@ export default function FloatingDesktopAd({ floatingDesktopAds }: FloatingDeskto
 
   return (
     <div
-      className="fixed bottom-0 left-0 right-0 z-50 bg-slate-955/80 backdrop-blur-md border-t border-slate-900 shadow-[0_-8px_30px_rgb(0,0,0,0.5)] hidden md:flex justify-center items-center pt-2 pb-2 animate-in slide-in-from-bottom duration-300"
+      className="fixed bottom-0 left-0 right-0 z-50 bg-transparent hidden md:flex justify-center items-center pt-2 pb-2 animate-in slide-in-from-bottom duration-300"
     >
       <button
         onClick={() => setIsDismissed(true)}

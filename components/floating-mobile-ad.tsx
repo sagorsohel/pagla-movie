@@ -111,7 +111,7 @@ export default function FloatingMobileAd({ floatingAds, heroAds, hero2Ads }: Flo
 
   return (
     <div
-      className="fixed bottom-0 left-0 right-0 z-50 bg-slate-950/70 backdrop-blur-md border-t border-slate-800/80 shadow-[0_-8px_30px_rgb(0,0,0,0.4)] flex justify-center items-center pt-[5px] pb-[calc(5px+env(safe-area-inset-bottom))] animate-in slide-in-from-bottom duration-300 md:hidden"
+      className="fixed bottom-0 left-0 right-0 z-50 bg-transparent flex justify-center items-center pt-[5px] pb-[calc(5px+env(safe-area-inset-bottom))] animate-in slide-in-from-bottom duration-300 md:hidden"
     >
       <button
         onClick={() => setIsDismissed(true)}
