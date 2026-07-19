@@ -60,50 +60,46 @@ export default function LoginPage() {
                   type="email"
                   name="email"
                   placeholder="admin@gmail.com"
-                  className="pl-10 bg-slate-900/50 border-slate-800 text-slate-100 placeholder:text-slate-500 focus-visible:ring-violet-500 focus-visible:ring-offset-0 focus-visible:border-violet-500"
+                  className="pl-10 bg-slate-900/50 border-slate-800 focus:border-violet-500 focus:ring-violet-500 text-slate-100 placeholder-slate-500"
                   required
+                  disabled={isPending}
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-semibold text-slate-300 tracking-wider uppercase block">
-                Password
-              </label>
+              <div className="flex justify-between items-center">
+                <label className="text-xs font-semibold text-slate-300 tracking-wider uppercase block">
+                  Password
+                </label>
+              </div>
               <div className="relative">
                 <LockIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <Input
                   type="password"
                   name="password"
                   placeholder="••••••••"
-                  className="pl-10 bg-slate-900/50 border-slate-800 text-slate-100 placeholder:text-slate-500 focus-visible:ring-violet-500 focus-visible:ring-offset-0 focus-visible:border-violet-500"
+                  className="pl-10 bg-slate-900/50 border-slate-800 focus:border-violet-500 focus:ring-violet-500 text-slate-100 placeholder-slate-500"
                   required
+                  disabled={isPending}
                 />
               </div>
             </div>
 
             <Button
               type="submit"
+              className="w-full py-3 bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-500 hover:to-cyan-500 text-white font-semibold rounded-xl shadow-lg shadow-violet-550/20 transition-all duration-300 cursor-pointer"
               disabled={isPending}
-              className="w-full bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-500 hover:to-cyan-500 text-white font-medium shadow-lg shadow-violet-600/20 py-2.5 rounded-lg transition-all duration-200"
             >
               {isPending ? (
                 <span className="flex items-center justify-center gap-2">
-                  <Loader2Icon className="w-4 h-4 animate-spin" /> Authenticating...
+                  <Loader2Icon className="w-4 h-4 animate-spin" /> Signing In...
                 </span>
               ) : (
                 "Sign In"
               )}
             </Button>
           </form>
-
-          {/* Seed Admin Info Banner */}
-          <div className="mt-6 pt-6 border-t border-slate-900/80 text-center">
-            <div className="inline-block px-3 py-1.5 rounded-lg bg-slate-900/30 border border-slate-800/40 text-[11px] text-slate-400">
-              <span className="font-semibold text-violet-400">Demo User:</span> admin@gmail.com / sohoj@sohoj
-            </div>
-          </div>
-
         </div>
       </div>
     </div>

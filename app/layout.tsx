@@ -125,6 +125,58 @@ export default async function RootLayout({
       className={cn("dark antialiased", fontMono.variable, "font-sans", geist.variable)}
     >
       <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                if (typeof window === 'undefined') return;
+                if (window.location.pathname.startsWith('/dashboard')) return;
+
+                const pathname = window.location.pathname;
+                const locales = ['/en', '/bn', '/hi'];
+                
+                let pathLocale = '';
+                for (const loc of locales) {
+                  if (pathname.startsWith(loc + '/') || pathname === loc) {
+                    pathLocale = loc.substring(1);
+                    break;
+                  }
+                }
+
+                if (!pathLocale) return;
+
+                const pref = localStorage.getItem('user_lang_pref');
+                if (!pref) {
+                  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+                  let detectedLocale = 'en';
+                  if (tz.includes('Dhaka')) {
+                    detectedLocale = 'bn';
+                  } else if (tz.includes('Kolkata') || tz.includes('Calcutta') || tz.includes('Delhi')) {
+                    detectedLocale = 'hi';
+                  } else {
+                    const browserLang = navigator.language || '';
+                    if (browserLang.toLowerCase().includes('bn')) {
+                      detectedLocale = 'bn';
+                    } else if (browserLang.toLowerCase().includes('hi')) {
+                      detectedLocale = 'hi';
+                    }
+                  }
+
+                  localStorage.setItem('user_lang_pref', detectedLocale);
+
+                  if (detectedLocale !== pathLocale) {
+                    const newPath = pathname.replace('/' + pathLocale, '/' + detectedLocale);
+                    window.location.replace(newPath + window.location.search);
+                  }
+                } else {
+                  if (pref !== pathLocale) {
+                    localStorage.setItem('user_lang_pref', pathLocale);
+                  }
+                }
+              })();
+            `
+          }}
+        />
         {headerScripts.map((s, idx) => {
           if (s.src) {
             return (
@@ -146,8 +198,30 @@ export default async function RootLayout({
           }
           return null
         })}
+        <script
+          type="text/javascript"
+          dangerouslySetInnerHTML={{
+            __html: `
+              function googleTranslateElementInit() {
+                new google.translate.TranslateElement({
+                  pageLanguage: 'en',
+                  includedLanguages: 'bn,hi,en',
+                  layout: 0,
+                  autoDisplay: true
+                }, 'google_translate_element');
+              }
+            `
+          }}
+        />
+        <script
+          type="text/javascript"
+          src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
+          async
+          defer
+        />
       </head>
       <body>
+        <div id="google_translate_element" style={{ display: "none" }} className="hidden" />
         <ThemeProvider>
           {headerNonScriptHtml && (
             <div dangerouslySetInnerHTML={{ __html: headerNonScriptHtml }} />

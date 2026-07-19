@@ -6,6 +6,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import AdCard from "@/components/ad-card"
 import { CineMoviesLogo } from "@/components/logo"
+import { getTranslation, type Locale } from "@/lib/translations"
 import { getImageUrl } from "@/lib/utils"
 import {
   PlayIcon,
@@ -97,10 +98,13 @@ function AdScriptContainer({ scriptHtml, className }: { scriptHtml?: string; cla
 export function MovieDetailClient({
   movie,
   allMovies,
+  locale = "en",
 }: {
   movie: Movie
   allMovies: Movie[]
+  locale?: Locale
 }) {
+  const t = getTranslation(locale)
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<"related" | "details">("related")
   const [isProfileOpen, setIsProfileOpen] = useState(false)
@@ -254,13 +258,13 @@ export function MovieDetailClient({
       <nav className="fixed top-0 left-0 right-0 z-40 bg-black/80 backdrop-blur-md border-b border-slate-900/60 py-3 px-4 md:px-12 flex items-center justify-between">
         <div className="flex items-center gap-6">
           <button
-            onClick={() => router.push("/")}
+            onClick={() => router.push(`/${locale}`)}
             className="text-slate-400 hover:text-white flex items-center gap-1.5 text-xs font-semibold cursor-pointer"
           >
-            <ChevronLeftIcon className="w-4 h-4" /> Back to Home
+            <ChevronLeftIcon className="w-4 h-4" /> {t.backToHome}
           </button>
           
-          <Link href="/" className="hidden sm:block">
+          <Link href={`/${locale}`} className="hidden sm:block">
             <CineMoviesLogo />
           </Link>
         </div>
@@ -291,7 +295,7 @@ export function MovieDetailClient({
                   Admin Dashboard
                 </Link>
                 <Link
-                  href="/login"
+                  href={`/${locale}/login`}
                   className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-slate-300 hover:bg-slate-900/40 hover:text-white transition border-t border-slate-800/40"
                 >
                   Log Out
@@ -346,9 +350,9 @@ export function MovieDetailClient({
                   {/* Countdown Status */}
                   <div className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">
                     {countdown > 0 ? (
-                      <span>Redirecting in <span className="text-red-500 font-bold">{countdown}s</span>...</span>
+                      <span>{t.redirectingIn} <span className="text-red-500 font-bold">{countdown}s</span>...</span>
                     ) : (
-                      <span className="text-green-500 font-bold">Redirecting...</span>
+                      <span className="text-green-500 font-bold">{t.redirecting}</span>
                     )}
                   </div>
 
@@ -356,7 +360,7 @@ export function MovieDetailClient({
                     onClick={handleSignUpClick}
                     className="w-full py-3 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-white font-extrabold text-xs tracking-widest rounded-xl shadow-lg shadow-red-650/30 transition-all duration-300 hover:scale-102 cursor-pointer uppercase"
                   >
-                    Sign Up and Watch Now
+                    {t.signUpWatchNow}
                   </button>
 
                   {/* Modal Ad in Player Locker */}
@@ -368,11 +372,11 @@ export function MovieDetailClient({
                   <div className="grid grid-cols-2 gap-2 text-[8px] sm:text-[9px] text-left pt-2">
                     <div className="flex items-center gap-1.5 p-1.5 bg-slate-900/40 border border-slate-800/40 rounded-lg">
                       <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-                      <span className="font-bold text-slate-350 truncate">4K UHD Quality</span>
+                      <span className="font-bold text-slate-350 truncate">{t.quality4K}</span>
                     </div>
                     <div className="flex items-center gap-1.5 p-1.5 bg-slate-900/40 border border-slate-800/40 rounded-lg">
                       <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-                      <span className="font-bold text-slate-350 truncate">No Ads Stream</span>
+                      <span className="font-bold text-slate-350 truncate">{t.noAds}</span>
                     </div>
                   </div>
                 </div>
@@ -402,7 +406,7 @@ export function MovieDetailClient({
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                   </svg>
-                  Connecting Secure Stream Tunnel...
+                  {t.connectingStream}
                 </div>
               </div>
             )}
@@ -418,13 +422,13 @@ export function MovieDetailClient({
                     <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
                   </svg>
                 </button>
-                <span className="font-mono text-[10px]">LIVE STREAMING • {movie.title} (4K UHD)</span>
+                <span className="font-mono text-[10px]">{t.liveStreaming} • {movie.title} (4K UHD)</span>
               </div>
               <button
                 onClick={() => setIsPlaying(false)}
-                className="hover:text-white transition cursor-pointer font-bold"
+                className="px-4 py-2 bg-slate-900 hover:bg-slate-850 border border-slate-850 hover:border-slate-700 text-slate-300 hover:text-white text-xs font-bold rounded-xl cursor-pointer transition transform active:scale-95 duration-100"
               >
-                Close Player
+                {t.closePlayer}
               </button>
             </div>
           </div>
@@ -506,7 +510,7 @@ export function MovieDetailClient({
                 {/* Watch Trailer / Play Icon */}
                 <button
                   onClick={handlePlayMovie}
-                  title="Watch Trailer"
+                  title={t.watchTrailer}
                   className="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-slate-700/60 bg-slate-900/40 hover:bg-slate-850 hover:border-slate-500 text-white cursor-pointer transition transform hover:scale-105 active:scale-95"
                 >
                   <PlayIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -514,7 +518,7 @@ export function MovieDetailClient({
 
                 {/* Plus Icon */}
                 <button
-                  title="Add to Watchlist"
+                  title={t.addToWatchlist}
                   className="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-slate-700/60 bg-slate-900/40 hover:bg-slate-850 hover:border-slate-500 text-white cursor-pointer transition transform hover:scale-105 active:scale-95"
                 >
                   <PlusIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -522,7 +526,7 @@ export function MovieDetailClient({
 
                 {/* Thumbs Up Icon */}
                 <button
-                  title="Like"
+                  title={t.like}
                   className="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-slate-700/60 bg-slate-900/40 hover:bg-slate-850 hover:border-slate-500 text-white cursor-pointer transition transform hover:scale-105 active:scale-95"
                 >
                   <ThumbsUpIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -530,7 +534,7 @@ export function MovieDetailClient({
 
                 {/* Thumbs Down Icon */}
                 <button
-                  title="Dislike"
+                  title={t.dislike}
                   className="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-slate-700/60 bg-slate-900/40 hover:bg-slate-850 hover:border-slate-500 text-white cursor-pointer transition transform hover:scale-105 active:scale-95"
                 >
                   <ThumbsDownIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -538,7 +542,7 @@ export function MovieDetailClient({
 
                 {/* Share Icon */}
                 <button
-                  title="Share"
+                  title={t.share}
                   className="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-slate-700/60 bg-slate-900/40 hover:bg-slate-850 hover:border-slate-500 text-white cursor-pointer transition transform hover:scale-105 active:scale-95"
                 >
                   <Share2Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -571,7 +575,7 @@ export function MovieDetailClient({
                 <div className="space-y-3 text-xs sm:text-sm md:border-l border-slate-900/40 pl-0 md:pl-8">
                   {directors.length > 0 && (
                     <div>
-                      <span className="text-slate-500 font-semibold mr-2">Director:</span>
+                      <span className="text-slate-500 font-semibold mr-2">{t.director}:</span>
                       <span className="text-slate-300 hover:text-white transition cursor-pointer">
                         {directors.map((d: any) => d.name).join(", ")}
                       </span>
@@ -579,7 +583,7 @@ export function MovieDetailClient({
                   )}
                   {castList.length > 0 && (
                     <div>
-                      <span className="text-slate-500 font-semibold mr-2">Cast:</span>
+                      <span className="text-slate-500 font-semibold mr-2">{t.cast}:</span>
                       <span className="text-slate-300 hover:text-white transition cursor-pointer">
                         {castList.slice(0, 4).map((actor: any) => actor.name).join(", ")}
                       </span>
@@ -792,7 +796,7 @@ export function MovieDetailClient({
                 activeTab === "related" ? "text-white font-extrabold" : "text-slate-450 hover:text-slate-200"
               }`}
             >
-              Related
+              {t.relatedMovies}
               {activeTab === "related" && (
                 <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-white rounded-full" />
               )}
@@ -803,7 +807,7 @@ export function MovieDetailClient({
                 activeTab === "details" ? "text-white font-extrabold" : "text-slate-450 hover:text-slate-200"
               }`}
             >
-              Details
+              {t.details}
               {activeTab === "details" && (
                 <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-white rounded-full" />
               )}
@@ -886,14 +890,14 @@ export function MovieDetailClient({
                     </div>
 
                     <div>
-                      <span className="font-bold text-slate-500 block mb-1">Audio Languages:</span>
+                      <span className="font-bold text-slate-500 block mb-1">{t.audioLanguages}</span>
                       <p className="text-slate-300 leading-relaxed">
                         English [Audio Description], Bengali, Hindi, Español, Deutsch
                       </p>
                     </div>
 
                     <div>
-                      <span className="font-bold text-slate-500 block mb-1">Subtitles:</span>
+                      <span className="font-bold text-slate-500 block mb-1">{t.subtitles}</span>
                       <p className="text-slate-400">
                         English, Bengali, Hindi, Español [CC]
                       </p>
@@ -908,14 +912,14 @@ export function MovieDetailClient({
           {activeTab === "related" && (
             <div className="space-y-4 pt-2 animate-in fade-in duration-200">
               <h4 className="text-xs font-bold uppercase text-slate-400 tracking-wider">
-                Customers also watched
+                {t.relatedMovies}
               </h4>
               {relatedMovies.length > 0 ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
                   {relatedMovies.map((m) => (
                     <div
                       key={m.id}
-                      onClick={() => router.push(`/movie/${m.slug || m.id}`)}
+                      onClick={() => router.push(`/${locale}/movie/${m.slug || m.id}`)}
                       className="group relative bg-card border border-slate-900/65 rounded-lg overflow-hidden cursor-pointer transform hover:scale-102 transition duration-200"
                     >
                       <div className="aspect-[2/3] w-full bg-slate-950">

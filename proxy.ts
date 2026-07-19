@@ -9,52 +9,104 @@ const JWT_SECRET = new TextEncoder().encode(
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
+  // 1. Identify if the pathname already starts with a locale
+  const locales = ["/en", "/bn", "/hi"]
+  const pathnameIsMissingLocale = locales.every(
+    (locale) => !pathname.startsWith(locale + "/") && pathname !== locale
+  )
+
+  // 2. Exclude system paths from locale redirects
+  const isExcludedPath =
+    pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/api") ||
+    pathname.startsWith("/_next") ||
+    pathname === "/favicon.ico"
+
+  // 3. Redirect to locale path if missing
+  if (pathnameIsMissingLocale && !isExcludedPath) {
+    const acceptLanguage = request.headers.get("accept-language") || ""
+    let targetLang = "en"
+    if (acceptLanguage.toLowerCase().includes("bn")) {
+      targetLang = "bn"
+    } else if (acceptLanguage.toLowerCase().includes("hi")) {
+      targetLang = "hi"
+    }
+
+    const redirectUrl = new URL(`/${targetLang}${pathname}`, request.url)
+    redirectUrl.search = request.nextUrl.search
+    return NextResponse.redirect(redirectUrl)
+  }
+
+  // 4. Resolve the locale for cookie setting/routing context
+  let currentLocale = "en"
+  for (const loc of ["bn", "hi"]) {
+    if (pathname.startsWith(`/${loc}/`) || pathname === `/${loc}`) {
+      currentLocale = loc
+      break
+    }
+  }
+
   const requestHeaders = new Headers(request.headers)
   requestHeaders.set("x-url", pathname)
+
+  let response: NextResponse
 
   // Protected paths
   if (pathname.startsWith("/dashboard")) {
     const token = request.cookies.get("admin_token")?.value
 
     if (!token) {
-      const loginUrl = new URL("/login", request.url)
-      return NextResponse.redirect(loginUrl)
+      const loginUrl = new URL(`/${currentLocale}/login`, request.url)
+      response = NextResponse.redirect(loginUrl)
+    } else {
+      try {
+        await jose.jwtVerify(token, JWT_SECRET)
+        response = NextResponse.next({
+          request: {
+            headers: requestHeaders,
+          },
+        })
+      } catch (error) {
+        const loginUrl = new URL(`/${currentLocale}/login`, request.url)
+        response = NextResponse.redirect(loginUrl)
+        response.cookies.delete("admin_token")
+      }
     }
-
-    try {
-      await jose.jwtVerify(token, JWT_SECRET)
-      return NextResponse.next({
+  } else if (pathname === "/login" || locales.map(l => l + "/login").includes(pathname)) {
+    const token = request.cookies.get("admin_token")?.value
+    let isLoggedIn = false
+    if (token) {
+      try {
+        await jose.jwtVerify(token, JWT_SECRET)
+        isLoggedIn = true
+      } catch (error) {}
+    }
+    if (isLoggedIn) {
+      const dashboardUrl = new URL("/dashboard", request.url)
+      response = NextResponse.redirect(dashboardUrl)
+    } else {
+      response = NextResponse.next({
         request: {
           headers: requestHeaders,
         },
       })
-    } catch (error) {
-      const loginUrl = new URL("/login", request.url)
-      const response = NextResponse.redirect(loginUrl)
-      response.cookies.delete("admin_token")
-      return response
     }
+  } else {
+    response = NextResponse.next({
+      request: {
+        headers: requestHeaders,
+      },
+    })
   }
 
-  // Redirect to dashboard if logged in and trying to access login page
-  if (pathname === "/login") {
-    const token = request.cookies.get("admin_token")?.value
-    if (token) {
-      try {
-        await jose.jwtVerify(token, JWT_SECRET)
-        const dashboardUrl = new URL("/dashboard", request.url)
-        return NextResponse.redirect(dashboardUrl)
-      } catch (error) {
-        // Continue to login if token invalid
-      }
-    }
+  // Set Google Translate cookie for auto-translation (ignores admin dashboard)
+  if (!pathname.startsWith("/dashboard") && currentLocale !== "en") {
+    response.cookies.set("googtrans", `/en/${currentLocale}`, { path: "/" })
+  } else if (currentLocale === "en") {
+    response.cookies.delete("googtrans")
   }
 
-  return NextResponse.next({
-    request: {
-      headers: requestHeaders,
-    },
-  })
+  return response
 }
 
 export const config = {

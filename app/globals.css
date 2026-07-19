@@ -127,3 +127,15 @@
     @apply font-sans;
     }
 }
+
+/* Hide Google Translate toolbar, banners, and tooltips to keep the UI premium */
+iframe.VIpgJd-yD0-IBn-LgbsSe-MX30fg,
+iframe[class*="VIpgJd-yD0-IBn-LgbsSe"],
+.VIpgJd-yD0-IBn-LgbsSe-MX30fg,
+.skiptranslate,
+#google_translate_element {
+  display: none !important;
+}
+body {
+  top: 0 !important;
+}

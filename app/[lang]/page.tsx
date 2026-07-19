@@ -2,11 +2,21 @@ import * as React from "react"
 import { db } from "@/db"
 import { movies, categories, movieCategories } from "@/db/schema"
 import { eq, desc } from "drizzle-orm"
-import { HomeClient } from "./home-client"
+import { HomeClient } from "../home-client"
+import { type Locale } from "@/lib/translations"
 
 export const dynamic = "force-dynamic"
 
-export default async function Page() {
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ lang: string }>
+}) {
+  const { lang } = await params
+  
+  // Resolve language and fallback to en if not supported
+  const locale: Locale = (lang === "bn" || lang === "hi") ? lang : "en"
+
   // 1. Fetch categories
   const allCategories = await db.select().from(categories).orderBy(categories.name)
 
@@ -42,6 +52,7 @@ export default async function Page() {
     <HomeClient
       movies={moviesWithCategories as any}
       categories={allCategories}
+      locale={locale}
     />
   )
 }

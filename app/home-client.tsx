@@ -8,6 +8,7 @@ import { HeroCarousel } from "@/components/hero-carousel"
 import { MovieRow } from "@/components/movie-row"
 import AdCard from "@/components/ad-card"
 import { CineMoviesLogo } from "@/components/logo"
+import { getTranslation, type Locale } from "@/lib/translations"
 import {
   SearchIcon,
   BellIcon,
@@ -50,10 +51,13 @@ type Category = {
 export function HomeClient({
   movies,
   categories,
+  locale = "en",
 }: {
   movies: Movie[]
   categories: Category[]
+  locale?: Locale
 }) {
+  const t = getTranslation(locale)
   const router = useRouter()
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null)
@@ -75,7 +79,7 @@ export function HomeClient({
 
   // Redirect to standalone single movie detail page
   const handleMovieClick = (movie: Movie) => {
-    router.push(`/movie/${movie.slug || movie.id}`)
+    router.push(`/${locale}/movie/${movie.slug || movie.id}`)
   }
 
   // Select a hero movie (highest rated or first one)
@@ -181,7 +185,7 @@ export function HomeClient({
         <div className="flex items-center gap-3 sm:gap-6 md:gap-10">
           {/* Logo */}
           <Link
-            href="/"
+            href={`/${locale}`}
             onClick={resetAllFilters}
           >
             <CineMoviesLogo />
@@ -190,18 +194,18 @@ export function HomeClient({
           {/* Main Links */}
           <div className="hidden lg:flex items-center gap-5 text-sm font-medium text-slate-300">
             <button onClick={resetAllFilters} className="text-white font-semibold hover:text-white transition cursor-pointer">
-              Home
+              {t.home}
             </button>
-            <span className="hover:text-white cursor-pointer transition">Series</span>
-            <span className="hover:text-white cursor-pointer transition">Films</span>
-            <span className="hover:text-white cursor-pointer transition">Games</span>
-            <span className="hover:text-white cursor-pointer transition">New & Popular</span>
-            <span className="hover:text-white cursor-pointer transition">My List</span>
+            <span className="hover:text-white cursor-pointer transition">{t.series}</span>
+            <span className="hover:text-white cursor-pointer transition">{t.films}</span>
+            <span className="hover:text-white cursor-pointer transition">{t.games}</span>
+            <span className="hover:text-white cursor-pointer transition">{t.newPopular}</span>
+            <span className="hover:text-white cursor-pointer transition">{t.myList}</span>
             <button
               onClick={() => setIsCategoryModalOpen(true)}
               className="text-violet-400 hover:text-violet-300 font-semibold flex items-center gap-1 transition cursor-pointer"
             >
-              Browse by Category <ChevronDownIcon className="w-3.5 h-3.5" />
+              {t.browseCategory} <ChevronDownIcon className="w-3.5 h-3.5" />
             </button>
           </div>
           
@@ -211,8 +215,8 @@ export function HomeClient({
               onClick={() => setIsCategoryModalOpen(true)}
               className="bg-slate-900/80 border border-slate-800 text-[10px] sm:text-xs px-2.5 py-1.5 rounded-lg flex items-center gap-1 hover:bg-slate-850 text-slate-200"
             >
-              <span className="hidden sm:inline">Browse Categories</span>
-              <span className="sm:hidden">Genres</span>
+              <span className="hidden sm:inline">{t.browseCategory}</span>
+              <span className="sm:hidden">{t.genres.replace(':', '')}</span>
               <ChevronDownIcon className="w-3 h-3 text-slate-400" />
             </button>
           </div>
@@ -225,7 +229,7 @@ export function HomeClient({
             <SearchIcon className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 pointer-events-none" />
             <input
               type="text"
-              placeholder="Search..."
+              placeholder={t.searchPlaceholder}
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value)
@@ -266,7 +270,7 @@ export function HomeClient({
                   Admin Dashboard
                 </Link>
                 <Link
-                  href="/login"
+                  href={`/${locale}/login`}
                   className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-slate-300 hover:bg-slate-900/40 hover:text-white transition border-t border-slate-800/40"
                 >
                   Log Out
@@ -314,12 +318,12 @@ export function HomeClient({
             {filteredMovies.length === 0 ? (
               <div className="flex flex-col items-center justify-center p-20 text-slate-500 rounded-2xl border border-dashed border-slate-900">
                 <FilmIcon className="w-12 h-12 mb-2 text-slate-700 animate-pulse" />
-                <p className="text-sm font-semibold">No movies found matching those filters.</p>
+                <p className="text-sm font-semibold">{t.noMovies}</p>
                 <button
                   onClick={resetAllFilters}
                   className="text-xs text-red-500 hover:text-red-400 font-semibold mt-2"
                 >
-                  Clear Filters
+                  {t.clearFilters}
                 </button>
               </div>
             ) : (
@@ -369,7 +373,7 @@ export function HomeClient({
           <div className="space-y-10">
             {/* 1. Today's Top Row */}
             <MovieRow
-              title="Today's Top Hits"
+              title={t.topHits}
               movies={todaysTopMovies}
               onMovieClick={handleMovieClick}
               onSeeMore={() => setFilterType("todays-top")}
@@ -382,7 +386,7 @@ export function HomeClient({
 
             {/* 2. Top Rated Row */}
             <MovieRow
-              title="Top Rated Movies"
+              title={t.topRated}
               movies={topRatedMovies}
               onMovieClick={handleMovieClick}
               onSeeMore={() => setFilterType("top-rated")}
@@ -390,7 +394,7 @@ export function HomeClient({
 
             {/* 3. Upcoming Row */}
             <MovieRow
-              title="Upcoming Releases"
+              title={t.upcoming}
               movies={upcomingMovies}
               onMovieClick={handleMovieClick}
               onSeeMore={() => setFilterType("upcoming")}
@@ -432,7 +436,7 @@ export function HomeClient({
             </button>
 
             <h3 className="text-xl font-extrabold text-white pr-8 tracking-tight flex items-center gap-2">
-              <FolderIcon className="w-6 h-6 text-violet-400" /> Browse by Category
+              <FolderIcon className="w-6 h-6 text-violet-400" /> {t.browseCategory}
             </h3>
             <p className="text-xs text-slate-500 mt-1 mb-6">
               Select a category to view matching movies and custom media content.
@@ -451,8 +455,8 @@ export function HomeClient({
                     : "border-slate-900 bg-slate-950/60 text-slate-300 hover:border-slate-800 hover:text-white"
                 }`}
               >
-                <div className="text-sm">All Genres</div>
-                <div className="text-[10px] text-slate-500 mt-0.5">Show all ({movies.length})</div>
+                <div className="text-sm">{t.allGenres}</div>
+                <div className="text-[10px] text-slate-500 mt-0.5">{t.showAll} ({movies.length})</div>
               </button>
 
               {categories.map((cat) => {
@@ -472,7 +476,7 @@ export function HomeClient({
                     }`}
                   >
                     <div className="text-sm truncate">{cat.name}</div>
-                    <div className="text-[10px] text-slate-500 mt-0.5">Movies: {count}</div>
+                    <div className="text-[10px] text-slate-500 mt-0.5">{t.moviesCount} {count}</div>
                   </button>
                 )
               })}

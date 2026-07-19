@@ -3,20 +3,24 @@ import { db } from "@/db"
 import { movies, categories, movieCategories } from "@/db/schema"
 import { eq, desc } from "drizzle-orm"
 import { notFound } from "next/navigation"
-import { MovieDetailClient } from "@/app/movie/[slug]/movie-detail-client"
+import { MovieDetailClient } from "../../../movie/[slug]/movie-detail-client"
+import { type Locale } from "@/lib/translations"
 
 export const dynamic = "force-dynamic"
 
 export default async function MovieDetailPage({
   params,
 }: {
-  params: Promise<{ slug: string }>
+  params: Promise<{ lang: string; slug: string }>
 }) {
-  const { slug } = await params
+  const { lang, slug } = await params
 
   if (!slug) {
     notFound()
   }
+
+  // Resolve language and fallback to en if not supported
+  const locale: Locale = (lang === "bn" || lang === "hi") ? lang : "en"
 
   // 1. Fetch the movie details by slug (fallback to ID if not found)
   let [movieData] = await db.select().from(movies).where(eq(movies.slug, slug)).limit(1)
@@ -79,6 +83,7 @@ export default async function MovieDetailPage({
     <MovieDetailClient
       movie={movieWithRelations as any}
       allMovies={formattedMovies as any}
+      locale={locale}
     />
   )
 }
