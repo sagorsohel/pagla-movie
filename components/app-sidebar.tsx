@@ -24,7 +24,7 @@ const data = {
   },
   teams: [
     {
-      name: "Pagla Movie",
+      name: "CineMovies",
       logo: (
         <GalleryVerticalEndIcon />
       ),

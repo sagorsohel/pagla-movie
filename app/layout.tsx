@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 import { headers } from "next/headers"
 import { db } from "@/db"
@@ -9,6 +10,16 @@ import FloatingDesktopAd from "@/components/floating-desktop-ad"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { cn } from "@/lib/utils";
+
+export const metadata: Metadata = {
+  title: "CineMovies - Watch Unlimited Movies & TV Shows in 4K UHD",
+  description: "Stream your favorite movies and TV shows on CineMovies. Enjoy unlimited high-speed streaming in 4K UHD with no interruptions. Discover new releases, top hits, and curated genres.",
+  openGraph: {
+    title: "CineMovies - Watch Unlimited Movies & TV Shows in 4K UHD",
+    description: "Stream your favorite movies and TV shows on CineMovies. Enjoy unlimited high-speed streaming in 4K UHD with no interruptions.",
+    type: "website",
+  },
+}
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'})
 

@@ -35,7 +35,7 @@ export default function LoginPage() {
               <FilmIcon className="w-6 h-6 text-white" />
             </div>
             <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-violet-200 via-slate-100 to-cyan-200 bg-clip-text text-transparent">
-              Pagla Movie Admin
+              CineMovies Admin
             </h1>
             <p className="text-sm text-slate-400 mt-1.5">
               Sign in to manage your movie application

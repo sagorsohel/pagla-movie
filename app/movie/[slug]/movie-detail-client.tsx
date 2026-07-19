@@ -5,6 +5,7 @@ import { useState, useMemo, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import AdCard from "@/components/ad-card"
+import { CineMoviesLogo } from "@/components/logo"
 import { getImageUrl } from "@/lib/utils"
 import {
   PlayIcon,
@@ -259,8 +260,8 @@ export function MovieDetailClient({
             <ChevronLeftIcon className="w-4 h-4" /> Back to Home
           </button>
           
-          <Link href="/" className="text-red-600 font-black text-xl tracking-tighter uppercase font-heading hidden sm:block">
-            PAGLA MOVIE
+          <Link href="/" className="hidden sm:block">
+            <CineMoviesLogo />
           </Link>
         </div>
 

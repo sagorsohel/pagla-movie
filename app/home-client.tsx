@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation"
 import { HeroCarousel } from "@/components/hero-carousel"
 import { MovieRow } from "@/components/movie-row"
 import AdCard from "@/components/ad-card"
+import { CineMoviesLogo } from "@/components/logo"
 import {
   SearchIcon,
   BellIcon,
@@ -182,9 +183,8 @@ export function HomeClient({
           <Link
             href="/"
             onClick={resetAllFilters}
-            className="text-red-600 font-black text-lg sm:text-2xl tracking-tighter uppercase font-heading hover:scale-105 transition-transform"
           >
-            PAGLA MOVIE
+            <CineMoviesLogo />
           </Link>
           
           {/* Main Links */}
