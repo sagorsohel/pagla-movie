@@ -62,7 +62,7 @@ export function HomeClient({
   const router = useRouter()
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null)
-  const [filterType, setFilterType] = useState<"todays-top" | "top-rated" | "upcoming" | null>(null)
+  const [filterType, setFilterType] = useState<string | null>(null)
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false)
   const [adsConfig, setAdsConfig] = useState<any>(null)
   const [isProfileOpen, setIsProfileOpen] = useState(false)
@@ -143,6 +143,25 @@ export function HomeClient({
     if (filterType === "upcoming") {
       return upcomingMovies
     }
+    if (filterType === "series") {
+      return movies.filter((movie) =>
+        movie.categories.some((c) => c.name === "TV Movie" || c.name === "Drama" || c.name === "Mystery")
+      )
+    }
+    if (filterType === "films") {
+      return movies
+    }
+    if (filterType === "games") {
+      return movies.filter((movie) =>
+        movie.categories.some((c) => c.name === "Action" || c.name === "Adventure" || c.name === "Science Fiction")
+      )
+    }
+    if (filterType === "new-popular") {
+      return [...movies].sort((a, b) => parseFloat(b.voteAverage || "0") - parseFloat(a.voteAverage || "0"))
+    }
+    if (filterType === "my-list") {
+      return movies.filter((movie) => parseFloat(movie.voteAverage || "0") >= 7.0)
+    }
     return movies
   }, [movies, searchQuery, selectedCategoryId, filterType, todaysTopMovies, topRatedMovies, upcomingMovies])
 
@@ -153,6 +172,11 @@ export function HomeClient({
     if (filterType === "todays-top") return "Today's Top Hits"
     if (filterType === "top-rated") return "Top Rated Movies"
     if (filterType === "upcoming") return "Upcoming Releases"
+    if (filterType === "series") return "Series & Shows"
+    if (filterType === "films") return "All Films"
+    if (filterType === "games") return "Games & Action"
+    if (filterType === "new-popular") return "New & Popular"
+    if (filterType === "my-list") return "My Watchlist"
     return ""
   }, [selectedCategoryId, filterType, categories])
 
@@ -194,14 +218,59 @@ export function HomeClient({
           
           {/* Main Links */}
           <div className="hidden lg:flex items-center gap-5 text-sm font-medium text-slate-300">
-            <button onClick={resetAllFilters} className="text-white font-semibold hover:text-white transition cursor-pointer">
+            <button onClick={resetAllFilters} className={`hover:text-white cursor-pointer transition ${!isFilterActive ? "text-white font-bold" : ""}`}>
               {t.home}
             </button>
-            <span className="hover:text-white cursor-pointer transition">{t.series}</span>
-            <span className="hover:text-white cursor-pointer transition">{t.films}</span>
-            <span className="hover:text-white cursor-pointer transition">{t.games}</span>
-            <span className="hover:text-white cursor-pointer transition">{t.newPopular}</span>
-            <span className="hover:text-white cursor-pointer transition">{t.myList}</span>
+            <button
+              onClick={() => {
+                setSelectedCategoryId(null)
+                setSearchQuery("")
+                setFilterType("series")
+              }}
+              className={`hover:text-white cursor-pointer transition ${filterType === "series" ? "text-white font-bold" : ""}`}
+            >
+              {t.series}
+            </button>
+            <button
+              onClick={() => {
+                setSelectedCategoryId(null)
+                setSearchQuery("")
+                setFilterType("films")
+              }}
+              className={`hover:text-white cursor-pointer transition ${filterType === "films" ? "text-white font-bold" : ""}`}
+            >
+              {t.films}
+            </button>
+            <button
+              onClick={() => {
+                setSelectedCategoryId(null)
+                setSearchQuery("")
+                setFilterType("games")
+              }}
+              className={`hover:text-white cursor-pointer transition ${filterType === "games" ? "text-white font-bold" : ""}`}
+            >
+              {t.games}
+            </button>
+            <button
+              onClick={() => {
+                setSelectedCategoryId(null)
+                setSearchQuery("")
+                setFilterType("new-popular")
+              }}
+              className={`hover:text-white cursor-pointer transition ${filterType === "new-popular" ? "text-white font-bold" : ""}`}
+            >
+              {t.newPopular}
+            </button>
+            <button
+              onClick={() => {
+                setSelectedCategoryId(null)
+                setSearchQuery("")
+                setFilterType("my-list")
+              }}
+              className={`hover:text-white cursor-pointer transition ${filterType === "my-list" ? "text-white font-bold" : ""}`}
+            >
+              {t.myList}
+            </button>
             <button
               onClick={() => setIsCategoryModalOpen(true)}
               className="text-violet-400 hover:text-violet-300 font-semibold flex items-center gap-1 transition cursor-pointer"
