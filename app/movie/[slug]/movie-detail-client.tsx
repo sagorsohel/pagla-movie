@@ -363,41 +363,8 @@ export function MovieDetailClient({
 
         {/* User profile option */}
         <div className="flex items-center gap-4">
-          <button className="text-slate-400 hover:text-white transition relative">
-            <BellIcon className="w-5 h-5" />
-          </button>
-
           {/* Language Selector */}
           <LanguageSelector currentLocale={locale} />
-          
-          <div className="relative">
-            <button
-              onClick={() => setIsProfileOpen(!isProfileOpen)}
-              className="flex items-center gap-1 focus:outline-hidden group cursor-pointer"
-            >
-              <img
-                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=100"
-                alt="Profile"
-                className="w-8 h-8 rounded-md object-cover border border-slate-800 group-hover:border-slate-500 transition"
-              />
-            </button>
-            {isProfileOpen && (
-              <div className="absolute right-0 mt-2 w-48 rounded-xl border border-slate-850 bg-popover p-2 shadow-2xl animate-in fade-in duration-200">
-                <Link
-                  href="/dashboard"
-                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-slate-300 hover:bg-slate-900/40 hover:text-white transition"
-                >
-                  Admin Dashboard
-                </Link>
-                <Link
-                  href={`/${locale}/login`}
-                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-slate-300 hover:bg-slate-900/40 hover:text-white transition border-t border-slate-800/40"
-                >
-                  Log Out
-                </Link>
-              </div>
-            )}
-          </div>
         </div>
       </nav>
 

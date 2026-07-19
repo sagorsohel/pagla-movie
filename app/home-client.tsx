@@ -241,47 +241,8 @@ export function HomeClient({
             />
           </div>
 
-          <button className="text-slate-350 hover:text-white transition relative">
-            <BellIcon className="w-4.5 h-4.5 sm:w-5 h-5" />
-            <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[8px] font-bold px-1 rounded-full border border-slate-950">
-              3
-            </span>
-          </button>
-
           {/* Language Selector */}
           <LanguageSelector currentLocale={locale} />
-
-          {/* User Profile Avatar */}
-          <div className="relative flex items-center">
-            <button
-              onClick={() => setIsProfileOpen(!isProfileOpen)}
-              className="flex items-center gap-0.5 focus:outline-hidden group cursor-pointer"
-            >
-              <img
-                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=100"
-                alt="Profile"
-                className="w-7 h-7 sm:w-8 h-8 rounded-md object-cover border border-slate-800 group-hover:border-slate-500 transition"
-              />
-              <ChevronDownIcon className="w-2.5 h-2.5 text-slate-400 group-hover:text-white hidden sm:block" />
-            </button>
-            
-            {isProfileOpen && (
-              <div className="absolute right-0 top-full mt-2 w-48 rounded-xl border border-slate-800 bg-popover p-2 shadow-2xl animate-in fade-in duration-200">
-                <Link
-                  href="/dashboard"
-                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-slate-300 hover:bg-slate-900/40 hover:text-white transition"
-                >
-                  Admin Dashboard
-                </Link>
-                <Link
-                  href={`/${locale}/login`}
-                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-slate-300 hover:bg-slate-900/40 hover:text-white transition border-t border-slate-800/40"
-                >
-                  Log Out
-                </Link>
-              </div>
-            )}
-          </div>
         </div>
       </nav>
 
