@@ -40,7 +40,8 @@ async function getAds() {
       floatingAds: adsData?.floatingAds || "",
       floatingAdsStatus: adsData?.floatingAdsStatus || "on",
       floatingDesktopAds: adsData?.floatingDesktopAds || "",
-      floatingDesktopAdsStatus: adsData?.floatingDesktopAdsStatus || "on"
+      floatingDesktopAdsStatus: adsData?.floatingDesktopAdsStatus || "on",
+      footerAds: adsData?.footerAds || ""
     }
   } catch (err) {
     console.error("Failed to fetch ads from DB directly:", err)
@@ -52,7 +53,8 @@ async function getAds() {
       floatingAds: "", 
       floatingAdsStatus: "on",
       floatingDesktopAds: "",
-      floatingDesktopAdsStatus: "on"
+      floatingDesktopAdsStatus: "on",
+      footerAds: ""
     }
   }
 }
@@ -98,7 +100,8 @@ export default async function RootLayout({
     floatingAds, 
     floatingAdsStatus,
     floatingDesktopAds,
-    floatingDesktopAdsStatus
+    floatingDesktopAdsStatus,
+    footerAds
   } = isManage 
     ? { 
         headerAds: "", 
@@ -108,7 +111,8 @@ export default async function RootLayout({
         floatingAds: "", 
         floatingAdsStatus: "on",
         floatingDesktopAds: "",
-        floatingDesktopAdsStatus: "on"
+        floatingDesktopAdsStatus: "on",
+        footerAds: ""
       } 
     : await getAds()
 
@@ -117,6 +121,9 @@ export default async function RootLayout({
 
   const bodyEndScripts = parseScriptTags(modalAds)
   const bodyEndNonScriptHtml = getNonScriptHtml(modalAds)
+
+  const footerScripts = parseScriptTags(footerAds)
+  const footerNonScriptHtml = getNonScriptHtml(footerAds)
 
   return (
     <html
@@ -247,6 +254,31 @@ export default async function RootLayout({
             return (
               <script
                 key={`body-end-scr-inline-${idx}`}
+                dangerouslySetInnerHTML={{ __html: s.content }}
+              />
+            )
+          }
+          return null
+        })}
+
+        {footerNonScriptHtml && (
+          <div dangerouslySetInnerHTML={{ __html: footerNonScriptHtml }} />
+        )}
+        {footerScripts.map((s, idx) => {
+          if (s.src) {
+            return (
+              <script
+                key={`footer-scr-${idx}`}
+                src={s.src}
+                async={s.async}
+                defer={s.defer}
+              />
+            )
+          }
+          if (s.content) {
+            return (
+              <script
+                key={`footer-scr-inline-${idx}`}
                 dangerouslySetInnerHTML={{ __html: s.content }}
               />
             )

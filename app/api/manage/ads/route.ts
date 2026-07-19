@@ -22,7 +22,8 @@ export async function GET() {
         floatingAdsStatus: "on",
         floatingDesktopAds: "",
         floatingDesktopAdsStatus: "on",
-        layoutOrder: '["top-ad", "hero", "ad-middle", "tabs", "ad-bottom"]'
+        layoutOrder: '["top-ad", "hero", "ad-middle", "tabs", "ad-bottom"]',
+        footerAds: ""
       })
       adsData = { 
         id: "global", 
@@ -37,7 +38,8 @@ export async function GET() {
         floatingAdsStatus: "on",
         floatingDesktopAds: "",
         floatingDesktopAdsStatus: "on",
-        layoutOrder: '["top-ad", "hero", "ad-middle", "tabs", "ad-bottom"]'
+        layoutOrder: '["top-ad", "hero", "ad-middle", "tabs", "ad-bottom"]',
+        footerAds: ""
       }
     }
     return NextResponse.json({ success: true, ads: adsData })
@@ -60,7 +62,8 @@ export async function POST(request: Request) {
       floatingAdsStatus,
       floatingDesktopAds,
       floatingDesktopAdsStatus,
-      layoutOrder
+      layoutOrder,
+      footerAds
     } = await request.json()
 
     const isBase64 = request.headers.get("x-encoded-payload") === "base64"
@@ -85,6 +88,7 @@ export async function POST(request: Request) {
       floatingDesktopAds = safeDecode(floatingDesktopAds)
       floatingDesktopAdsStatus = safeDecode(floatingDesktopAdsStatus)
       layoutOrder = safeDecode(layoutOrder)
+      footerAds = safeDecode(footerAds)
     }
 
     await db.update(ads)
@@ -100,7 +104,8 @@ export async function POST(request: Request) {
         floatingAdsStatus: floatingAdsStatus ?? "on",
         floatingDesktopAds: floatingDesktopAds ?? "",
         floatingDesktopAdsStatus: floatingDesktopAdsStatus ?? "on",
-        layoutOrder: layoutOrder ?? '["top-ad", "hero", "ad-middle", "tabs", "ad-bottom"]'
+        layoutOrder: layoutOrder ?? '["top-ad", "hero", "ad-middle", "tabs", "ad-bottom"]',
+        footerAds: footerAds ?? ""
       })
       .where(eq(ads.id, "global"))
 

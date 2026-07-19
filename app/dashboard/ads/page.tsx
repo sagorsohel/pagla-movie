@@ -23,6 +23,7 @@ export default function AdsControlPage() {
   const [floatingAdsStatus, setFloatingAdsStatus] = useState("on")
   const [floatingDesktopAds, setFloatingDesktopAds] = useState("")
   const [floatingDesktopAdsStatus, setFloatingDesktopAdsStatus] = useState("on")
+  const [footerAds, setFooterAds] = useState("")
   const [layoutOrder, setLayoutOrder] = useState<string[]>(["top-ad", "hero", "ad-middle", "tabs", "ad-bottom"])
   
   const [adsSaving, setAdsSaving] = useState(false)
@@ -45,6 +46,7 @@ export default function AdsControlPage() {
           setFloatingAdsStatus(data.ads.floatingAdsStatus || "on")
           setFloatingDesktopAds(data.ads.floatingDesktopAds || "")
           setFloatingDesktopAdsStatus(data.ads.floatingDesktopAdsStatus || "on")
+          setFooterAds(data.ads.footerAds || "")
           if (data.ads.layoutOrder) {
             try {
               const parsed = JSON.parse(data.ads.layoutOrder)
@@ -120,7 +122,8 @@ export default function AdsControlPage() {
           floatingAdsStatus: safeBtoa(floatingAdsStatus),
           floatingDesktopAds: safeBtoa(floatingDesktopAds),
           floatingDesktopAdsStatus: safeBtoa(floatingDesktopAdsStatus),
-          layoutOrder: safeBtoa(JSON.stringify(layoutOrder))
+          layoutOrder: safeBtoa(JSON.stringify(layoutOrder)),
+          footerAds: safeBtoa(footerAds)
         })
       })
       if (res.ok) {
@@ -234,6 +237,23 @@ export default function AdsControlPage() {
           </p>
         </div>
 
+        {/* Global Footer Ads Input */}
+        <div className="space-y-2">
+          <label className="text-[10px] uppercase tracking-wider font-bold text-slate-400 flex items-center gap-1.5 font-mono">
+            Global Footer Ads (Script / HTML Code)
+          </label>
+          <textarea
+            value={footerAds}
+            onChange={(e) => setFooterAds(e.target.value)}
+            placeholder="<!-- Paste Google AdSense, Popunder, or other footer tracking scripts here -->"
+            rows={6}
+            className="w-full bg-slate-950 border border-slate-900 rounded-xl px-4 py-3 text-xs text-slate-200 placeholder-slate-600 focus:outline-hidden focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 font-mono transition-all"
+          />
+          <p className="text-[9px] text-slate-500 leading-relaxed">
+            This script renders at the very end of the website body (just before the closing &lt;/body&gt; tag). Great for Popunder, Direct Link, and Analytics scripts.
+          </p>
+        </div>
+
         {/* Hero Ads Input */}
         <div className="space-y-2">
           <label className="text-[10px] uppercase tracking-wider font-bold text-slate-400 flex items-center gap-1.5 font-mono">
@@ -289,7 +309,7 @@ export default function AdsControlPage() {
         <div className="space-y-4 border-t border-slate-900/60 pt-6">
           <div className="space-y-2">
             <label className="text-[10px] uppercase tracking-wider font-bold text-slate-400 flex items-center gap-1.5 font-mono">
-              Floating Mobile Ads Status
+              Sticky Bottom / Footer Ads Status (Mobile)
             </label>
             <div className="flex gap-4">
               <label className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all cursor-pointer text-xs font-bold ${
@@ -324,23 +344,23 @@ export default function AdsControlPage() {
               </label>
             </div>
             <p className="text-[9px] text-slate-500 leading-relaxed">
-              Enable or disable the floating mobile overlay ads application-wide.
+              Enable or disable the sticky bottom / footer ads application-wide on mobile devices.
             </p>
           </div>
 
           <div className="space-y-2">
             <label className="text-[10px] uppercase tracking-wider font-bold text-slate-400 flex items-center gap-1.5 font-mono">
-              Floating Mobile Ads (Script / HTML Code)
+              Sticky Bottom / Footer Ads (Mobile - Script / HTML Code)
             </label>
             <textarea
               value={floatingAds}
               onChange={(e) => setFloatingAds(e.target.value)}
-              placeholder="<!-- Paste floating mobile overlay banner scripts here -->"
+              placeholder="<!-- Paste sticky bottom or footer mobile overlay banner scripts here -->"
               rows={6}
               className="w-full bg-slate-955 border border-slate-900 rounded-xl px-4 py-3 text-xs text-slate-200 placeholder-slate-600 focus:outline-hidden focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 font-mono transition-all"
             />
             <p className="text-[9px] text-slate-500 leading-relaxed">
-              This script renders as a floating overlay banner at the bottom of mobile screens.
+              This script renders as a sticky bottom / footer banner at the bottom of mobile screens.
             </p>
           </div>
         </div>
@@ -349,7 +369,7 @@ export default function AdsControlPage() {
         <div className="space-y-4 border-t border-slate-900/60 pt-6">
           <div className="space-y-2">
             <label className="text-[10px] uppercase tracking-wider font-bold text-slate-400 flex items-center gap-1.5 font-mono">
-              Floating Desktop Ads Status (Desktop Only)
+              Sticky Bottom / Footer Ads Status (Desktop)
             </label>
             <div className="flex gap-4">
               <label className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all cursor-pointer text-xs font-bold ${
@@ -384,23 +404,23 @@ export default function AdsControlPage() {
               </label>
             </div>
             <p className="text-[9px] text-slate-500 leading-relaxed">
-              Enable or disable the floating desktop overlay ads.
+              Enable or disable the sticky bottom / footer ads application-wide on desktop screens.
             </p>
           </div>
 
           <div className="space-y-2">
             <label className="text-[10px] uppercase tracking-wider font-bold text-slate-400 flex items-center gap-1.5 font-mono">
-              Floating Desktop Ads (Script / HTML Code)
+              Sticky Bottom / Footer Ads (Desktop - Script / HTML Code)
             </label>
             <textarea
               value={floatingDesktopAds}
               onChange={(e) => setFloatingDesktopAds(e.target.value)}
-              placeholder="<!-- Paste floating desktop overlay banner scripts here -->"
+              placeholder="<!-- Paste sticky bottom or footer desktop overlay banner scripts here -->"
               rows={6}
               className="w-full bg-slate-955 border border-slate-900 rounded-xl px-4 py-3 text-xs text-slate-200 placeholder-slate-600 focus:outline-hidden focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 font-mono transition-all"
             />
             <p className="text-[9px] text-slate-500 leading-relaxed">
-              This script renders as a floating overlay banner (e.g. left/right sidebar, or bottom sticky bar) on desktop viewports only.
+              This script renders as a sticky bottom / footer banner on desktop viewports.
             </p>
           </div>
         </div>

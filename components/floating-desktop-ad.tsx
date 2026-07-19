@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { X } from "lucide-react"
+import { usePathname } from "next/navigation"
 
 interface FloatingDesktopAdProps {
   floatingDesktopAds?: string
@@ -60,12 +61,18 @@ function AdScriptContainer({ scriptHtml, className }: { scriptHtml?: string; cla
 }
 
 export default function FloatingDesktopAd({ floatingDesktopAds }: FloatingDesktopAdProps) {
+  const pathname = usePathname()
   const [mounted, setMounted] = useState(false)
   const [isDismissed, setIsDismissed] = useState(false)
 
   useEffect(() => {
     setMounted(true)
   }, [])
+
+  // Reset the dismissed state when navigating to another page
+  useEffect(() => {
+    setIsDismissed(false)
+  }, [pathname])
 
   if (!mounted || isDismissed || !floatingDesktopAds) {
     return null
@@ -82,7 +89,7 @@ export default function FloatingDesktopAd({ floatingDesktopAds }: FloatingDeskto
         <X className="w-3.5 h-3.5" />
       </button>
 
-      <AdScriptContainer scriptHtml={floatingDesktopAds} />
+      <AdScriptContainer key={pathname} scriptHtml={floatingDesktopAds} />
     </div>
   )
 }

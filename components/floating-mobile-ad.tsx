@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { X } from "lucide-react"
+import { usePathname } from "next/navigation"
 
 interface FloatingMobileAdProps {
   floatingAds?: string
@@ -64,6 +65,7 @@ function AdScriptContainer({ scriptHtml, className }: { scriptHtml?: string; cla
 
 export default function FloatingMobileAd({ floatingAds, heroAds, hero2Ads }: FloatingMobileAdProps) {
   const isMobile = useIsMobile()
+  const pathname = usePathname()
   const [mounted, setMounted] = useState(false)
   const [isDismissed, setIsDismissed] = useState(false)
 
@@ -90,6 +92,11 @@ export default function FloatingMobileAd({ floatingAds, heroAds, hero2Ads }: Flo
     return () => clearInterval(interval)
   }, [heroAds, hero2Ads])
 
+  // Reset the dismissed state when navigating to another page
+  useEffect(() => {
+    setIsDismissed(false)
+  }, [pathname])
+
   if (!mounted || !isMobile || isDismissed) {
     return null
   }
@@ -114,12 +121,12 @@ export default function FloatingMobileAd({ floatingAds, heroAds, hero2Ads }: Flo
     >
       <button
         onClick={() => setIsDismissed(true)}
-        className="absolute top-1 right-2 p-1 rounded-md bg-slate-900/80 hover:bg-slate-850 text-slate-400 hover:text-slate-200 transition-all border border-slate-800 cursor-pointer z-50"
+        className="absolute top-1 right-2 p-1 rounded-md bg-slate-900/80 hover:bg-slate-855 text-slate-400 hover:text-slate-200 transition-all border border-slate-800 cursor-pointer z-50"
       >
         <X className="w-3.5 h-3.5" />
       </button>
 
-      <AdScriptContainer scriptHtml={activeAdHtml} />
+      <AdScriptContainer key={pathname} scriptHtml={activeAdHtml} />
     </div>
   )
 }

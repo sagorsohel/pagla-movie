@@ -86,5 +86,6 @@ export const ads = mysqlTable("ads", {
   floatingDesktopAds: text("floating_desktop_ads"),
   floatingDesktopAdsStatus: varchar("floating_desktop_ads_status", { length: 10 }).default("on"),
   layoutOrder: text("layout_order"),
+  footerAds: text("footer_ads"),
 })
 
