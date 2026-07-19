@@ -6,7 +6,8 @@ import {
   CheckCircle,
   AlertTriangle,
   Upload,
-  X
+  X,
+  GripVertical
 } from "lucide-react"
 import { getImageUrl } from "@/lib/utils"
 
@@ -22,6 +23,7 @@ export default function AdsControlPage() {
   const [floatingAdsStatus, setFloatingAdsStatus] = useState("on")
   const [floatingDesktopAds, setFloatingDesktopAds] = useState("")
   const [floatingDesktopAdsStatus, setFloatingDesktopAdsStatus] = useState("on")
+  const [layoutOrder, setLayoutOrder] = useState<string[]>(["top-ad", "hero", "ad-middle", "tabs", "ad-bottom"])
   
   const [adsSaving, setAdsSaving] = useState(false)
   const [adsMessage, setAdsMessage] = useState({ text: "", type: "success" })
@@ -43,6 +45,14 @@ export default function AdsControlPage() {
           setFloatingAdsStatus(data.ads.floatingAdsStatus || "on")
           setFloatingDesktopAds(data.ads.floatingDesktopAds || "")
           setFloatingDesktopAdsStatus(data.ads.floatingDesktopAdsStatus || "on")
+          if (data.ads.layoutOrder) {
+            try {
+              const parsed = JSON.parse(data.ads.layoutOrder)
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                setLayoutOrder(parsed)
+              }
+            } catch {}
+          }
         }
       })
       .catch(() => { })
@@ -109,7 +119,8 @@ export default function AdsControlPage() {
           floatingAds: safeBtoa(floatingAds),
           floatingAdsStatus: safeBtoa(floatingAdsStatus),
           floatingDesktopAds: safeBtoa(floatingDesktopAds),
-          floatingDesktopAdsStatus: safeBtoa(floatingDesktopAdsStatus)
+          floatingDesktopAdsStatus: safeBtoa(floatingDesktopAdsStatus),
+          layoutOrder: safeBtoa(JSON.stringify(layoutOrder))
         })
       })
       if (res.ok) {

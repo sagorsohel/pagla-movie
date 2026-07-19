@@ -100,6 +100,10 @@ const data = {
           title: "Configure Ads",
           url: "/dashboard/ads",
         },
+        {
+          title: "Visual Layout Builder",
+          url: "/dashboard/ads/layout",
+        },
       ],
     },
   ],

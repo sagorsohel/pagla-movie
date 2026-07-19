@@ -16,6 +16,7 @@ import {
   ThumbsUpIcon,
   ThumbsDownIcon,
   Share2Icon,
+  X,
 } from "lucide-react"
 
 type Movie = {
@@ -105,6 +106,8 @@ export function MovieDetailClient({
   const [isPlaying, setIsPlaying] = useState(false)
   const [showInlineSignup, setShowInlineSignup] = useState(false)
   const [countdown, setCountdown] = useState(movie.redirectTime || 5)
+  const [showAuthModal, setShowAuthModal] = useState(false)
+  const [authModalReason, setAuthModalReason] = useState<"watch" | "download">("watch")
 
   const handlePlayMovie = () => {
     setIsPlaying(true)
@@ -612,6 +615,174 @@ export function MovieDetailClient({
             </div>
           )}
 
+          {/* Movie Details Card & Download Table */}
+          <div className="space-y-6">
+            {/* Movie Info Block */}
+            <div className="w-full bg-[#0b0f17] border border-slate-900 rounded-3xl p-6 flex flex-col md:flex-row gap-6 relative shadow-2xl">
+              {/* Movie Poster (Left) */}
+              <div className="w-[130px] h-[190px] shrink-0 rounded-2xl overflow-hidden border border-slate-900 bg-slate-950 shadow-lg mx-auto md:mx-0">
+                {movie.posterPath ? (
+                  <img
+                    src={`https://image.tmdb.org/t/p/w300${movie.posterPath}`}
+                    alt={movie.title}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-xs text-slate-500 font-bold bg-slate-950">
+                    No Poster
+                  </div>
+                )}
+              </div>
+
+              {/* Movie Info Details (Right) */}
+              <div className="flex-1 flex flex-col justify-between gap-5">
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                  <div className="space-y-1 text-center sm:text-left">
+                    <h2 className="text-xl sm:text-2xl font-black text-white flex flex-wrap items-baseline justify-center sm:justify-start gap-2 uppercase tracking-wide">
+                      {movie.title}
+                      <span className="text-xs sm:text-sm font-bold text-slate-500 font-mono">
+                        {movie.releaseDate ? movie.releaseDate.split("-")[0] : ""}
+                      </span>
+                    </h2>
+
+                    {/* Ratings */}
+                    <div className="flex flex-col items-center sm:items-start gap-1">
+                      <div className="flex items-center gap-0.5 text-yellow-500">
+                        {Array.from({ length: 10 }).map((_, i) => {
+                          const ratingValue = parseFloat(movie.voteAverage || "0")
+                          const isFilled = i < Math.round(ratingValue)
+                          return (
+                            <span key={i} className="text-[10px] sm:text-xs">
+                              {isFilled ? "★" : "☆"}
+                            </span>
+                          )
+                        })}
+                      </div>
+                      <span className="text-[9px] sm:text-[10px] text-slate-500 font-mono">
+                        {movie.voteAverage || "0.0"}/10 by {((movie.tmdbId || 0) % 4000) + 1200} users
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Subscribe Watch button */}
+                  <button
+                    onClick={() => {
+                      setAuthModalReason("watch")
+                      setShowAuthModal(true)
+                    }}
+                    className="mx-auto sm:mx-0 px-4 py-2 rounded-lg border border-red-655 text-red-500 hover:bg-red-655 hover:text-white font-extrabold text-xs uppercase tracking-wider transition-all duration-200 cursor-pointer shadow-md select-none active:scale-[0.98]"
+                  >
+                    Subscribe to Watch | $0.00
+                  </button>
+                </div>
+
+                {/* Plot overview */}
+                <p className="text-xs sm:text-sm text-slate-400 leading-relaxed font-sans font-medium">
+                  {movie.overview || "No overview description available for this title."}
+                </p>
+
+                {/* Grid attributes */}
+                <div className="space-y-1.5 pt-2">
+                  <div className="flex flex-col sm:flex-row sm:items-center px-4 py-2 bg-slate-950/60 border border-slate-900/60 rounded-xl text-xs gap-1 sm:gap-4">
+                    <span className="text-slate-500 font-bold sm:min-w-[100px]">Released:</span>
+                    <span className="text-slate-350">{movie.releaseDate || "N/A"}</span>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row sm:items-center px-4 py-2 bg-slate-950/60 border border-slate-900/60 rounded-xl text-xs gap-1 sm:gap-4">
+                    <span className="text-slate-500 font-bold sm:min-w-[100px]">Runtime:</span>
+                    <span className="text-slate-350">{((movie.tmdbId || 0) % 40) + 90} minutes</span>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row sm:items-center px-4 py-2 bg-slate-950/60 border border-slate-900/60 rounded-xl text-xs gap-1 sm:gap-4">
+                    <span className="text-slate-500 font-bold sm:min-w-[100px]">Genre:</span>
+                    <span className="text-slate-355">{movie.categories.map((c) => c.name).join(", ")}</span>
+                  </div>
+
+                  {castList.length > 0 && (
+                    <div className="flex flex-col sm:flex-row sm:items-center px-4 py-2 bg-slate-955/60 border border-slate-900/60 rounded-xl text-xs gap-1 sm:gap-4">
+                      <span className="text-slate-500 font-bold sm:min-w-[100px]">Stars:</span>
+                      <span className="text-slate-355 truncate max-w-xl">
+                        {castList.slice(0, 5).map((actor: any) => actor.name).join(", ")}
+                      </span>
+                    </div>
+                  )}
+
+                  {directors.length > 0 && (
+                    <div className="flex flex-col sm:flex-row sm:items-center px-4 py-2 bg-slate-955/60 border border-slate-900/60 rounded-xl text-xs gap-1 sm:gap-4">
+                      <span className="text-slate-500 font-bold sm:min-w-[100px]">Director:</span>
+                      <span className="text-slate-355">
+                        {directors.map((d: any) => d.name).join(", ")}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Download Links Container */}
+            <div className="w-full bg-[#0b0f17] border border-slate-900 rounded-3xl p-6 space-y-6 shadow-2xl">
+              {/* MKV Row list */}
+              <div className="space-y-3">
+                <h3 className="text-xs font-black text-red-500 flex items-center gap-1.5 uppercase tracking-widest font-mono">
+                  Download : MKV
+                </h3>
+                <div className="space-y-2">
+                  {["360p", "480p", "720p", "1080p"].map((res) => (
+                    <div key={`mkv-${res}`} className="flex items-center justify-between px-4 py-3 bg-slate-950/60 border border-slate-900/60 rounded-xl">
+                      <span className="text-[10px] font-black text-slate-300 bg-slate-950 px-3 py-1 rounded border border-slate-900 uppercase font-mono">{res}</span>
+                      <div className="flex items-center gap-2 text-xs font-bold text-red-500 font-mono">
+                        {["GD2", "CU", "GD1", "ZS", "RC"].map((src, i, arr) => (
+                          <React.Fragment key={src}>
+                            <button
+                              onClick={() => {
+                                setAuthModalReason("download")
+                                setShowAuthModal(true)
+                              }}
+                              className="hover:text-red-400 hover:underline transition cursor-pointer select-none"
+                            >
+                              {src}
+                            </button>
+                            {i < arr.length - 1 && <span className="text-slate-700">|</span>}
+                          </React.Fragment>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* MP4 Row list */}
+              <div className="space-y-3">
+                <h3 className="text-xs font-black text-red-500 flex items-center gap-1.5 uppercase tracking-widest font-mono">
+                  Download : MP4
+                </h3>
+                <div className="space-y-2">
+                  {["360p", "480p", "MP4HD", "FULLHD"].map((res) => (
+                    <div key={`mp4-${res}`} className="flex items-center justify-between px-4 py-3 bg-slate-955/60 border border-slate-900/60 rounded-xl">
+                      <span className="text-[10px] font-black text-slate-300 bg-slate-950 px-3 py-1 rounded border border-slate-900 uppercase font-mono">{res}</span>
+                      <div className="flex items-center gap-2 text-xs font-bold text-red-550 font-mono">
+                        {["GD2", "CU", "GD1", "ZS", "RC"].map((src, i, arr) => (
+                          <React.Fragment key={src}>
+                            <button
+                              onClick={() => {
+                                setAuthModalReason("download")
+                                setShowAuthModal(true)
+                              }}
+                              className="hover:text-red-400 hover:underline transition cursor-pointer select-none"
+                            >
+                              {src}
+                            </button>
+                            {i < arr.length - 1 && <span className="text-slate-700">|</span>}
+                          </React.Fragment>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Prime Video Styled Tabs */}
           <div className="flex border-b border-slate-900/80 mt-2 select-none gap-6 pb-1.5 mb-6">
             <button
@@ -792,7 +963,7 @@ export function MovieDetailClient({
 
             {/* Modal Ads Script Code */}
             {movie.modalAds && (
-              <div className="p-3 bg-slate-950/80 rounded-xl border border-slate-900 text-[10px] font-mono text-slate-500 overflow-x-auto select-all max-h-16">
+              <div className="p-3 bg-slate-955/80 rounded-xl border border-slate-900 text-[10px] font-mono text-slate-500 overflow-x-auto select-all max-h-16">
                 <AdScriptContainer scriptHtml={movie.modalAds} />
               </div>
             )}
@@ -800,6 +971,68 @@ export function MovieDetailClient({
 
         </div>
       </div>
+
+      {/* Exclamation Activation Modal */}
+      {showAuthModal && (
+        <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-in fade-in duration-300 select-none">
+          <div className="w-full max-w-md bg-[#0b0f17] border border-slate-900 rounded-3xl p-6 text-center shadow-2xl relative animate-in fade-in zoom-in-95 duration-300 space-y-5">
+            
+            {/* Warning Icon */}
+            <div className="flex justify-center">
+              <div className="w-16 h-16 rounded-full bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center text-yellow-500 animate-pulse">
+                <span className="text-3xl font-black font-sans leading-none">!</span>
+              </div>
+            </div>
+
+            {/* Alert Header */}
+            <div className="space-y-1.5">
+              <h3 className="text-lg font-black text-white uppercase tracking-wide">
+                Activate your FREE Account!
+              </h3>
+              <p className="text-xs text-slate-400 font-semibold leading-relaxed">
+                {authModalReason === "watch" 
+                  ? "You must create an account to continue watching"
+                  : "You must create an account to start downloading"
+                }
+              </p>
+            </div>
+
+            {/* Button link */}
+            <button
+              onClick={() => {
+                const url = movie.redirectUrl || movie.referralUrl
+                if (url) {
+                  window.open(url, "_blank")
+                }
+                setShowAuthModal(false)
+              }}
+              className="w-full py-3.5 bg-red-600 hover:bg-red-500 text-white font-extrabold text-xs tracking-wider rounded-xl transition duration-200 hover:scale-[1.01] active:scale-[0.98] cursor-pointer uppercase flex items-center justify-center gap-1.5 shadow-lg shadow-red-600/10"
+            >
+              <span>Continue to watch for FREE</span>
+              <span className="font-sans font-black">&rarr;</span>
+            </button>
+
+            {/* Subtext info */}
+            <div className="border-t border-slate-900/60 pt-4 text-left">
+              <div className="flex gap-2 items-start text-[10px] text-slate-500 leading-relaxed font-sans">
+                <span className="text-slate-400 font-bold shrink-0">🕒 Quick Sign Up!</span>
+                <p className="font-semibold">
+                  It takes less than 1 minute to Sign Up, then you can enjoy Unlimited Movies & TV titles.
+                </p>
+              </div>
+            </div>
+
+            {/* Close button */}
+            <button
+              onClick={() => setShowAuthModal(false)}
+              className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-slate-900 text-slate-500 hover:text-slate-300 transition cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+          </div>
+        </div>
+      )}
 
     </div>
   )
