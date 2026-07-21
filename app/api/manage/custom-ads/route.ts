@@ -47,7 +47,7 @@ export async function POST(request: Request) {
     }
 
     // Check if exists
-    const existing = await db.select().from(customAds).where(eq(customAds.id, id)).then(r => r[0])
+    const existing = await db.select().from(customAds).where(eq(customAds.id, id)).then((r: any) => r[0])
 
     if (existing) {
       await db.update(customAds)
