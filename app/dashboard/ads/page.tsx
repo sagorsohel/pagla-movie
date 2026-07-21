@@ -25,7 +25,7 @@ export default function AdsControlPage() {
   const [floatingDesktopAdsStatus, setFloatingDesktopAdsStatus] = useState("on")
   const [footerAds, setFooterAds] = useState("")
   const [layoutOrder, setLayoutOrder] = useState<string[]>(["top-ad", "hero", "ad-middle", "tabs", "ad-bottom"])
-  
+
   const [adsSaving, setAdsSaving] = useState(false)
   const [adsMessage, setAdsMessage] = useState({ text: "", type: "success" })
 
@@ -53,7 +53,7 @@ export default function AdsControlPage() {
               if (Array.isArray(parsed) && parsed.length > 0) {
                 setLayoutOrder(parsed)
               }
-            } catch {}
+            } catch { }
           }
         }
       })
@@ -106,7 +106,7 @@ export default function AdsControlPage() {
     try {
       const res = await fetch("/api/manage/ads", {
         method: "POST",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
           "x-encoded-payload": "base64"
         },
@@ -157,11 +157,10 @@ export default function AdsControlPage() {
       <form onSubmit={handleSaveAds} className="bg-[#050b14] border border-slate-900 rounded-3xl p-6 space-y-6 shadow-xl">
         {adsMessage.text && (
           <div
-            className={`p-4 rounded-xl border text-xs font-semibold flex items-center gap-2.5 ${
-              adsMessage.type === "success"
+            className={`p-4 rounded-xl border text-xs font-semibold flex items-center gap-2.5 ${adsMessage.type === "success"
                 ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
                 : "bg-red-500/10 border-red-500/20 text-red-400"
-            }`}
+              }`}
           >
             {adsMessage.type === "success" ? (
               <CheckCircle className="w-4 h-4 shrink-0" />
@@ -312,11 +311,10 @@ export default function AdsControlPage() {
               Sticky Bottom / Footer Ads Status (Mobile)
             </label>
             <div className="flex gap-4">
-              <label className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all cursor-pointer text-xs font-bold ${
-                floatingAdsStatus === "on"
+              <label className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all cursor-pointer text-xs font-bold ${floatingAdsStatus === "on"
                   ? "bg-cyan-500/10 border-cyan-500/30 text-cyan-400"
                   : "bg-slate-950 border-slate-900 text-slate-400 hover:border-slate-800"
-              }`}>
+                }`}>
                 <input
                   type="radio"
                   name="floatingAdsStatus"
@@ -327,11 +325,10 @@ export default function AdsControlPage() {
                 />
                 <span>ON (Enabled)</span>
               </label>
-              <label className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all cursor-pointer text-xs font-bold ${
-                floatingAdsStatus === "off"
+              <label className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all cursor-pointer text-xs font-bold ${floatingAdsStatus === "off"
                   ? "bg-red-500/10 border-red-500/30 text-red-400"
                   : "bg-slate-950 border-slate-900 text-slate-400 hover:border-slate-800"
-              }`}>
+                }`}>
                 <input
                   type="radio"
                   name="floatingAdsStatus"
@@ -372,11 +369,10 @@ export default function AdsControlPage() {
               Sticky Bottom / Footer Ads Status (Desktop)
             </label>
             <div className="flex gap-4">
-              <label className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all cursor-pointer text-xs font-bold ${
-                floatingDesktopAdsStatus === "on"
+              <label className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all cursor-pointer text-xs font-bold ${floatingDesktopAdsStatus === "on"
                   ? "bg-cyan-500/10 border-cyan-500/30 text-cyan-400"
                   : "bg-slate-950 border-slate-900 text-slate-400 hover:border-slate-800"
-              }`}>
+                }`}>
                 <input
                   type="radio"
                   name="floatingDesktopAdsStatus"
@@ -387,11 +383,10 @@ export default function AdsControlPage() {
                 />
                 <span>ON (Enabled)</span>
               </label>
-              <label className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all cursor-pointer text-xs font-bold ${
-                floatingDesktopAdsStatus === "off"
+              <label className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all cursor-pointer text-xs font-bold ${floatingDesktopAdsStatus === "off"
                   ? "bg-red-500/10 border-red-500/30 text-red-400"
                   : "bg-slate-950 border-slate-900 text-slate-400 hover:border-slate-800"
-              }`}>
+                }`}>
                 <input
                   type="radio"
                   name="floatingDesktopAdsStatus"

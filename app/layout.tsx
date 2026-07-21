@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   },
 }
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'})
+const geist = Geist({ subsets: ['latin'], variable: '--font-sans' })
 
 const fontMono = Geist_Mono({
   subsets: ["latin"],
@@ -45,12 +45,12 @@ async function getAds() {
     }
   } catch (err) {
     console.error("Failed to fetch ads from DB directly:", err)
-    return { 
-      headerAds: "", 
-      modalAds: "", 
-      heroAds: "", 
-      hero2Ads: "", 
-      floatingAds: "", 
+    return {
+      headerAds: "",
+      modalAds: "",
+      heroAds: "",
+      hero2Ads: "",
+      floatingAds: "",
       floatingAdsStatus: "on",
       floatingDesktopAds: "",
       floatingDesktopAdsStatus: "on",
@@ -92,29 +92,29 @@ export default async function RootLayout({
   const pathname = headersList.get("x-url") || ""
   const isManage = pathname.startsWith("/dashboard")
 
-  const { 
-    headerAds, 
-    modalAds, 
-    heroAds, 
-    hero2Ads, 
-    floatingAds, 
+  const {
+    headerAds,
+    modalAds,
+    heroAds,
+    hero2Ads,
+    floatingAds,
     floatingAdsStatus,
     floatingDesktopAds,
     floatingDesktopAdsStatus,
     footerAds
-  } = isManage 
-    ? { 
-        headerAds: "", 
-        modalAds: "", 
-        heroAds: "", 
-        hero2Ads: "", 
-        floatingAds: "", 
+  } = isManage
+      ? {
+        headerAds: "",
+        modalAds: "",
+        heroAds: "",
+        hero2Ads: "",
+        floatingAds: "",
         floatingAdsStatus: "on",
         floatingDesktopAds: "",
         floatingDesktopAdsStatus: "on",
         footerAds: ""
-      } 
-    : await getAds()
+      }
+      : await getAds()
 
   const headerScripts = parseScriptTags(headerAds)
   const headerNonScriptHtml = getNonScriptHtml(headerAds)
@@ -229,7 +229,7 @@ export default async function RootLayout({
             <div dangerouslySetInnerHTML={{ __html: headerNonScriptHtml }} />
           )}
           {children}
-           {floatingAdsStatus !== "off" && (
+          {floatingAdsStatus !== "off" && (
             <FloatingMobileAd floatingAds={floatingAds} heroAds={heroAds} hero2Ads={hero2Ads} />
           )}
           {floatingDesktopAdsStatus !== "off" && (
