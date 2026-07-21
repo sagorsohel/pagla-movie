@@ -64,8 +64,8 @@ export default async function CategoriesPage({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-100">Categories (Genres)</h1>
-        <p className="text-sm text-slate-400 mt-1">
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Categories (Genres)</h1>
+        <p className="text-sm text-slate-500 mt-1">
           Manage movie genres, custom affiliate referral URLs, and modal advertisements.
         </p>
       </div>

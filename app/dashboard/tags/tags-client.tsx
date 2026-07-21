@@ -74,79 +74,69 @@ export function TagsClient({
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-3">
+    <div className="grid gap-6 lg:grid-cols-3 font-sans">
       {/* Create form */}
-      <div className="rounded-xl border border-slate-800 bg-slate-900/30 p-6 lg:col-span-1 h-fit">
-        <h2 className="text-lg font-bold text-slate-200 flex items-center gap-2 mb-4">
-          <PlusIcon className="w-4 h-4 text-violet-400" /> Create Custom Tag
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 lg:col-span-1 h-fit shadow-xs">
+        <h2 className="text-base font-extrabold text-slate-900 flex items-center gap-2 mb-4">
+          <PlusIcon className="w-4 h-4 text-cyan-600" /> Create Custom Tag
         </h2>
         <form ref={formRef} action={createAction} className="space-y-4">
           {createState?.error && (
-            <div className="p-3 rounded-lg border border-red-500/30 bg-red-500/10 text-xs text-red-400">
+            <div className="p-3 rounded-xl border border-red-200 bg-red-50 text-xs text-red-700 font-bold">
               {createState.error}
             </div>
           )}
 
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-slate-400">Tag Name</label>
+            <label className="text-xs font-bold text-slate-700 font-mono">Tag Name</label>
             <Input
               name="name"
               placeholder="e.g. Action Blast"
-              className="bg-slate-950 border-slate-800 text-slate-100 placeholder:text-slate-600 focus-visible:ring-violet-500"
+              className="bg-slate-50 border-slate-200 text-slate-900 text-xs focus-visible:ring-cyan-500"
               required
             />
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-slate-400">Referral URL (Optional)</label>
+            <label className="text-xs font-bold text-slate-700 font-mono">Referral/Affiliate URL</label>
             <Input
               name="referralUrl"
-              placeholder="https://referral-link.com"
-              className="bg-slate-950 border-slate-800 text-slate-100 placeholder:text-slate-600 focus-visible:ring-violet-500"
+              placeholder="https://referral-domain.com/tag"
+              className="bg-slate-50 border-slate-200 text-slate-900 text-xs focus-visible:ring-cyan-500"
             />
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-slate-400">Modal Image URL (Optional)</label>
+            <label className="text-xs font-bold text-slate-700 font-mono">Modal Image Banner URL</label>
             <Input
               name="modalImage"
-              placeholder="https://image-banner.com/img.jpg"
-              className="bg-slate-950 border-slate-800 text-slate-100 placeholder:text-slate-600 focus-visible:ring-violet-500"
+              placeholder="https://image-hosting.com/tag-banner.jpg"
+              className="bg-slate-50 border-slate-200 text-slate-900 text-xs focus-visible:ring-cyan-500"
             />
           </div>
 
           <Button
             type="submit"
             disabled={isCreatePending}
-            className="w-full bg-violet-600 hover:bg-violet-500 text-white font-semibold"
+            className="w-full bg-gradient-to-r from-cyan-600 to-emerald-600 hover:from-cyan-500 hover:to-emerald-500 text-white font-extrabold text-xs rounded-xl shadow-xs"
           >
-            {isCreatePending ? (
-              <span className="flex items-center gap-2">
-                <Loader2Icon className="w-3.5 h-3.5 animate-spin" /> Creating...
-              </span>
-            ) : (
-              "Add Tag"
-            )}
+            {isCreatePending ? <Loader2Icon className="w-4 h-4 animate-spin" /> : "Save Tag"}
           </Button>
         </form>
       </div>
 
-      {/* Tags List */}
-      <div className="rounded-xl border border-slate-800 bg-slate-900/30 p-6 lg:col-span-2">
-        <h2 className="text-lg font-bold text-slate-200 flex items-center gap-2 mb-4">
-          <TagIcon className="w-4 h-4 text-cyan-400" /> Custom Tags
-        </h2>
-
+      {/* Tags Table */}
+      <div className="rounded-2xl border border-slate-200 bg-white lg:col-span-2 overflow-hidden shadow-xs">
         {tagsList.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-12 text-slate-500">
-            <TagIcon className="w-10 h-10 mb-2 text-slate-600" />
+            <TagIcon className="w-10 h-10 mb-2 text-slate-400" />
             <p className="text-sm font-medium">No custom tags created yet.</p>
           </div>
         ) : (
           <>
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm text-slate-400">
-                <thead className="bg-slate-950 text-xs font-semibold uppercase text-slate-300 border-b border-slate-900">
+              <table className="w-full text-left text-xs text-slate-700">
+                <thead className="bg-slate-50 text-[10px] font-mono uppercase text-slate-400 border-b border-slate-200 tracking-wider">
                   <tr>
                     <th className="px-5 py-4">Name</th>
                     <th className="px-5 py-4">Slug</th>
@@ -154,33 +144,37 @@ export function TagsClient({
                     <th className="px-5 py-4 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-850">
+                <tbody className="divide-y divide-slate-100">
                   {tagsList.map((tag) => (
-                    <tr key={tag.id} className="hover:bg-slate-900/10">
-                      <td className="px-5 py-3 font-semibold text-slate-200">{tag.name}</td>
-                      <td className="px-5 py-3 font-mono text-xs text-cyan-400">/{tag.slug}</td>
-                      <td className="px-5 py-3 max-w-[200px] truncate">
+                    <tr key={tag.id} className="hover:bg-slate-50 transition-colors">
+                      {/* Name */}
+                      <td className="px-5 py-3 font-bold text-slate-900">{tag.name}</td>
+                      {/* Slug */}
+                      <td className="px-5 py-3 font-mono text-xs text-cyan-600">/{tag.slug}</td>
+                      {/* Referral Link */}
+                      <td className="px-5 py-3 max-w-[150px] truncate">
                         {tag.referralUrl ? (
                           <a
                             href={tag.referralUrl}
                             target="_blank"
                             rel="noreferrer"
-                            className="flex items-center gap-1 text-cyan-400 hover:text-cyan-300"
+                            className="flex items-center gap-1 text-cyan-600 hover:text-cyan-700 font-medium"
                           >
                             <span className="truncate">{tag.referralUrl}</span>
-                            <ExternalLinkIcon className="w-3 h-3 flex-shrink-0" />
+                            <ExternalLinkIcon className="w-3 h-3 shrink-0" />
                           </a>
                         ) : (
-                          <span className="text-slate-600">Not set</span>
+                          <span className="text-slate-400">Not set</span>
                         )}
                       </td>
+                      {/* Actions */}
                       <td className="px-5 py-3 text-right">
-                        <div className="flex justify-end gap-1.5">
+                        <div className="flex items-center justify-end gap-1">
                           <Button
                             variant="ghost"
                             size="icon"
                             onClick={() => setSelectedTag(tag)}
-                            className="text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10"
+                            className="text-cyan-600 hover:text-cyan-700 hover:bg-cyan-50"
                           >
                             <Edit3Icon className="w-4 h-4" />
                           </Button>
@@ -188,7 +182,7 @@ export function TagsClient({
                             variant="ghost"
                             size="icon"
                             onClick={() => handleDelete(tag.id)}
-                            className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
                           >
                             <Trash2Icon className="w-4 h-4" />
                           </Button>
@@ -200,12 +194,12 @@ export function TagsClient({
               </table>
             </div>
 
-            {/* Pagination */}
+            {/* Pagination Controls */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-between border-t border-slate-900 px-5 py-4">
+              <div className="flex items-center justify-between border-t border-slate-100 px-5 py-4 bg-slate-50">
                 <div className="text-xs text-slate-500">
-                  Page <span className="text-slate-300 font-medium">{currentPage}</span> of{" "}
-                  <span className="text-slate-300 font-medium">{totalPages}</span>
+                  Page <span className="text-slate-900 font-bold font-mono">{currentPage}</span> of{" "}
+                  <span className="text-slate-900 font-bold font-mono">{totalPages}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Button
@@ -213,18 +207,18 @@ export function TagsClient({
                     size="sm"
                     disabled={currentPage <= 1}
                     onClick={() => navigateToPage(currentPage - 1)}
-                    className="border-slate-800 bg-slate-900/30 hover:bg-slate-950 text-slate-300"
+                    className="border-slate-200 bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold"
                   >
-                    <ChevronLeftIcon className="w-4 h-4 mr-1" /> Previous
+                    Previous
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
                     disabled={currentPage >= totalPages}
                     onClick={() => navigateToPage(currentPage + 1)}
-                    className="border-slate-800 bg-slate-900/30 hover:bg-slate-950 text-slate-300"
+                    className="border-slate-200 bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold"
                   >
-                    Next <ChevronRightIcon className="w-4 h-4 ml-1" />
+                    Next
                   </Button>
                 </div>
               </div>
@@ -233,73 +227,74 @@ export function TagsClient({
         )}
       </div>
 
-      {/* Edit Dialog */}
+      {/* Edit Modal */}
       {selectedTag && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4">
-          <div className="relative w-full max-w-md rounded-2xl border border-slate-800 bg-slate-950 p-6 shadow-2xl animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4">
+          <div className="relative w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 shadow-xl animate-in fade-in duration-200">
             <button
               onClick={() => setSelectedTag(null)}
-              className="absolute right-4 top-4 text-slate-500 hover:text-slate-300"
+              className="absolute right-4 top-4 text-slate-400 hover:text-slate-700 p-1"
             >
               <XIcon className="w-5 h-5" />
             </button>
 
-            <h3 className="text-lg font-bold text-slate-100 pr-8">
-              Edit Tag: <span className="text-violet-400">{selectedTag.name}</span>
+            <h3 className="text-base font-extrabold text-slate-900 pr-8">
+              Edit Tag: <span className="text-cyan-600">{selectedTag.name}</span>
             </h3>
-            <p className="text-xs text-slate-500 mt-1 mb-4">
-              Add links or customized popups associated with this tag.
-            </p>
 
-            <form action={updateAction} className="space-y-4">
+            <form action={updateAction} className="space-y-4 pt-4">
               <input type="hidden" name="id" value={selectedTag.id} />
 
               {editState?.error && (
-                <div className="p-3 rounded-lg border border-red-500/30 bg-red-500/10 text-xs text-red-400">
+                <div className="p-3 rounded-xl border border-red-200 bg-red-50 text-xs text-red-700 font-bold">
                   {editState.error}
                 </div>
               )}
 
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-400">Referral/Affiliate URL</label>
+                <label className="text-xs font-bold text-slate-700 font-mono">Tag Name</label>
                 <Input
-                  name="referralUrl"
-                  defaultValue={selectedTag.referralUrl || ""}
-                  placeholder="https://referral-domain.com/item"
-                  className="bg-slate-900 border-slate-800 text-slate-100 placeholder:text-slate-600 focus-visible:ring-violet-500"
+                  name="name"
+                  defaultValue={selectedTag.name}
+                  className="bg-slate-50 border-slate-200 text-slate-900 text-xs focus-visible:ring-cyan-500"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-400">Modal Promotional Image URL</label>
+                <label className="text-xs font-bold text-slate-700 font-mono">Referral/Affiliate URL</label>
                 <Input
-                  name="modalImage"
-                  defaultValue={selectedTag.modalImage || ""}
-                  placeholder="https://image-hosting.com/banner.jpg"
-                  className="bg-slate-900 border-slate-800 text-slate-100 placeholder:text-slate-600 focus-visible:ring-violet-500"
+                  name="referralUrl"
+                  defaultValue={selectedTag.referralUrl || ""}
+                  placeholder="https://referral-domain.com/tag"
+                  className="bg-slate-50 border-slate-200 text-slate-900 text-xs focus-visible:ring-cyan-500"
                 />
               </div>
 
-              <div className="flex justify-end gap-3 pt-3 border-t border-slate-900">
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-700 font-mono">Modal Image Banner URL</label>
+                <Input
+                  name="modalImage"
+                  defaultValue={selectedTag.modalImage || ""}
+                  placeholder="https://image-hosting.com/tag-banner.jpg"
+                  className="bg-slate-50 border-slate-200 text-slate-900 text-xs focus-visible:ring-cyan-500"
+                />
+              </div>
+
+              <div className="pt-4 flex justify-end gap-2 border-t border-slate-100">
                 <Button
                   type="button"
+                  variant="outline"
                   onClick={() => setSelectedTag(null)}
-                  className="border-slate-800 bg-slate-900/30 hover:bg-slate-950 text-slate-300"
+                  className="border-slate-200 text-slate-700 text-xs font-bold"
                 >
                   Cancel
                 </Button>
                 <Button
                   type="submit"
                   disabled={isUpdatePending}
-                  className="bg-violet-600 hover:bg-violet-500 text-white font-semibold"
+                  className="bg-gradient-to-r from-cyan-600 to-emerald-600 hover:from-cyan-500 hover:to-emerald-500 text-white font-extrabold text-xs"
                 >
-                  {isUpdatePending ? (
-                    <span className="flex items-center gap-2">
-                      <Loader2Icon className="w-3.5 h-3.5 animate-spin" /> Saving...
-                    </span>
-                  ) : (
-                    "Save Changes"
-                  )}
+                  {isUpdatePending ? "Saving..." : "Save Changes"}
                 </Button>
               </div>
             </form>

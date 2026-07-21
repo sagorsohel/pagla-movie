@@ -129,10 +129,10 @@ export default async function MoviesPage({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-100">
-          Movies Database {filterCategoryName && <span className="text-violet-400">({filterCategoryName})</span>}
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+          Movies Database {filterCategoryName && <span className="text-cyan-600">({filterCategoryName})</span>}
         </h1>
-        <p className="text-sm text-slate-400 mt-1">
+        <p className="text-sm text-slate-500 mt-1">
           {filterCategoryName 
             ? `Viewing movies categorized under ${filterCategoryName}.`
             : "Manage movies, custom affiliate referral URLs, redirect routes, categories, and tags."}

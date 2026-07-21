@@ -18,22 +18,55 @@ import {
   PlusCircle,
   Maximize2,
   Volume2,
-  Settings
+  Settings,
+  ChevronUp,
+  ChevronDown,
+  RotateCcw,
+  Film,
+  Download,
+  FolderOpen,
+  Sparkles,
+  ExternalLink,
+  ThumbsUp,
+  ThumbsDown,
+  Share2,
+  Star,
+  Trash2,
+  Layers,
+  FileCode
 } from "lucide-react"
 
-// Types for components
+// Standard Component Labels
 const COMPONENT_LABELS: Record<string, string> = {
   "top-ad": "Top Ad Slot (Navbar Ad)",
   "hero": "Billboard Hero Header & Video Player",
-  "ad-middle": "Middle Ad Slot (Custom script ad)",
-  "tabs": "Tabs Panel (Related Movies & Metadata details)",
-  "ad-bottom": "Bottom Ad Slot (Promo card banners)"
+  "ad-middle": "Middle Ad Slot (Custom Script Ad)",
+  "movie-info": "Movie Info Card & Plot Details",
+  "download-links": "Download Links Container (MKV / MP4)",
+  "tabs": "Tabs Panel (Related Movies & Cast Info)",
+  "ad-bottom": "Bottom Ad Slot (Promo Card Banner)"
 }
 
+const DEFAULT_LAYOUT = [
+  "top-ad",
+  "hero",
+  "ad-middle",
+  "movie-info",
+  "download-links",
+  "tabs",
+  "ad-bottom"
+]
+
+const STANDARD_PALETTE = [
+  { id: "top-ad", name: "Top Ad Slot (Navbar Ad)", desc: "Cycles Hero Ads 1 & 2 at top of page" },
+  { id: "ad-middle", name: "Middle Ad Slot (Script Ad)", desc: "Inline banner below header player" },
+  { id: "ad-bottom", name: "Bottom Ad Slot (Footer Banner)", desc: "Banner below related movies recommendations" }
+]
+
 export default function VisualLayoutBuilderPage() {
-  const [selectedPage, setSelectedPage] = useState<"single">("single")
   const [previewMode, setPreviewMode] = useState<"visual" | "compact">("visual")
-  const [layout, setLayout] = useState<string[]>(["top-ad", "hero", "ad-middle", "tabs", "ad-bottom"])
+  const [layout, setLayout] = useState<string[]>(DEFAULT_LAYOUT)
+  const [customAdsList, setCustomAdsList] = useState<Array<{ id: string; name: string; code: string }>>([])
   
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -41,9 +74,10 @@ export default function VisualLayoutBuilderPage() {
 
   // Drag states
   const [draggedBlockIndex, setDraggedBlockIndex] = useState<number | null>(null)
+  const [draggedPaletteAd, setDraggedPaletteAd] = useState<string | null>(null)
   const [activeDropIndicator, setActiveDropIndicator] = useState<number | null>(null)
   
-  // Full ads configuration object from backend
+  // Backend ads configuration
   const [fullAdsData, setFullAdsData] = useState<any>(null)
 
   useEffect(() => {
@@ -53,6 +87,7 @@ export default function VisualLayoutBuilderPage() {
   const fetchData = async () => {
     setLoading(true)
     try {
+      // Fetch layout configs
       const res = await fetch("/api/manage/ads")
       if (res.ok) {
         const data = await res.json()
@@ -62,11 +97,24 @@ export default function VisualLayoutBuilderPage() {
             try {
               const parsed = JSON.parse(data.ads.layoutOrder)
               if (Array.isArray(parsed) && parsed.length > 0) {
-                setLayout(parsed)
+                const merged = [...parsed]
+                DEFAULT_LAYOUT.forEach(item => {
+                  if (!merged.includes(item)) {
+                    merged.push(item)
+                  }
+                })
+                setLayout(merged)
               }
             } catch {}
           }
         }
+      }
+
+      // Fetch customized ads
+      const cRes = await fetch("/api/manage/custom-ads")
+      if (cRes.ok) {
+        const cData = await cRes.json()
+        setCustomAdsList(cData.ads || [])
       }
     } catch (err) {
       console.error("Failed to load settings:", err)
@@ -89,9 +137,65 @@ export default function VisualLayoutBuilderPage() {
     }
   }
 
+  // Combine standard and custom ads into palette list
+  const fullPalette = [
+    ...STANDARD_PALETTE,
+    ...customAdsList.map(ca => ({
+      id: ca.id,
+      name: ca.name,
+      desc: `Custom Ad Slot (${ca.id})`
+    }))
+  ]
+
+  const getItemLabel = (id: string) => {
+    if (COMPONENT_LABELS[id]) return COMPONENT_LABELS[id]
+    const custom = customAdsList.find(c => c.id === id)
+    if (custom) return custom.name
+    return id
+  }
+
+  // Move item up/down manually
+  const moveItem = (index: number, direction: "up" | "down") => {
+    const newIndex = direction === "up" ? index - 1 : index + 1
+    if (newIndex < 0 || newIndex >= layout.length) return
+    const newLayout = [...layout]
+    const [movedItem] = newLayout.splice(index, 1)
+    newLayout.splice(newIndex, 0, movedItem)
+    setLayout(newLayout)
+  }
+
+  // Remove item from layout
+  const removeItem = (index: number) => {
+    const itemToRemove = layout[index]
+    const newLayout = layout.filter((_, i) => i !== index)
+    setLayout(newLayout)
+    showNotification(`Removed ${getItemLabel(itemToRemove)} from layout`, "success")
+  }
+
+  // Add item back to layout
+  const addItem = (sectionId: string, insertIndex?: number) => {
+    const newLayout = [...layout]
+    const existingIdx = newLayout.indexOf(sectionId)
+    if (existingIdx !== -1) {
+      newLayout.splice(existingIdx, 1)
+    }
+    const idx = insertIndex !== undefined ? insertIndex : newLayout.length
+    newLayout.splice(idx, 0, sectionId)
+    setLayout(newLayout)
+    showNotification(`Placed ${getItemLabel(sectionId)} into layout`, "success")
+  }
+
+  const removedSections = DEFAULT_LAYOUT.filter(id => !layout.includes(id))
+
   // Drag and drop handlers
   const handleDragStartFromLayout = (index: number) => {
     setDraggedBlockIndex(index)
+    setDraggedPaletteAd(null)
+  }
+
+  const handleDragStartFromPalette = (adId: string) => {
+    setDraggedPaletteAd(adId)
+    setDraggedBlockIndex(null)
   }
 
   const handleDragOverIndicator = (e: DragEvent, index: number) => {
@@ -104,15 +208,20 @@ export default function VisualLayoutBuilderPage() {
   }
 
   const handleDropOnIndicator = (index: number) => {
+    if (draggedPaletteAd) {
+      addItem(draggedPaletteAd, index)
+      setDraggedPaletteAd(null)
+      setActiveDropIndicator(null)
+      return
+    }
+
     if (draggedBlockIndex === null) return
 
     const newLayout = [...layout]
     const itemToMove = newLayout[draggedBlockIndex]
     
-    // Remove from old position
     newLayout.splice(draggedBlockIndex, 1)
     
-    // Calculate new insertion index
     let insertIndex = index
     if (draggedBlockIndex < index) {
       insertIndex = index - 1
@@ -121,9 +230,13 @@ export default function VisualLayoutBuilderPage() {
     newLayout.splice(insertIndex, 0, itemToMove)
     setLayout(newLayout)
 
-    // Reset drag status
     setDraggedBlockIndex(null)
     setActiveDropIndicator(null)
+  }
+
+  const handleResetDefault = () => {
+    setLayout([...DEFAULT_LAYOUT])
+    showNotification("Reset layout to default structure.", "success")
   }
 
   const handleSaveLayout = async () => {
@@ -155,7 +268,7 @@ export default function VisualLayoutBuilderPage() {
       })
 
       if (res.ok) {
-        showNotification("Layout order saved successfully!", "success")
+        showNotification("Layout order saved successfully! Applied live to movie details page.", "success")
         fetchData()
       } else {
         showNotification("Failed to save layout order.", "error")
@@ -167,57 +280,74 @@ export default function VisualLayoutBuilderPage() {
     }
   }
 
+  // Render Section Component matching movie-detail-client.tsx
   const renderVisualComponent = (item: string) => {
+    if (item.startsWith("ads_")) {
+      const custom = customAdsList.find(c => c.id === item)
+      return (
+        <div className="w-full bg-cyan-50 border-2 border-dashed border-cyan-300 rounded-2xl p-4 flex flex-col items-center justify-center gap-1.5 transition-all text-center min-h-[90px] shadow-2xs select-none">
+          <div className="flex items-center gap-2 text-cyan-700 font-bold">
+            <Megaphone className="w-4 h-4" />
+            <span className="text-[11px] font-black uppercase font-mono tracking-widest">
+              CUSTOM AD: {custom?.name || item}
+            </span>
+          </div>
+          <span className="text-xs font-bold text-cyan-600">Dynamic Custom Ad Tag #{item}</span>
+          <span className="text-[10px] font-semibold text-slate-500 font-mono">
+            Script code dynamically loaded from customized ads library.
+          </span>
+        </div>
+      )
+    }
+
     switch (item) {
       case "top-ad":
         return (
-          <div className="w-full bg-amber-500/5 hover:bg-amber-500/10 border-2 border-dashed border-amber-500/25 hover:border-amber-500/40 rounded-2xl p-4 flex flex-col items-center justify-center gap-1.5 transition-all text-center min-h-[90px]">
-            <div className="flex items-center gap-2 text-amber-455">
+          <div className="w-full bg-amber-50 border-2 border-dashed border-amber-300 rounded-2xl p-4 flex flex-col items-center justify-center gap-1.5 transition-all text-center min-h-[90px] shadow-2xs select-none">
+            <div className="flex items-center gap-2 text-amber-700 font-bold">
               <Megaphone className="w-4 h-4" />
-              <span className="text-[10px] font-black uppercase font-mono tracking-widest">
-                AD SLOT 1: HERO / TOP AD BANNER [40s / 20s CYCLE]
+              <span className="text-[11px] font-black uppercase font-mono tracking-widest">
+                AD SLOT 1: TOP BANNER AD (40s / 20s CYCLE)
               </span>
             </div>
-            <span className="text-xs font-black text-amber-250">Top Navbar Ad</span>
-            <span className="text-[9px] font-semibold text-amber-500/80 font-mono">
-              Displays immediately below the navigation bar. Cycles Hero Ads 1 & 2.
+            <span className="text-xs font-bold text-amber-600">Top Navbar Ad Banner</span>
+            <span className="text-[10px] font-semibold text-slate-500 font-mono">
+              Rendered directly below the site header bar.
             </span>
           </div>
         )
 
       case "hero":
         return (
-          <div className="w-full bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col gap-4 relative overflow-hidden font-sans select-none shadow-sm text-left">
-            <div className="flex justify-between items-start gap-4">
-              <div className="space-y-1.5 flex-1">
-                <div className="flex gap-1.5">
-                  <span className="bg-red-500/10 text-red-500 text-[7px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider">ACTION</span>
-                  <span className="bg-red-500/10 text-red-500 text-[7px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider">SCI-FI</span>
-                </div>
-                <h4 className="text-sm font-black uppercase text-slate-100 leading-tight">Avengers: Endgame (2019)</h4>
-                
-                <div className="flex items-center gap-2 pt-1">
-                  <button type="button" className="px-3.5 py-1.5 bg-white text-slate-950 rounded-full text-[9px] font-black pointer-events-none uppercase flex items-center gap-1 shadow-sm">▶ Watch Now</button>
-                  <span className="w-7 h-7 rounded-full border border-slate-800 bg-slate-950 flex items-center justify-center text-[9px] text-slate-400 font-bold hover:text-white cursor-pointer transition">+</span>
-                </div>
+          <div className="w-full bg-slate-950 border border-slate-800 rounded-3xl overflow-hidden shadow-xl relative font-sans select-none text-left">
+            {/* Backdrop preview */}
+            <div className="relative min-h-[280px] flex flex-col justify-end p-6 md:p-8 bg-gradient-to-t from-slate-950 via-slate-950/70 to-transparent">
+              <div className="absolute inset-0 z-0 bg-slate-900 overflow-hidden">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="https://image.tmdb.org/t/p/original/7RyHsO4yDXtBv1zUU3mSYzF8W2Q.jpg"
+                  alt="Hero Backdrop"
+                  className="w-full h-full object-cover object-top opacity-50"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent" />
               </div>
-              <div className="w-28 h-18 rounded bg-slate-950 border border-slate-850 flex items-center justify-center text-[8px] text-slate-600 font-bold shrink-0 shadow-xs">BACKDROP PREVIEW</div>
-            </div>
 
-            {/* Metadata info */}
-            <div className="grid grid-cols-3 gap-4 pt-3 border-t border-slate-900/60">
-              <div className="col-span-2 space-y-1.5">
-                <span className="text-[7px] font-black text-slate-500 uppercase block tracking-wider">Overview Description</span>
-                <p className="text-[10px] text-slate-400 leading-relaxed font-semibold">
-                  After the devastating events of Avengers: Infinity War, the universe is in ruins. With the help of remaining allies, the Avengers assemble once more to reverse Thanos' actions...
-                </p>
-              </div>
-              <div className="border-l border-slate-900/80 pl-3 space-y-1.5 text-[8px] text-slate-500 shrink-0">
-                <div><span className="font-bold text-slate-455">Director:</span> Anthony Russo</div>
-                <div><span className="font-bold text-slate-455">Cast:</span> Robert Downey Jr., Chris Evans</div>
-                <div className="flex gap-1 pt-1">
-                  <span className="bg-slate-950 px-1 border border-slate-800 rounded font-bold text-[5px] text-slate-400">16+</span>
-                  <span className="bg-slate-950 px-1 border border-slate-800 rounded font-bold text-[5px] text-slate-400">UHD</span>
+              <div className="relative z-10 space-y-3 max-w-2xl">
+                <div className="flex gap-2">
+                  <span className="bg-red-600 text-white text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-wider">ACTION</span>
+                  <span className="bg-red-600 text-white text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-wider">SCI-FI</span>
+                </div>
+                <h2 className="text-2xl md:text-3xl font-black uppercase text-white tracking-tight drop-shadow-md">
+                  Avengers: Endgame (2019)
+                </h2>
+
+                <div className="flex flex-wrap items-center gap-3 pt-1">
+                  <button type="button" className="px-5 py-2 bg-white text-black rounded-full text-xs font-black uppercase flex items-center gap-2 shadow-lg">
+                    <Play className="w-3.5 h-3.5 fill-current" /> Watch Now
+                  </button>
+                  <button type="button" className="px-4 py-2 bg-slate-900/80 border border-slate-800 text-cyan-400 rounded-full text-xs font-bold flex items-center gap-1.5">
+                    Visit Offer <ExternalLink className="w-3 h-3" />
+                  </button>
                 </div>
               </div>
             </div>
@@ -226,81 +356,129 @@ export default function VisualLayoutBuilderPage() {
 
       case "ad-middle":
         return (
-          <div className="w-full bg-emerald-500/5 hover:bg-emerald-500/10 border-2 border-dashed border-emerald-500/25 hover:border-emerald-500/40 rounded-2xl p-4 flex flex-col items-center justify-center gap-1.5 transition-all text-center min-h-[90px]">
-            <div className="flex items-center gap-2 text-emerald-455">
+          <div className="w-full bg-emerald-50 border-2 border-dashed border-emerald-300 rounded-2xl p-4 flex flex-col items-center justify-center gap-1.5 transition-all text-center min-h-[90px] shadow-2xs select-none">
+            <div className="flex items-center gap-2 text-emerald-700 font-bold">
               <Megaphone className="w-4 h-4" />
-              <span className="text-[10px] font-black uppercase font-mono tracking-widest">
-                AD SLOT 2: MIDDLE BANNER ADSENSE / AD SCRIPT
+              <span className="text-[11px] font-black uppercase font-mono tracking-widest">
+                AD SLOT 2: MIDDLE BANNER AD
               </span>
             </div>
-            <span className="text-xs font-black text-emerald-250">Middle Ad Slot</span>
-            <span className="text-[9px] font-semibold text-emerald-500/80 font-mono">
-              Injected dynamically below the video player / billboard header and above tabs navigation panel.
+            <span className="text-xs font-bold text-emerald-600">Middle Ad Banner Slot</span>
+            <span className="text-[10px] font-semibold text-slate-500 font-mono">
+              Injected between the main hero player header and the movie overview card.
             </span>
+          </div>
+        )
+
+      case "movie-info":
+        return (
+          <div className="w-full bg-white border border-slate-200 rounded-3xl p-6 flex flex-col md:flex-row gap-6 relative shadow-sm text-left select-none">
+            <div className="w-[120px] h-[175px] shrink-0 rounded-2xl overflow-hidden border border-slate-200 bg-slate-100 shadow-xs mx-auto md:mx-0">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="https://image.tmdb.org/t/p/w300/or06FN3Dka5tukKFAvgMOHW2fl5.jpg"
+                alt="Movie Poster"
+                className="w-full h-full object-cover"
+              />
+            </div>
+
+            <div className="flex-1 flex flex-col justify-between gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                <div className="space-y-1">
+                  <h3 className="text-lg font-black text-slate-900 uppercase tracking-wide flex items-center gap-2">
+                    Avengers: Endgame <span className="text-xs text-slate-400 font-mono font-normal">(2019)</span>
+                  </h3>
+                  <div className="flex items-center gap-1 text-amber-500 text-xs">
+                    ★★★★★★★★☆☆ <span className="text-[10px] text-slate-500 font-mono ml-1">8.4/10 by 18,450 users</span>
+                  </div>
+                </div>
+
+                <button type="button" className="px-3.5 py-1.5 rounded-lg border border-red-600 text-red-600 bg-red-50 font-bold text-xs uppercase tracking-wider">
+                  Subscribe to Watch | $0.00
+                </button>
+              </div>
+
+              <p className="text-xs text-slate-600 leading-relaxed">
+                After the devastating events of Avengers: Infinity War, the universe is in ruins. With the help of remaining allies, the Avengers assemble once more to reverse Thanos' actions...
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-medium pt-1">
+                <div className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl flex justify-between">
+                  <span className="text-slate-500 font-bold">Released:</span>
+                  <span className="text-slate-800 font-mono">2019-04-24</span>
+                </div>
+                <div className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl flex justify-between">
+                  <span className="text-slate-500 font-bold">Runtime:</span>
+                  <span className="text-slate-800 font-mono">181 minutes</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+
+      case "download-links":
+        return (
+          <div className="w-full bg-white border border-slate-200 rounded-3xl p-6 space-y-4 shadow-sm text-left select-none">
+            <h3 className="text-xs font-black text-red-600 flex items-center gap-1.5 uppercase tracking-widest font-mono">
+              <Download className="w-3.5 h-3.5" /> Download Links : MKV
+            </h3>
+            <div className="space-y-2">
+              {["480p - 450MB", "720p - 1.2GB", "1080p - 2.8GB"].map((res, i) => (
+                <div key={i} className="flex items-center justify-between px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl">
+                  <span className="text-[10px] font-black text-slate-700 bg-white px-2.5 py-1 rounded border border-slate-200 uppercase font-mono">
+                    {res}
+                  </span>
+                  <div className="flex items-center gap-2 text-xs font-bold text-red-600 font-mono">
+                    <span>GD2</span>
+                    <span className="text-slate-300">|</span>
+                    <span>CU</span>
+                    <span className="text-slate-300">|</span>
+                    <span>GD1</span>
+                    <span className="text-slate-300">|</span>
+                    <span>ZS</span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )
 
       case "tabs":
         return (
-          <div className="w-full bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3.5 shadow-sm text-left font-sans select-none">
-            <div className="flex gap-4 border-b border-slate-800 pb-2 text-[8px] font-bold text-slate-500">
-              <span className="text-white border-b border-white pb-2 font-extrabold uppercase">Related Content</span>
-              <span className="uppercase">Details & Advisory</span>
+          <div className="w-full bg-white border border-slate-200 rounded-3xl p-6 space-y-4 shadow-sm text-left select-none font-sans">
+            <div className="flex gap-4 border-b border-slate-200 pb-2 text-xs font-bold text-slate-500">
+              <span className="text-slate-900 border-b-2 border-red-600 pb-2 font-black uppercase">Related Movies</span>
+              <span className="uppercase">Cast & Info</span>
             </div>
-            
-            <div className="grid grid-cols-3 gap-4">
-              {/* Main Column (2 columns) */}
-              <div className="col-span-2 space-y-2">
-                <span className="text-[7px] font-black text-slate-500 uppercase tracking-wider block">Customers also watched</span>
-                <div className="grid grid-cols-3 gap-2">
-                  {Array.from({ length: 3 }).map((_, i) => (
-                    <div key={i} className="aspect-[2/3] rounded bg-slate-950 border border-slate-850 flex flex-col justify-end p-1.5 shrink-0">
-                      <div className="w-full h-1 bg-slate-900 rounded-xs" />
-                    </div>
-                  ))}
-                </div>
-              </div>
 
-              {/* Sidebar Column (1 column) */}
-              <div className="border-l border-slate-850 pl-3 space-y-3.5">
-                <span className="text-[7px] font-black text-slate-500 uppercase tracking-wider block">Cast & Info Sidebar</span>
-                
-                <div className="space-y-2">
-                  {Array.from({ length: 3 }).map((_, i) => (
-                    <div key={i} className="flex items-center gap-2">
-                      <div className="w-4 h-4 rounded-full bg-slate-950 border border-slate-800 shrink-0" />
-                      <div className="space-y-0.5 min-w-0">
-                        <div className="w-12 h-1 bg-slate-400 rounded-xs" />
-                        <div className="w-8 h-1 bg-slate-655 rounded-xs" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="space-y-1 text-[7.5px] text-slate-500 border-t border-slate-850 pt-2 shrink-0">
-                  <div><span className="font-bold text-slate-400">Director:</span> Anthony Russo</div>
-                  <div className="flex gap-1 pt-1.5">
-                    <span className="bg-slate-950 px-1 border border-slate-800 rounded font-bold text-[5px] text-slate-400">16+</span>
-                    <span className="bg-slate-955 px-1 border border-slate-800 rounded font-bold text-[5px] text-slate-400">SUB</span>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="aspect-[2/3] rounded-2xl bg-slate-100 border border-slate-200 flex flex-col justify-end p-2 relative overflow-hidden">
+                  <div className="absolute inset-0 bg-slate-100 flex items-center justify-center text-slate-400 font-bold text-[10px]">
+                    MOVIE PREVIEW
+                  </div>
+                  <div className="relative z-10 space-y-1 bg-white/95 p-2 rounded-xl border border-slate-200 shadow-2xs">
+                    <div className="text-[10px] font-bold text-slate-900 truncate">Related Movie #{i + 1}</div>
+                    <div className="text-[8px] text-amber-500 font-bold">★ 8.{i + 1}</div>
                   </div>
                 </div>
-              </div>
+              ))}
             </div>
           </div>
         )
 
       case "ad-bottom":
         return (
-          <div className="w-full bg-purple-500/5 hover:bg-purple-500/10 border-2 border-dashed border-purple-500/25 hover:border-purple-500/40 rounded-2xl p-4 flex flex-col items-center justify-center gap-1.5 transition-all text-center min-h-[90px]">
-            <div className="flex items-center gap-2 text-purple-455">
+          <div className="w-full bg-purple-50 border-2 border-dashed border-purple-300 rounded-2xl p-4 flex flex-col items-center justify-center gap-1.5 transition-all text-center min-h-[90px] shadow-2xs select-none">
+            <div className="flex items-center gap-2 text-purple-700 font-bold">
               <Megaphone className="w-4 h-4" />
-              <span className="text-[10px] font-black uppercase font-mono tracking-widest">
-                AD SLOT 3: BOTTOM ROTATING AD CARD / SPONSOR
+              <span className="text-[11px] font-black uppercase font-mono tracking-widest">
+                AD SLOT 3: BOTTOM BANNER AD / SPONSOR
               </span>
             </div>
-            <span className="text-xs font-black text-purple-250">Bottom Ad Slot</span>
-            <span className="text-[9px] font-semibold text-purple-500/80 font-mono">
-              Custom advertisement script displayed at the bottom of the related list or details metadata info.
+            <span className="text-xs font-black text-purple-600">Bottom Ad Banner Slot</span>
+            <span className="text-[10px] font-semibold text-slate-500 font-mono">
+              Renders at the bottom of the page below related content recommendations.
             </span>
           </div>
         )
@@ -313,7 +491,7 @@ export default function VisualLayoutBuilderPage() {
   if (loading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="w-10 h-10 rounded-full border-2 border-t-cyan-500 border-r-transparent border-b-cyan-500 border-l-transparent animate-spin"></div>
+        <div className="w-10 h-10 rounded-full border-2 border-t-cyan-600 border-r-transparent border-b-cyan-600 border-l-transparent animate-spin"></div>
       </div>
     )
   }
@@ -321,120 +499,235 @@ export default function VisualLayoutBuilderPage() {
   return (
     <div className="space-y-6 max-w-7xl animate-fade-in font-sans pb-20">
       {/* Title Header */}
-      <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-linear-to-br from-cyan-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-cyan-500/10">
-            <SlidersHorizontal className="w-5 h-5 text-slate-950" />
+          <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-600">
+            <SlidersHorizontal className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-base font-extrabold text-slate-100">Visual Layout Builder</h3>
-            <p className="text-xs text-slate-400 font-medium">Design page structure visually. Drag components on the left and reorder them on the right details mockup.</p>
+            <h3 className="text-base font-extrabold text-slate-900">Visual Layout & Drag Ads Builder</h3>
+            <p className="text-xs text-slate-500 font-medium">
+              Drag Ad Blocks directly from the left palette onto the page preview canvas to place them anywhere!
+            </p>
           </div>
         </div>
 
-        <button
-          onClick={handleSaveLayout}
-          disabled={saving}
-          className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-slate-955 font-extrabold rounded-xl text-xs uppercase tracking-wider transition-all shadow-md shadow-cyan-500/10 active:scale-[0.98] cursor-pointer disabled:opacity-50"
-        >
-          <Save className="w-4 h-4" />
-          <span>{saving ? "Saving Layout..." : "Save Layout"}</span>
-        </button>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/dashboard/ads"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 text-xs font-bold transition-all"
+          >
+            <FileCode className="w-3.5 h-3.5" />
+            <span>Create Custom Ads</span>
+          </Link>
+
+          <button
+            onClick={handleResetDefault}
+            type="button"
+            className="flex items-center gap-2 px-3.5 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-all active:scale-[0.98] cursor-pointer"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>Reset Layout</span>
+          </button>
+
+          <button
+            onClick={handleSaveLayout}
+            disabled={saving}
+            className="flex items-center justify-center gap-2 px-5 py-2 bg-gradient-to-r from-cyan-600 to-emerald-600 hover:from-cyan-500 hover:to-emerald-500 text-white font-extrabold rounded-xl text-xs uppercase tracking-wider transition-all shadow-sm active:scale-[0.98] cursor-pointer disabled:opacity-50"
+          >
+            <Save className="w-4 h-4" />
+            <span>{saving ? "Saving..." : "Save Layout"}</span>
+          </button>
+        </div>
       </div>
 
       {message.text && (
         <div
-          className={`p-4 rounded-xl border text-xs font-semibold flex items-center gap-2.5 max-w-lg ${
+          className={`p-4 rounded-xl border text-xs font-bold flex items-center gap-2.5 max-w-lg ${
             message.type === "success"
-              ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
-              : "bg-red-500/10 border-red-500/20 text-red-400"
+              ? "bg-emerald-50 border-emerald-200 text-emerald-700"
+              : "bg-red-50 border-red-200 text-red-700"
           }`}
         >
           {message.type === "success" ? (
-            <CheckCircle className="w-4 h-4 shrink-0" />
+            <CheckCircle className="w-4 h-4 shrink-0 text-emerald-600" />
           ) : (
-            <AlertTriangle className="w-4 h-4 shrink-0" />
+            <AlertTriangle className="w-4 h-4 shrink-0 text-red-600" />
           )}
           <span>{message.text}</span>
         </div>
       )}
 
-      {/* Main Grid: Left Draggable Panel vs Right Preview Mockup */}
+      {/* Main Grid: Left Draggable Controls & Ad Palette vs Right Real Mockup */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
-        {/* LEFT COLUMN: AVAILABLE AD BLOCKS & DRAGGABLE SECTIONS (5 Cols - STICKY) */}
+        {/* LEFT COLUMN: AD BLOCKS PALETTE & REORDER CONTROL (5 Cols - STICKY) */}
         <div className="lg:col-span-5 space-y-6 lg:sticky lg:top-6 self-start">
-          <div className="bg-[#050b14] border border-slate-900 rounded-3xl p-5 shadow-xl space-y-5">
-            <div>
-              <h4 className="text-xs font-black uppercase tracking-wider text-slate-200">Draggable Ads & Sections</h4>
-              <p className="text-[10px] text-slate-500 mt-1">Drag the boxes from here or use them as a reference. Move items in the right mockup list to reorder them.</p>
+          
+          {/* STANDALONE AD BLOCKS PALETTE */}
+          <div className="bg-white border border-cyan-200 rounded-3xl p-5 shadow-sm space-y-4 relative overflow-hidden">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Megaphone className="w-4 h-4 text-cyan-600" />
+                <h4 className="text-xs font-black uppercase tracking-wider text-slate-900 font-mono">Available Ad Blocks</h4>
+              </div>
+              <span className="text-[9px] font-mono font-bold bg-cyan-50 text-cyan-700 border border-cyan-200 px-2 py-0.5 rounded-full">
+                Drag to Canvas
+              </span>
+            </div>
+            <p className="text-[10px] text-slate-500">
+              Drag any of these Ad blocks onto the right page mockup to insert ads before/after any content section.
+            </p>
+
+            {/* List of Draggable Standalone Ads */}
+            <div className="space-y-2">
+              {fullPalette.map((ad) => {
+                const isAlreadyInLayout = layout.includes(ad.id)
+
+                return (
+                  <div
+                    key={`palette-${ad.id}`}
+                    draggable
+                    onDragStart={() => handleDragStartFromPalette(ad.id)}
+                    className="flex items-center justify-between p-3 bg-slate-50 border border-cyan-200 hover:border-cyan-400 rounded-xl transition-all cursor-grab active:cursor-grabbing hover:shadow-xs group select-none"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <GripVertical className="w-4 h-4 text-cyan-600 shrink-0 group-hover:text-cyan-700" />
+                      <div className="min-w-0">
+                        <h5 className="text-xs font-extrabold text-slate-900 truncate">{ad.name}</h5>
+                        <p className="text-[9px] text-slate-500 font-mono truncate">{ad.desc}</p>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => addItem(ad.id)}
+                      className="px-2.5 py-1 bg-cyan-50 hover:bg-cyan-100 text-cyan-700 border border-cyan-200 rounded-lg text-[10px] font-extrabold flex items-center gap-1 shrink-0 cursor-pointer transition active:scale-95"
+                    >
+                      <Plus className="w-3 h-3" />
+                      <span>{isAlreadyInLayout ? "Re-insert" : "Insert"}</span>
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* PAGE SECTIONS REORDER LIST */}
+          <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Layers className="w-4 h-4 text-slate-600" />
+                <h4 className="text-xs font-black uppercase tracking-wider text-slate-900 font-mono">Reorder Page Layout</h4>
+              </div>
+              <span className="text-[9px] font-mono font-bold bg-slate-100 text-slate-600 border border-slate-200 px-2 py-0.5 rounded-full">
+                {layout.length} Sections
+              </span>
             </div>
 
-            <div className="space-y-2.5">
+            <div className="space-y-2">
               {layout.map((sectionId, idx) => {
-                let badgeColor = ""
-                if (sectionId === "top-ad") {
-                  badgeColor = "border-amber-500/30 bg-amber-500/5 text-amber-400"
-                } else if (sectionId === "hero") {
-                  badgeColor = "border-slate-800 bg-slate-900/60 text-slate-300"
-                } else if (sectionId === "ad-middle") {
-                  badgeColor = "border-emerald-500/30 bg-emerald-500/5 text-emerald-400"
-                } else if (sectionId === "tabs") {
-                  badgeColor = "border-slate-800 bg-slate-900/60 text-slate-300"
-                } else if (sectionId === "ad-bottom") {
-                  badgeColor = "border-purple-500/30 bg-purple-500/5 text-purple-400"
-                }
+                const isAd = sectionId.includes("ad") || sectionId.startsWith("ads_")
+                let badgeColor = isAd ? "border-cyan-200 bg-cyan-50 text-cyan-700" : "border-slate-200 bg-slate-100 text-slate-700"
 
                 return (
                   <div
                     key={`left-${sectionId}`}
                     draggable
                     onDragStart={() => handleDragStartFromLayout(idx)}
-                    className="flex items-center justify-between p-3.5 bg-slate-950 border border-slate-900 hover:border-slate-700 rounded-xl transition-all cursor-grab active:cursor-grabbing hover:shadow-xs group select-none"
+                    className="flex items-center justify-between p-3.5 bg-slate-50 border border-slate-200 hover:border-slate-300 rounded-xl transition-all cursor-grab active:cursor-grabbing hover:shadow-2xs group select-none"
                   >
-                    <div className="flex items-center gap-3">
-                      <GripVertical className="w-4 h-4 text-slate-600 shrink-0 group-hover:text-slate-400" />
-                      <span className="text-xs font-black tracking-wide text-slate-300 uppercase">
-                        {COMPONENT_LABELS[sectionId] || sectionId}
+                    <div className="flex items-center gap-3 min-w-0">
+                      <GripVertical className="w-4 h-4 text-slate-400 shrink-0 group-hover:text-slate-600" />
+                      <span className="text-xs font-extrabold tracking-wide text-slate-900 truncate">
+                        {getItemLabel(sectionId)}
                       </span>
                     </div>
-                    <span className={`text-[8px] font-mono font-bold border px-1.5 py-0.5 rounded shrink-0 uppercase ${badgeColor}`}>
-                      Item {idx + 1}
-                    </span>
+
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => moveItem(idx, "up")}
+                        disabled={idx === 0}
+                        className="p-1 rounded bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 disabled:opacity-30 cursor-pointer"
+                        title="Move Up"
+                      >
+                        <ChevronUp className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => moveItem(idx, "down")}
+                        disabled={idx === layout.length - 1}
+                        className="p-1 rounded bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 disabled:opacity-30 cursor-pointer"
+                        title="Move Down"
+                      >
+                        <ChevronDown className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => removeItem(idx)}
+                        className="p-1 rounded bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 transition cursor-pointer"
+                        title="Remove section from layout"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                      <span className={`text-[8px] font-mono font-bold border px-1.5 py-0.5 rounded uppercase ${badgeColor}`}>
+                        #{idx + 1}
+                      </span>
+                    </div>
                   </div>
                 )
               })}
             </div>
 
-            <div className="p-4 bg-slate-950/80 border border-slate-900 rounded-2xl flex gap-3 text-slate-500">
-              <HelpCircle className="w-5 h-5 shrink-0 text-cyan-400" />
-              <div className="text-[10px] font-semibold leading-relaxed">
-                <span className="font-bold text-slate-300 block mb-1">Layout Ordering Guide:</span>
-                - Reorder items by dragging their grab handle.
-                - The Right Page Preview updates instantly to match your arrangement.
-                - Click the "Save Layout" button at the top to commit changes.
+            {/* Removed Sections Palette */}
+            {removedSections.length > 0 && (
+              <div className="pt-4 border-t border-slate-100 space-y-2.5">
+                <h5 className="text-[11px] font-black uppercase text-slate-500 tracking-wider flex items-center justify-between font-mono">
+                  <span>Hidden / Removed ({removedSections.length})</span>
+                </h5>
+                <div className="space-y-1.5">
+                  {removedSections.map((sectionId) => (
+                    <div
+                      key={`removed-${sectionId}`}
+                      className="flex items-center justify-between p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                    >
+                      <span className="text-xs font-semibold text-slate-600">
+                        {getItemLabel(sectionId)}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => addItem(sectionId)}
+                        className="px-2.5 py-1 bg-cyan-50 hover:bg-cyan-100 text-cyan-700 border border-cyan-200 rounded-lg text-[10px] font-bold flex items-center gap-1 cursor-pointer transition active:scale-95"
+                      >
+                        <Plus className="w-3 h-3" />
+                        <span>Add Back</span>
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
 
-        {/* RIGHT COLUMN: HIGH FIDELITY LAYOUT PREVIEW CANVAS (7 Cols) */}
+        {/* RIGHT COLUMN: HIGH FIDELITY REAL MOVIE DETAIL MOCKUP (7 Cols) */}
         <div className="lg:col-span-7 space-y-6">
-          <div className="bg-[#050b14] border border-slate-900 rounded-3xl p-6 shadow-xl space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-900 pb-4 gap-3">
+          <div className="bg-slate-100 border border-slate-200 rounded-3xl p-6 shadow-sm space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 pb-4 gap-3">
               <div>
-                <h4 className="text-xs font-black uppercase text-slate-200 tracking-wider">Layout Canvas & Live Mockup</h4>
-                <p className="text-[10px] text-slate-500 mt-1">Drag layout sections directly inside the container list below to rearrange.</p>
+                <h4 className="text-xs font-black uppercase text-slate-900 tracking-wider">Movie Details Page Canvas</h4>
+                <p className="text-[10px] text-slate-500 mt-1">Drag and drop ads onto the drop indicators below.</p>
               </div>
               <div className="flex items-center gap-2 select-none">
-                <div className="bg-slate-950 p-1 rounded-lg border border-slate-900 flex items-center gap-1">
+                <div className="bg-white p-1 rounded-lg border border-slate-200 flex items-center gap-1">
                   <button
                     type="button"
                     onClick={() => setPreviewMode("visual")}
-                    className={`px-2 py-1 text-[9px] font-extrabold rounded-md uppercase tracking-wider flex items-center gap-1 transition-all cursor-pointer ${
+                    className={`px-2.5 py-1 text-[9px] font-extrabold rounded-md uppercase tracking-wider flex items-center gap-1 transition-all cursor-pointer ${
                       previewMode === "visual"
-                        ? "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 font-black"
-                        : "text-slate-500 hover:text-slate-200"
+                        ? "bg-cyan-50 text-cyan-700 border border-cyan-200 font-black"
+                        : "text-slate-500 hover:text-slate-800"
                     }`}
                   >
                     <Eye className="w-3 h-3" />
@@ -443,95 +736,126 @@ export default function VisualLayoutBuilderPage() {
                   <button
                     type="button"
                     onClick={() => setPreviewMode("compact")}
-                    className={`px-2 py-1 text-[9px] font-extrabold rounded-md uppercase tracking-wider flex items-center gap-1 transition-all cursor-pointer ${
+                    className={`px-2.5 py-1 text-[9px] font-extrabold rounded-md uppercase tracking-wider flex items-center gap-1 transition-all cursor-pointer ${
                       previewMode === "compact"
-                        ? "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 font-black"
-                        : "text-slate-500 hover:text-slate-200"
+                        ? "bg-cyan-50 text-cyan-700 border border-cyan-200 font-black"
+                        : "text-slate-500 hover:text-slate-800"
                     }`}
                   >
                     <SlidersHorizontal className="w-3 h-3" />
-                    <span>Compact Lists</span>
+                    <span>Compact Mode</span>
                   </button>
                 </div>
               </div>
             </div>
 
             {/* Drag & Drop Visual Canvas */}
-            <div className="flex flex-col relative py-2 gap-1 select-none">
+            <div className="flex flex-col relative py-2 gap-2 select-none">
               
-              {/* Drop indicator at very top (Index 0) */}
+              {/* Drop indicator at top */}
               <div
                 onDragOver={(e) => handleDragOverIndicator(e, 0)}
                 onDragLeave={handleDragLeaveIndicator}
                 onDrop={() => handleDropOnIndicator(0)}
-                className={`h-3 rounded-lg border-2 border-dashed flex items-center justify-center transition-all ${
+                className={`h-4 rounded-xl border-2 border-dashed flex items-center justify-center transition-all ${
                   activeDropIndicator === 0
-                    ? "border-emerald-500 bg-emerald-500/10 scale-102 h-10"
-                    : "border-transparent opacity-0 hover:opacity-100 hover:border-emerald-500/30 hover:h-6 hover:bg-emerald-500/2"
+                    ? "border-cyan-500 bg-cyan-100 scale-102 h-12 shadow-sm"
+                    : "border-slate-300 opacity-60 hover:opacity-100 hover:border-cyan-400 hover:h-8 hover:bg-cyan-50"
                 }`}
               >
-                <span className="text-[9px] text-emerald-450 font-black tracking-widest uppercase">
-                  {activeDropIndicator === 0 ? "Drop here" : "Drag block here"}
+                <span className="text-[10px] text-cyan-700 font-extrabold tracking-widest uppercase flex items-center gap-1.5">
+                  <Plus className="w-3.5 h-3.5" />
+                  {activeDropIndicator === 0 ? "Drop Ad Block Here" : "Drag Ad / Section Here (Position #1)"}
                 </span>
               </div>
 
               {layout.map((item, idx) => (
-                <div key={`${item}-${idx}`} className="flex flex-col gap-1">
+                <div key={`${item}-${idx}`} className="flex flex-col gap-2">
                   {previewMode === "visual" ? (
-                    /* Visual Mode rendering */
                     <div
                       draggable
                       onDragStart={() => handleDragStartFromLayout(idx)}
-                      className="group/item relative rounded-2xl border border-slate-900/60 bg-slate-950/20 hover:border-cyan-500/30 hover:bg-slate-950 transition-all cursor-grab active:cursor-grabbing hover:shadow-xl p-1"
+                      className="group/item relative rounded-2xl border border-slate-200 hover:border-cyan-400 transition-all cursor-grab active:cursor-grabbing p-1 bg-white shadow-2xs"
                     >
-                      {/* Drag & Position handle tags on hover */}
-                      <div className="absolute top-2 right-2.5 z-20 flex items-center gap-1.5 opacity-0 group-hover/item:opacity-100 transition-all pointer-events-none">
-                        <span className="text-[8px] font-black font-mono bg-slate-950/95 text-cyan-400 border border-cyan-500/20 px-2 py-0.5 rounded-md uppercase tracking-widest shadow-xs">
-                          {item === "top-ad" || item === "ad-middle" || item === "ad-bottom" ? "Ad Banner" : "Content Frame"}
+                      {/* Section Badge Header */}
+                      <div className="flex items-center justify-between px-3 py-1.5 bg-slate-50 border-b border-slate-200 rounded-t-xl text-[9px] font-mono text-slate-600">
+                        <span className="font-extrabold uppercase text-slate-800 flex items-center gap-1.5">
+                          <GripVertical className="w-3 h-3 text-slate-400" />
+                          <span>{getItemLabel(item)}</span>
                         </span>
-                        <div className="bg-slate-900 border border-slate-800 rounded-md p-1 pointer-events-auto flex items-center shadow-xs">
-                          <Move className="w-3.5 h-3.5 text-slate-400 hover:text-white" />
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => moveItem(idx, "up")}
+                            disabled={idx === 0}
+                            className="p-0.5 rounded hover:bg-slate-200 text-slate-600 disabled:opacity-20 cursor-pointer"
+                            title="Move Up"
+                          >
+                            <ChevronUp className="w-3 h-3" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => moveItem(idx, "down")}
+                            disabled={idx === layout.length - 1}
+                            className="p-0.5 rounded hover:bg-slate-200 text-slate-600 disabled:opacity-20 cursor-pointer"
+                            title="Move Down"
+                          >
+                            <ChevronDown className="w-3 h-3" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => removeItem(idx)}
+                            className="p-0.5 rounded hover:bg-red-100 text-red-600 cursor-pointer"
+                            title="Remove Section"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                          <span className="font-bold bg-white border border-slate-200 px-1.5 py-0.5 rounded text-[8px] text-cyan-700 ml-1">
+                            Position #{idx + 1}
+                          </span>
                         </div>
                       </div>
 
-                      {/* Render Visual content */}
-                      {renderVisualComponent(item)}
+                      {/* Render Visual component */}
+                      <div className="pt-2">
+                        {renderVisualComponent(item)}
+                      </div>
                     </div>
                   ) : (
-                    /* Compact mode rendering */
                     <div
                       draggable
                       onDragStart={() => handleDragStartFromLayout(idx)}
-                      className="flex items-center justify-between px-4 py-4 rounded-xl border border-slate-900 bg-slate-950 hover:bg-slate-900 cursor-grab active:cursor-grabbing transition-all select-none hover:shadow-lg"
+                      className="flex items-center justify-between px-4 py-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 cursor-grab active:cursor-grabbing transition-all select-none shadow-2xs"
                     >
                       <div className="flex items-center gap-3">
-                        <Move className="w-4 h-4 text-slate-655 shrink-0" />
+                        <GripVertical className="w-4 h-4 text-slate-400 shrink-0" />
                         <div>
-                          <span className="text-[8.5px] font-black uppercase font-mono tracking-wider text-slate-500">
-                            {item === "top-ad" || item === "ad-middle" || item === "ad-bottom" ? "Ad Frame" : "Main Section"}
+                          <span className="text-[9px] font-black uppercase font-mono tracking-wider text-slate-400">
+                            {item.includes("ad") ? "Ad Frame" : "Movie Section"}
                           </span>
-                          <p className="text-xs font-bold text-slate-200 mt-0.5">{COMPONENT_LABELS[item] || item}</p>
+                          <p className="text-xs font-bold text-slate-900 mt-0.5">{getItemLabel(item)}</p>
                         </div>
                       </div>
-                      <span className="text-[8px] font-mono font-bold bg-slate-900 border border-slate-800 text-slate-550 px-1.5 py-0.5 rounded uppercase">
-                        Slot {idx + 1}
+                      <span className="text-[9px] font-mono font-bold bg-slate-100 border border-slate-200 text-cyan-700 px-2 py-0.5 rounded uppercase">
+                        Position #{idx + 1}
                       </span>
                     </div>
                   )}
 
-                  {/* Drop indicator below this item (Index idx + 1) */}
+                  {/* Drop indicator below */}
                   <div
                     onDragOver={(e) => handleDragOverIndicator(e, idx + 1)}
                     onDragLeave={handleDragLeaveIndicator}
                     onDrop={() => handleDropOnIndicator(idx + 1)}
-                    className={`h-3 rounded-lg border-2 border-dashed flex items-center justify-center transition-all ${
+                    className={`h-4 rounded-xl border-2 border-dashed flex items-center justify-center transition-all ${
                       activeDropIndicator === idx + 1
-                        ? "border-emerald-500 bg-emerald-500/10 scale-102 h-10 my-1"
-                        : "border-transparent opacity-0 hover:opacity-100 hover:border-emerald-500/30 hover:h-6 hover:bg-emerald-500/2 my-0.5"
+                        ? "border-cyan-500 bg-cyan-100 scale-102 h-12 shadow-sm"
+                        : "border-slate-300 opacity-40 hover:opacity-100 hover:border-cyan-400 hover:h-8 hover:bg-cyan-50"
                     }`}
                   >
-                    <span className="text-[9px] text-emerald-450 font-black tracking-widest uppercase">
-                      {activeDropIndicator === idx + 1 ? "Drop here" : "Drag block here"}
+                    <span className="text-[10px] text-cyan-700 font-extrabold tracking-widest uppercase flex items-center gap-1.5">
+                      <Plus className="w-3.5 h-3.5" />
+                      {activeDropIndicator === idx + 1 ? "Drop Ad Block Here" : `Drag Ad / Section Here (Position #${idx + 2})`}
                     </span>
                   </div>
                 </div>

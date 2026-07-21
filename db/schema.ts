@@ -89,3 +89,9 @@ export const ads = mysqlTable("ads", {
   footerAds: text("footer_ads"),
 })
 
+export const customAds = mysqlTable("custom_ads", {
+  id: varchar("id", { length: 191 }).primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  code: text("code"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+})

@@ -22,32 +22,32 @@ export default function DashboardLayout({
 }) {
   return (
     <TooltipProvider>
-      <SidebarProvider>
+      <SidebarProvider className="light bg-slate-50 text-slate-900">
         <AppSidebar />
-        <SidebarInset className="bg-slate-950 text-slate-100 border-slate-900">
-          <header className="flex h-16 shrink-0 items-center gap-2 border-b border-slate-900 px-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+        <SidebarInset className="bg-slate-50 text-slate-900 border-slate-200">
+          <header className="flex h-16 shrink-0 items-center gap-2 border-b border-slate-200 bg-white px-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 shadow-2xs">
             <div className="flex items-center gap-2">
-              <SidebarTrigger className="-ml-1" />
+              <SidebarTrigger className="-ml-1 text-slate-700 hover:text-slate-900" />
               <Separator
                 orientation="vertical"
-                className="mr-2 h-4 bg-slate-800"
+                className="mr-2 h-4 bg-slate-200"
               />
               <Breadcrumb>
                 <BreadcrumbList>
                   <BreadcrumbItem className="hidden md:block">
-                    <BreadcrumbLink href="/dashboard" className="text-slate-400 hover:text-slate-200">
+                    <BreadcrumbLink href="/dashboard" className="text-slate-500 hover:text-slate-900 font-semibold">
                       Dashboard
                     </BreadcrumbLink>
                   </BreadcrumbItem>
-                  <BreadcrumbSeparator className="hidden md:block text-slate-600" />
+                  <BreadcrumbSeparator className="hidden md:block text-slate-400" />
                   <BreadcrumbItem>
-                    <BreadcrumbPage className="text-slate-200">Admin Control Panel</BreadcrumbPage>
+                    <BreadcrumbPage className="text-slate-900 font-bold">Admin Control Panel</BreadcrumbPage>
                   </BreadcrumbItem>
                 </BreadcrumbList>
               </Breadcrumb>
             </div>
           </header>
-          <main className="flex-1 p-6 bg-slate-950">
+          <main className="flex-1 p-6 bg-slate-50 text-slate-900">
             {children}
           </main>
         </SidebarInset>

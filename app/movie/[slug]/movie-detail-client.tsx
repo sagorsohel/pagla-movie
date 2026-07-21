@@ -350,6 +350,23 @@ export function MovieDetailClient({
     return crewList.filter((c: any) => c.job === "Producer" || c.job === "Executive Producer")
   }, [crewList])
 
+  const layoutOrder = useMemo(() => {
+    if (!adsConfig?.layoutOrder) {
+      return ["top-ad", "hero", "ad-middle", "movie-info", "download-links", "tabs", "ad-bottom"]
+    }
+    try {
+      const parsed = JSON.parse(adsConfig.layoutOrder)
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        const result = [...parsed]
+        ;["top-ad", "hero", "ad-middle", "movie-info", "download-links", "tabs", "ad-bottom"].forEach((s) => {
+          if (!result.includes(s)) result.push(s)
+        })
+        return result
+      }
+    } catch (e) {}
+    return ["top-ad", "hero", "ad-middle", "movie-info", "download-links", "tabs", "ad-bottom"]
+  }, [adsConfig?.layoutOrder])
+
   return (
     <div className="min-h-screen text-slate-100 bg-background relative font-sans antialiased pb-20 selection:bg-red-600 selection:text-white">
       

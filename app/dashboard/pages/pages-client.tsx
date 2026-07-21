@@ -36,124 +36,121 @@ export function PagesClient({ initialPages }: { initialPages: PageData[] }) {
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-3">
+    <div className="grid gap-6 lg:grid-cols-3 font-sans">
       {/* Create Form */}
-      <div className="rounded-xl border border-slate-800 bg-slate-900/30 p-6 lg:col-span-1 h-fit">
-        <h2 className="text-lg font-bold text-slate-200 flex items-center gap-2 mb-4">
-          <PlusIcon className="w-4 h-4 text-violet-400" /> Create Custom Page
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 lg:col-span-1 h-fit shadow-xs">
+        <h2 className="text-base font-extrabold text-slate-900 flex items-center gap-2 mb-4">
+          <PlusIcon className="w-4 h-4 text-cyan-600" /> Create Custom Page
         </h2>
         <form ref={formRef} action={formAction} className="space-y-4">
           {state?.error && (
-            <div className="p-3 rounded-lg border border-red-500/30 bg-red-500/10 text-xs text-red-400">
+            <div className="p-3 rounded-xl border border-red-200 bg-red-50 text-xs text-red-700 font-bold">
               {state.error}
             </div>
           )}
 
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-slate-400">Page Title</label>
+            <label className="text-xs font-bold text-slate-700 font-mono">Page Title</label>
             <Input
               name="title"
               placeholder="e.g. Action Movies Special"
-              className="bg-slate-950 border-slate-800 text-slate-100 placeholder:text-slate-600 focus-visible:ring-violet-500"
+              className="bg-slate-50 border-slate-200 text-slate-900 text-xs focus-visible:ring-cyan-500"
               required
             />
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-slate-400">Page Slug</label>
+            <label className="text-xs font-bold text-slate-700 font-mono">Page Slug</label>
             <Input
               name="slug"
               placeholder="e.g. action-special"
-              className="bg-slate-950 border-slate-800 text-slate-100 placeholder:text-slate-600 focus-visible:ring-violet-500"
+              className="bg-slate-50 border-slate-200 text-slate-900 text-xs focus-visible:ring-cyan-500"
               required
             />
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-slate-400">Redirect URL (Optional)</label>
+            <label className="text-xs font-bold text-slate-700 font-mono">Redirect URL (Optional)</label>
             <Input
               name="redirectUrl"
               placeholder="https://example.com/target"
-              className="bg-slate-950 border-slate-800 text-slate-100 placeholder:text-slate-600 focus-visible:ring-violet-500"
+              className="bg-slate-50 border-slate-200 text-slate-900 text-xs focus-visible:ring-cyan-500"
             />
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-slate-400">Redirect Delay (Seconds)</label>
+            <label className="text-xs font-bold text-slate-700 font-mono">Redirect Delay (Seconds)</label>
             <Input
               name="redirectTime"
               type="number"
               defaultValue={5}
               placeholder="5"
-              className="bg-slate-950 border-slate-800 text-slate-100 placeholder:text-slate-600 focus-visible:ring-violet-500"
+              className="bg-slate-50 border-slate-200 text-slate-900 text-xs focus-visible:ring-cyan-500"
             />
           </div>
 
           <Button
             type="submit"
             disabled={isPending}
-            className="w-full bg-violet-600 hover:bg-violet-500 text-white font-medium shadow-md shadow-violet-600/10"
+            className="w-full bg-gradient-to-r from-cyan-600 to-emerald-600 hover:from-cyan-500 hover:to-emerald-500 text-white font-extrabold text-xs rounded-xl shadow-xs"
           >
             {isPending ? (
               <span className="flex items-center gap-2">
                 <Loader2Icon className="w-3.5 h-3.5 animate-spin" /> Creating...
               </span>
             ) : (
-              "Add Page"
+              "Save Page"
             )}
           </Button>
         </form>
       </div>
 
       {/* Pages List */}
-      <div className="rounded-xl border border-slate-800 bg-slate-900/30 p-6 lg:col-span-2">
-        <h2 className="text-lg font-bold text-slate-200 flex items-center gap-2 mb-4">
-          <LinkIcon className="w-4 h-4 text-cyan-400" /> Active Custom Pages
-        </h2>
-
+      <div className="rounded-2xl border border-slate-200 bg-white lg:col-span-2 overflow-hidden shadow-xs">
         {initialPages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center p-8 rounded-lg border border-dashed border-slate-800 text-slate-500">
-            <LinkIcon className="w-8 h-8 mb-2 opacity-50" />
-            <p className="text-sm">No custom pages created yet.</p>
+          <div className="flex flex-col items-center justify-center p-12 text-slate-500">
+            <LinkIcon className="w-10 h-10 mb-2 text-slate-400" />
+            <p className="text-sm font-medium">No custom pages created yet.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm text-slate-400">
-              <thead className="bg-slate-950 text-xs font-semibold uppercase text-slate-300">
+            <table className="w-full text-left text-xs text-slate-700">
+              <thead className="bg-slate-50 text-[10px] font-mono uppercase text-slate-400 border-b border-slate-200 tracking-wider">
                 <tr>
-                  <th className="px-4 py-3 rounded-l-lg">Title</th>
-                  <th className="px-4 py-3">Slug / Path</th>
-                  <th className="px-4 py-3">Redirect Target</th>
-                  <th className="px-4 py-3 rounded-r-lg text-right">Actions</th>
+                  <th className="px-5 py-4">Title</th>
+                  <th className="px-5 py-4">Route / Slug</th>
+                  <th className="px-5 py-4">Redirect URL</th>
+                  <th className="px-5 py-4">Delay</th>
+                  <th className="px-5 py-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/55">
+              <tbody className="divide-y divide-slate-100">
                 {initialPages.map((page) => (
-                  <tr key={page.id} className="hover:bg-slate-900/15">
-                    <td className="px-4 py-3 font-semibold text-slate-200">{page.title}</td>
-                    <td className="px-4 py-3 font-mono text-xs text-cyan-400">
-                      /{page.slug}
-                    </td>
-                    <td className="px-4 py-3 max-w-xs truncate">
+                  <tr key={page.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="px-5 py-3 font-bold text-slate-900">{page.title}</td>
+                    <td className="px-5 py-3 font-mono text-xs text-cyan-600">/{page.slug}</td>
+                    <td className="px-5 py-3 max-w-[180px] truncate">
                       {page.redirectUrl ? (
                         <a
                           href={page.redirectUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="flex items-center gap-1 hover:text-white"
+                          className="flex items-center gap-1 text-cyan-600 hover:text-cyan-700 font-medium"
                         >
-                          {page.redirectUrl} <ExternalLinkIcon className="w-3 h-3" />
+                          <span className="truncate">{page.redirectUrl}</span>
+                          <ExternalLinkIcon className="w-3 h-3 shrink-0" />
                         </a>
                       ) : (
-                        <span className="text-slate-600">None</span>
+                        <span className="text-slate-400">None</span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-right">
+                    <td className="px-5 py-3 font-mono text-slate-500">{page.redirectTime}s</td>
+                    <td className="px-5 py-3 text-right">
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => handleDelete(page.id)}
-                        className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
                       >
                         <Trash2Icon className="w-4 h-4" />
                       </Button>

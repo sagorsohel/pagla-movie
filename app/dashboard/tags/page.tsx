@@ -32,8 +32,8 @@ export default async function TagsPage({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-100">Custom Tags</h1>
-        <p className="text-sm text-slate-400 mt-1">
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Custom Tags</h1>
+        <p className="text-sm text-slate-500 mt-1">
           Create and manage tags for movie categorizations, affiliate referral links, and modal popups.
         </p>
       </div>

@@ -73,20 +73,17 @@ export function DashboardCharts({
   return (
     <div className="space-y-8 animate-fade-in font-sans">
       {/* Header Banner */}
-      <div className="relative overflow-hidden rounded-3xl border border-slate-800 bg-gradient-to-r from-slate-900 via-slate-950 to-slate-900 p-6 md:p-8 shadow-2xl">
-        <div className="absolute top-0 right-0 -mt-8 -mr-8 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-1/3 -mb-8 w-64 h-64 bg-violet-500/10 rounded-full blur-3xl pointer-events-none" />
-        
+      <div className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 md:p-8 shadow-sm">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-bold font-mono">
-              <SparklesIcon className="w-3.5 h-3.5" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-50 border border-cyan-200 text-cyan-700 text-xs font-bold font-mono">
+              <SparklesIcon className="w-3.5 h-3.5 text-cyan-600" />
               <span>Admin Telemetry Dashboard</span>
             </div>
-            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-white">
+            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900">
               Welcome back, Administrator
             </h1>
-            <p className="text-xs md:text-sm text-slate-400 max-w-xl leading-relaxed">
+            <p className="text-xs md:text-sm text-slate-500 max-w-xl leading-relaxed">
               Overview of your streaming metrics, active movies catalog, user database, and system status telemetry.
             </p>
           </div>
@@ -94,191 +91,208 @@ export function DashboardCharts({
           <div className="flex items-center gap-3">
             <Link
               href="/dashboard/movies"
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-955 font-extrabold text-xs transition-all shadow-md shadow-cyan-500/20 active:scale-95"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-emerald-600 hover:from-cyan-500 hover:to-emerald-500 text-white font-extrabold text-xs transition-all shadow-md active:scale-95"
             >
               <FilmIcon className="w-4 h-4" />
               <span>Manage Movies</span>
             </Link>
             <Link
-              href="/dashboard/ads"
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 text-xs font-bold transition-all active:scale-95"
+              href="/dashboard/ads/layout"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 font-extrabold text-xs transition-all active:scale-95"
             >
-              <SlidersHorizontalIcon className="w-4 h-4" />
-              <span>Ads Control</span>
+              <SlidersHorizontalIcon className="w-4 h-4 text-cyan-600" />
+              <span>Drag & Drop Ads</span>
             </Link>
           </div>
         </div>
       </div>
 
-      {/* Grid Stats Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        {/* Total Movies */}
-        <div className="relative overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-900/40 p-5 backdrop-blur-xs transition-all hover:border-cyan-500/30 hover:bg-slate-900/60 group">
+      {/* 5 Stats Cards Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        {/* Card 1: Movies */}
+        <div className="bg-white border border-slate-200 p-5 rounded-2xl shadow-2xs hover:border-cyan-300 transition-all group">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider font-mono">Movies</span>
-            <div className="w-9 h-9 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 group-hover:scale-110 transition-transform">
-              <FilmIcon className="w-4.5 h-4.5" />
+            <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">
+              Total Movies
+            </span>
+            <div className="p-2.5 rounded-xl bg-cyan-50 text-cyan-600 border border-cyan-100 group-hover:scale-105 transition-transform">
+              <FilmIcon className="w-4 h-4" />
             </div>
           </div>
-          <div className="mt-4 flex items-baseline justify-between">
-            <span className="text-3xl font-extrabold text-white tracking-tight">{movieCount}</span>
-            <span className="text-[11px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full flex items-center gap-1">
+          <div className="mt-3 flex items-baseline justify-between">
+            <span className="text-2xl font-black text-slate-900 font-mono">
+              {movieCount}
+            </span>
+            <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded flex items-center gap-0.5">
               <TrendingUpIcon className="w-3 h-3" /> Live
             </span>
           </div>
-          <p className="text-[11px] text-slate-500 mt-1">In active library</p>
         </div>
 
-        {/* Total Categories */}
-        <div className="relative overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-900/40 p-5 backdrop-blur-xs transition-all hover:border-violet-500/30 hover:bg-slate-900/60 group">
+        {/* Card 2: Categories */}
+        <div className="bg-white border border-slate-200 p-5 rounded-2xl shadow-2xs hover:border-cyan-300 transition-all group">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider font-mono">Categories</span>
-            <div className="w-9 h-9 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400 group-hover:scale-110 transition-transform">
-              <FolderOpenIcon className="w-4.5 h-4.5" />
+            <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">
+              Categories
+            </span>
+            <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 group-hover:scale-105 transition-transform">
+              <FolderOpenIcon className="w-4 h-4" />
             </div>
           </div>
-          <div className="mt-4 flex items-baseline justify-between">
-            <span className="text-3xl font-extrabold text-white tracking-tight">{categoryCount}</span>
-            <span className="text-[11px] font-bold text-violet-400 bg-violet-500/10 px-2 py-0.5 rounded-full">
-              Genres
+          <div className="mt-3 flex items-baseline justify-between">
+            <span className="text-2xl font-black text-slate-900 font-mono">
+              {categoryCount}
+            </span>
+            <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">
+              Active
             </span>
           </div>
-          <p className="text-[11px] text-slate-500 mt-1">Assigned genres</p>
         </div>
 
-        {/* Total Tags */}
-        <div className="relative overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-900/40 p-5 backdrop-blur-xs transition-all hover:border-emerald-500/30 hover:bg-slate-900/60 group">
+        {/* Card 3: Tags */}
+        <div className="bg-white border border-slate-200 p-5 rounded-2xl shadow-2xs hover:border-cyan-300 transition-all group">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider font-mono">Tags</span>
-            <div className="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform">
-              <TagIcon className="w-4.5 h-4.5" />
+            <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">
+              Genre Tags
+            </span>
+            <div className="p-2.5 rounded-xl bg-violet-50 text-violet-600 border border-violet-100 group-hover:scale-105 transition-transform">
+              <TagIcon className="w-4 h-4" />
             </div>
           </div>
-          <div className="mt-4 flex items-baseline justify-between">
-            <span className="text-3xl font-extrabold text-white tracking-tight">{tagCount}</span>
-            <span className="text-[11px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">
-              Filterable
+          <div className="mt-3 flex items-baseline justify-between">
+            <span className="text-2xl font-black text-slate-900 font-mono">
+              {tagCount}
+            </span>
+            <span className="text-[10px] font-bold text-violet-600 bg-violet-50 border border-violet-200 px-1.5 py-0.5 rounded">
+              Mapped
             </span>
           </div>
-          <p className="text-[11px] text-slate-500 mt-1">Content tags</p>
         </div>
 
-        {/* Total Users */}
-        <div className="relative overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-900/40 p-5 backdrop-blur-xs transition-all hover:border-amber-500/30 hover:bg-slate-900/60 group">
+        {/* Card 4: Users */}
+        <div className="bg-white border border-slate-200 p-5 rounded-2xl shadow-2xs hover:border-cyan-300 transition-all group">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider font-mono">Users</span>
-            <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform">
-              <UsersIcon className="w-4.5 h-4.5" />
+            <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">
+              Registered Users
+            </span>
+            <div className="p-2.5 rounded-xl bg-amber-50 text-amber-600 border border-amber-100 group-hover:scale-105 transition-transform">
+              <UsersIcon className="w-4 h-4" />
             </div>
           </div>
-          <div className="mt-4 flex items-baseline justify-between">
-            <span className="text-3xl font-extrabold text-white tracking-tight">{userCount}</span>
-            <span className="text-[11px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full">
-              Accounts
+          <div className="mt-3 flex items-baseline justify-between">
+            <span className="text-2xl font-black text-slate-900 font-mono">
+              {userCount}
+            </span>
+            <span className="text-[10px] font-bold text-amber-600 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">
+              Members
             </span>
           </div>
-          <p className="text-[11px] text-slate-500 mt-1">Registered users</p>
         </div>
 
-        {/* Custom Pages */}
-        <div className="relative overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-900/40 p-5 backdrop-blur-xs transition-all hover:border-pink-500/30 hover:bg-slate-900/60 group">
+        {/* Card 5: Pages */}
+        <div className="bg-white border border-slate-200 p-5 rounded-2xl shadow-2xs hover:border-cyan-300 transition-all group">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider font-mono">Pages</span>
-            <div className="w-9 h-9 rounded-xl bg-pink-500/10 border border-pink-500/20 flex items-center justify-center text-pink-400 group-hover:scale-110 transition-transform">
-              <FileTextIcon className="w-4.5 h-4.5" />
+            <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">
+              CMS Pages
+            </span>
+            <div className="p-2.5 rounded-xl bg-pink-50 text-pink-600 border border-pink-100 group-hover:scale-105 transition-transform">
+              <FileTextIcon className="w-4 h-4" />
             </div>
           </div>
-          <div className="mt-4 flex items-baseline justify-between">
-            <span className="text-3xl font-extrabold text-white tracking-tight">{pageCount}</span>
-            <span className="text-[11px] font-bold text-pink-400 bg-pink-500/10 px-2 py-0.5 rounded-full">
-              Links
+          <div className="mt-3 flex items-baseline justify-between">
+            <span className="text-2xl font-black text-slate-900 font-mono">
+              {pageCount}
+            </span>
+            <span className="text-[10px] font-bold text-pink-600 bg-pink-50 border border-pink-200 px-1.5 py-0.5 rounded">
+              Published
             </span>
           </div>
-          <p className="text-[11px] text-slate-500 mt-1">Redirect pages</p>
         </div>
       </div>
 
-      {/* Analytics Section: Graph & Distribution */}
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Traffic & Streaming Activity Graph (2 Cols) */}
-        <div className="lg:col-span-2 rounded-3xl border border-slate-800/80 bg-[#050b14]/80 p-6 shadow-xl space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Main Analytics Graph Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left Column: Visual Chart (8 cols) */}
+        <div className="lg:col-span-8 bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
             <div>
-              <h3 className="text-base font-extrabold text-slate-100 flex items-center gap-2">
-                <ActivityIcon className="w-4 h-4 text-cyan-400" />
-                <span>Traffic & Streaming Telemetry</span>
+              <h3 className="text-sm font-extrabold text-slate-900 uppercase tracking-wider font-mono flex items-center gap-2">
+                <ActivityIcon className="w-4 h-4 text-cyan-600" />
+                Traffic & Streaming Telemetry
               </h3>
-              <p className="text-xs text-slate-400 font-medium mt-0.5">Real-time visitor pageviews vs video playback sessions.</p>
+              <p className="text-xs text-slate-500 mt-0.5">Real-time daily page views vs video playback sessions.</p>
             </div>
 
-            <div className="flex items-center gap-1 bg-slate-900 p-1 rounded-xl border border-slate-800 self-start sm:self-auto">
-              <button
-                onClick={() => setActiveTab("7d")}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                  activeTab === "7d"
-                    ? "bg-cyan-500 text-slate-955 shadow-xs"
-                    : "text-slate-400 hover:text-slate-200"
-                }`}
-              >
-                7 Days
-              </button>
-              <button
-                onClick={() => setActiveTab("30d")}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                  activeTab === "30d"
-                    ? "bg-cyan-500 text-slate-955 shadow-xs"
-                    : "text-slate-400 hover:text-slate-200"
-                }`}
-              >
-                30 Days
-              </button>
+            <div className="flex items-center gap-2">
+              <div className="bg-slate-100 p-1 rounded-xl border border-slate-200 flex items-center gap-1 text-xs">
+                <button
+                  onClick={() => setActiveTab("7d")}
+                  className={`px-3 py-1 rounded-lg font-bold transition-all cursor-pointer ${
+                    activeTab === "7d"
+                      ? "bg-white text-cyan-700 shadow-2xs border border-slate-200 font-extrabold"
+                      : "text-slate-500 hover:text-slate-800"
+                  }`}
+                >
+                  Last 7 Days
+                </button>
+                <button
+                  onClick={() => setActiveTab("30d")}
+                  className={`px-3 py-1 rounded-lg font-bold transition-all cursor-pointer ${
+                    activeTab === "30d"
+                      ? "bg-white text-cyan-700 shadow-2xs border border-slate-200 font-extrabold"
+                      : "text-slate-500 hover:text-slate-800"
+                  }`}
+                >
+                  Last 30 Days
+                </button>
+              </div>
             </div>
           </div>
 
-          {/* Key Legend Badges */}
-          <div className="flex items-center gap-6 pt-2 text-xs font-bold">
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-cyan-400 shadow-sm shadow-cyan-400/50" />
-              <span className="text-slate-300">Page Views</span>
+          {/* Bar / Area Visual Chart */}
+          <div className="space-y-4 pt-2">
+            <div className="flex items-center justify-end gap-6 text-xs font-mono font-bold">
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-sm bg-cyan-500" />
+                <span className="text-slate-600">Page Views</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-sm bg-emerald-500" />
+                <span className="text-slate-600">Video Streams</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-violet-500 shadow-sm shadow-violet-500/50" />
-              <span className="text-slate-300">Video Streams</span>
-            </div>
-          </div>
 
-          {/* Visual Bar / Graph Chart Area */}
-          <div className="pt-4 pb-2 space-y-4">
-            <div className="h-48 flex items-end gap-3 sm:gap-6 pt-6 pb-2 px-2 border-b border-slate-900">
-              {chartData.map((d, i) => {
-                const viewHeight = Math.round((d.views / maxVal) * 100)
-                const streamHeight = Math.round((d.streams / maxVal) * 100)
+            <div className="h-64 flex items-end justify-between gap-2 sm:gap-4 pt-6 px-2 border-b border-slate-100">
+              {chartData.map((d, idx) => {
+                const viewsPct = Math.round((d.views / maxVal) * 100)
+                const streamsPct = Math.round((d.streams / maxVal) * 100)
 
                 return (
-                  <div key={i} className="flex-1 flex flex-col items-center gap-2 h-full justify-end group">
+                  <div key={idx} className="flex-1 flex flex-col items-center gap-2 h-full justify-end group">
                     <div className="w-full flex items-end justify-center gap-1.5 h-full">
-                      {/* Views Bar */}
+                      {/* Views bar */}
                       <div
-                        style={{ height: `${viewHeight}%` }}
-                        className="w-full max-w-[18px] bg-gradient-to-t from-cyan-500/20 via-cyan-400 to-cyan-300 rounded-t-md group-hover:brightness-125 transition-all relative"
+                        className="w-1/2 max-w-[20px] bg-gradient-to-t from-cyan-600 to-cyan-400 rounded-t-md transition-all duration-300 group-hover:brightness-110 relative"
+                        style={{ height: `${viewsPct}%` }}
                       >
-                        <div className="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 border border-slate-700 text-cyan-300 text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-md pointer-events-none transition-opacity whitespace-nowrap z-20 shadow-md">
+                        <div className="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[9px] font-mono py-0.5 px-1.5 rounded shadow-lg pointer-events-none transition-opacity whitespace-nowrap z-20">
                           {d.views.toLocaleString()}
                         </div>
                       </div>
 
-                      {/* Streams Bar */}
+                      {/* Streams bar */}
                       <div
-                        style={{ height: `${streamHeight}%` }}
-                        className="w-full max-w-[18px] bg-gradient-to-t from-violet-600/20 via-violet-500 to-violet-400 rounded-t-md group-hover:brightness-125 transition-all relative"
+                        className="w-1/2 max-w-[20px] bg-gradient-to-t from-emerald-600 to-emerald-400 rounded-t-md transition-all duration-300 group-hover:brightness-110 relative"
+                        style={{ height: `${streamsPct}%` }}
                       >
-                        <div className="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 border border-slate-700 text-violet-300 text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-md pointer-events-none transition-opacity whitespace-nowrap z-20 shadow-md">
+                        <div className="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[9px] font-mono py-0.5 px-1.5 rounded shadow-lg pointer-events-none transition-opacity whitespace-nowrap z-20">
                           {d.streams.toLocaleString()}
                         </div>
                       </div>
                     </div>
-
-                    <span className="text-[11px] font-bold text-slate-500 font-mono truncate">{d.day}</span>
+                    <span className="text-[10px] font-mono text-slate-500 font-bold tracking-tight">
+                      {d.day}
+                    </span>
                   </div>
                 )
               })}
@@ -286,153 +300,130 @@ export function DashboardCharts({
           </div>
         </div>
 
-        {/* System & Category Health (1 Col) */}
-        <div className="rounded-3xl border border-slate-800/80 bg-[#050b14]/80 p-6 shadow-xl space-y-6 flex flex-col justify-between">
-          <div>
-            <h3 className="text-base font-extrabold text-slate-100 flex items-center gap-2">
-              <ServerIcon className="w-4 h-4 text-emerald-400" />
-              <span>System & Telemetry Status</span>
+        {/* Right Column: System Telemetry (4 cols) */}
+        <div className="lg:col-span-4 space-y-6">
+          <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-4">
+            <h3 className="text-xs font-black uppercase text-slate-900 tracking-wider font-mono flex items-center gap-2">
+              <ServerIcon className="w-4 h-4 text-cyan-600" />
+              System Status Telemetry
             </h3>
-            <p className="text-xs text-slate-400 font-medium mt-0.5">Live database and CDN connection health.</p>
 
-            <div className="mt-6 space-y-4">
+            <div className="space-y-3 pt-2">
               {/* MySQL Status */}
-              <div className="p-3.5 rounded-2xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
+              <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className={`w-8 h-8 rounded-xl ${dbStatus === "Connected" ? "bg-emerald-500/10 text-emerald-400" : "bg-red-500/10 text-red-400"} flex items-center justify-center shrink-0`}>
-                    {dbStatus === "Connected" ? <CheckCircle2Icon className="w-4 h-4" /> : <ShieldAlertIcon className="w-4 h-4" />}
-                  </div>
+                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
                   <div>
-                    <h4 className="text-xs font-bold text-slate-200">MySQL Database</h4>
-                    <p className="text-[10px] text-slate-400 font-mono">127.0.0.1:3306</p>
+                    <div className="text-xs font-bold text-slate-900">Database Engine</div>
+                    <div className="text-[10px] text-slate-500 font-mono">MySQL / Drizzle ORM</div>
                   </div>
                 </div>
-                <span className={`text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider ${
-                  dbStatus === "Connected" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-red-500/10 text-red-400 border border-red-500/20"
-                }`}>
-                  {dbStatus}
+                <span className="text-[10px] font-mono font-bold bg-emerald-50 border border-emerald-200 text-emerald-700 px-2 py-0.5 rounded">
+                  {dbStatus === "connected" ? "Connected" : "Error"}
                 </span>
               </div>
 
-              {/* Image CDN Server */}
-              <div className="p-3.5 rounded-2xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
+              {/* CDN & Edge */}
+              <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center shrink-0">
-                    <CheckCircle2Icon className="w-4 h-4" />
-                  </div>
+                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
                   <div>
-                    <h4 className="text-xs font-bold text-slate-200">Image CDN Server</h4>
-                    <p className="text-[10px] text-slate-400 font-mono truncate max-w-[120px]">image.streamespn.org</p>
+                    <div className="text-xs font-bold text-slate-900">CDN & Asset Storage</div>
+                    <div className="text-[10px] text-slate-500 font-mono">TMDB API & Local Uploads</div>
                   </div>
                 </div>
-                <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
-                  Online
+                <span className="text-[10px] font-mono font-bold bg-emerald-50 border border-emerald-200 text-emerald-700 px-2 py-0.5 rounded">
+                  Operational
                 </span>
               </div>
 
-              {/* Next.js Server Status */}
-              <div className="p-3.5 rounded-2xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
+              {/* Server Response Latency */}
+              <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-violet-500/10 text-violet-400 flex items-center justify-center shrink-0">
-                    <CheckCircle2Icon className="w-4 h-4" />
-                  </div>
+                  <div className="w-2.5 h-2.5 rounded-full bg-cyan-500" />
                   <div>
-                    <h4 className="text-xs font-bold text-slate-200">App Engine</h4>
-                    <p className="text-[10px] text-slate-400 font-mono">Next.js 16 (App Router)</p>
+                    <div className="text-xs font-bold text-slate-900">Next.js App Router</div>
+                    <div className="text-[10px] text-slate-500 font-mono">Latency ~ 18ms</div>
                   </div>
                 </div>
-                <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider bg-violet-500/10 text-violet-400 border border-violet-500/20">
-                  Healthy
+                <span className="text-[10px] font-mono font-bold bg-cyan-50 border border-cyan-200 text-cyan-700 px-2 py-0.5 rounded">
+                  Fast
                 </span>
               </div>
             </div>
           </div>
-
-          <div className="pt-4 border-t border-slate-900 flex items-center justify-between text-xs text-slate-400">
-            <span>Server Latency</span>
-            <span className="font-mono font-bold text-emerald-400">~18ms</span>
-          </div>
         </div>
       </div>
 
-      {/* Recent Movies Table Section */}
-      <div className="rounded-3xl border border-slate-800/80 bg-[#050b14]/80 p-6 shadow-xl space-y-4">
-        <div className="flex items-center justify-between">
+      {/* Recent Uploads Table */}
+      <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-4">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-4">
           <div>
-            <h3 className="text-base font-extrabold text-slate-100 flex items-center gap-2">
-              <FilmIcon className="w-4 h-4 text-cyan-400" />
-              <span>Recently Uploaded Movies</span>
+            <h3 className="text-sm font-extrabold text-slate-900 uppercase tracking-wider font-mono">
+              Recently Uploaded Movies
             </h3>
-            <p className="text-xs text-slate-400 font-medium mt-0.5">Latest movies added to the streaming database.</p>
+            <p className="text-xs text-slate-500 mt-0.5">Latest movies added to your database catalog.</p>
           </div>
           <Link
             href="/dashboard/movies"
-            className="text-xs font-bold text-cyan-400 hover:text-cyan-300 flex items-center gap-1 transition-all"
+            className="text-xs font-bold text-cyan-600 hover:text-cyan-700 flex items-center gap-1"
           >
             <span>View All</span>
             <ArrowUpRightIcon className="w-3.5 h-3.5" />
           </Link>
         </div>
 
-        {recentMovies.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-slate-300">
-              <thead>
-                <tr className="border-b border-slate-900 text-[11px] font-mono text-slate-500 uppercase tracking-wider">
-                  <th className="py-3 px-4">Movie</th>
-                  <th className="py-3 px-4">Release Date</th>
-                  <th className="py-3 px-4">Rating</th>
-                  <th className="py-3 px-4 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-900/60">
-                {recentMovies.map((movie) => (
-                  <tr key={movie.id} className="hover:bg-slate-900/40 transition-colors">
-                    <td className="py-3 px-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-11 rounded-lg bg-slate-900 overflow-hidden border border-slate-800 shrink-0">
-                          {movie.posterPath ? (
-                            /* eslint-disable-next-line @next/next/no-img-element */
-                            <img
-                              src={movie.posterPath.startsWith("http") ? movie.posterPath : `https://image.tmdb.org/t/p/w92${movie.posterPath}`}
-                              alt={movie.title}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-slate-600">
-                              <FilmIcon className="w-4 h-4" />
-                            </div>
-                          )}
-                        </div>
-                        <span className="font-bold text-slate-200 line-clamp-1">{movie.title}</span>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs text-slate-700">
+            <thead>
+              <tr className="border-b border-slate-100 text-[10px] font-mono text-slate-400 uppercase tracking-wider">
+                <th className="py-3 px-4">Poster & Movie Title</th>
+                <th className="py-3 px-4">Rating</th>
+                <th className="py-3 px-4">Release Date</th>
+                <th className="py-3 px-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {recentMovies.map((movie) => (
+                <tr key={movie.id} className="hover:bg-slate-50 transition-colors">
+                  <td className="py-3 px-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-12 rounded bg-slate-100 border border-slate-200 overflow-hidden shrink-0">
+                        {movie.posterPath ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={`https://image.tmdb.org/t/p/w92${movie.posterPath}`}
+                            alt={movie.title}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-[8px] text-slate-400 font-bold">
+                            No Poster
+                          </div>
+                        )}
                       </div>
-                    </td>
-                    <td className="py-3 px-4 font-mono text-slate-400">
-                      {movie.releaseDate || "N/A"}
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className="px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 font-bold text-[10px]">
-                        ★ {movie.voteAverage || "0.0"}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 text-right">
-                      <Link
-                        href="/dashboard/movies"
-                        className="px-3 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 text-[11px] font-bold border border-slate-800 transition-all inline-block"
-                      >
-                        Manage
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div className="p-8 text-center bg-slate-950/40 rounded-2xl border border-slate-900">
-            <p className="text-xs text-slate-500">No movies found in database yet.</p>
-          </div>
-        )}
+                      <span className="font-bold text-slate-900">{movie.title}</span>
+                    </div>
+                  </td>
+                  <td className="py-3 px-4 font-mono font-bold text-amber-500">
+                    ★ {movie.voteAverage || "N/A"}
+                  </td>
+                  <td className="py-3 px-4 font-mono text-slate-500">
+                    {movie.releaseDate || "N/A"}
+                  </td>
+                  <td className="py-3 px-4 text-right">
+                    <Link
+                      href={`/dashboard/movies/${movie.id}`}
+                      className="px-3 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold border border-slate-200 transition-all inline-flex items-center gap-1"
+                    >
+                      <span>Manage</span>
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   )
