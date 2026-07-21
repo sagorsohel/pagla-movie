@@ -13,9 +13,18 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar"
-import { GalleryVerticalEndIcon, TerminalSquareIcon, FilmIcon, FolderOpenIcon, TagIcon, MegaphoneIcon } from "lucide-react"
+import {
+  GalleryVerticalEndIcon,
+  TerminalSquareIcon,
+  FilmIcon,
+  FolderOpenIcon,
+  TagIcon,
+  FileTextIcon,
+  SlidersHorizontalIcon,
+  LayoutGridIcon,
+} from "lucide-react"
 
-// This is sample data.
+// Dashboard Navigation Data (Flat structure, no dropdowns)
 const data = {
   user: {
     name: "Admin User",
@@ -25,89 +34,49 @@ const data = {
   teams: [
     {
       name: "CineMovies",
-      logo: (
-        <GalleryVerticalEndIcon />
-      ),
+      logo: <GalleryVerticalEndIcon />,
       plan: "Admin Panel",
-    }
+    },
   ],
   navMain: [
     {
       title: "Dashboard",
       url: "/dashboard",
-      icon: (
-        <TerminalSquareIcon />
-      ),
-      isActive: true,
-      items: [
-        {
-          title: "Overview",
-          url: "/dashboard",
-        },
-      ],
+      exact: true,
+      icon: <TerminalSquareIcon className="w-5 h-5" />,
     },
     {
-      title: "Movies",
+      title: "Manage Movies",
       url: "/dashboard/movies",
-      icon: (
-        <FilmIcon />
-      ),
-      isActive: true,
-      items: [
-        {
-          title: "Manage Movies",
-          url: "/dashboard/movies",
-        },
-      ],
+      icon: <FilmIcon className="w-5 h-5" />,
     },
     {
-      title: "Categories",
+      title: "Manage Categories",
       url: "/dashboard/categories",
-      icon: (
-        <FolderOpenIcon />
-      ),
-      isActive: true,
-      items: [
-        {
-          title: "Manage Categories",
-          url: "/dashboard/categories",
-        },
-      ],
+      icon: <FolderOpenIcon className="w-5 h-5" />,
     },
     {
-      title: "Tags",
+      title: "Manage Tags",
       url: "/dashboard/tags",
-      icon: (
-        <TagIcon />
-      ),
-      isActive: true,
-      items: [
-        {
-          title: "Manage Tags",
-          url: "/dashboard/tags",
-        },
-      ],
+      icon: <TagIcon className="w-5 h-5" />,
     },
     {
-      title: "Ads Settings",
+      title: "Manage Pages",
+      url: "/dashboard/pages",
+      icon: <FileTextIcon className="w-5 h-5" />,
+    },
+    {
+      title: "Ads Control",
       url: "/dashboard/ads",
-      icon: (
-        <MegaphoneIcon />
-      ),
-      isActive: true,
-      items: [
-        {
-          title: "Configure Ads",
-          url: "/dashboard/ads",
-        },
-        {
-          title: "Visual Layout Builder",
-          url: "/dashboard/ads/layout",
-        },
-      ],
+      exact: true,
+      icon: <SlidersHorizontalIcon className="w-5 h-5" />,
+    },
+    {
+      title: "Drag & Drop Ads",
+      url: "/dashboard/ads/layout",
+      icon: <LayoutGridIcon className="w-5 h-5" />,
     },
   ],
-  projects: [],
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
