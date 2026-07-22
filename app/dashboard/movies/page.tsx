@@ -1,7 +1,7 @@
 import * as React from "react"
 import { db } from "@/db"
 import { movies, categories, tags, movieCategories, movieTags } from "@/db/schema"
-import { sql, desc, eq, inArray } from "drizzle-orm"
+import { sql, desc, eq, inArray, and, like, or } from "drizzle-orm"
 import { MoviesClient } from "./movies-client"
 
 export const dynamic = "force-dynamic"
@@ -9,17 +9,25 @@ export const dynamic = "force-dynamic"
 export default async function MoviesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string; categoryId?: string }>
+  searchParams: Promise<{ page?: string; categoryId?: string; q?: string }>
 }) {
   const params = await searchParams
   const currentPage = params.page ? parseInt(params.page) : 1
   const categoryId = params.categoryId ? parseInt(params.categoryId) : undefined
+  const searchQuery = params.q || ""
   const limit = 10
   const offset = (currentPage - 1) * limit
 
   let totalCount = 0
   let paginatedMovies: any[] = []
   let filterCategoryName = ""
+
+  const searchFilter = searchQuery.trim()
+    ? or(
+        like(movies.title, `%${searchQuery}%`),
+        like(movies.overview, `%${searchQuery}%`)
+      )
+    : undefined
 
   if (categoryId) {
     // 1. Get Category Name
@@ -28,11 +36,17 @@ export default async function MoviesPage({
       filterCategoryName = cat.name
     }
 
-    // 2. Get Count for Category
+    // 2. Get Count for Category with optional search query
     const countResult = await db
       .select({ count: sql<number>`count(*)` })
-      .from(movieCategories)
-      .where(eq(movieCategories.categoryId, categoryId))
+      .from(movies)
+      .innerJoin(movieCategories, eq(movieCategories.movieId, movies.id))
+      .where(
+        and(
+          eq(movieCategories.categoryId, categoryId),
+          searchFilter
+        )
+      )
     totalCount = countResult[0]?.count || 0
 
     // 3. Get Movies for Category
@@ -55,23 +69,34 @@ export default async function MoviesPage({
         })
         .from(movies)
         .innerJoin(movieCategories, eq(movieCategories.movieId, movies.id))
-        .where(eq(movieCategories.categoryId, categoryId))
+        .where(
+          and(
+            eq(movieCategories.categoryId, categoryId),
+            searchFilter
+          )
+        )
         .orderBy(desc(movies.createdAt))
         .limit(limit)
         .offset(offset)
     }
   } else {
-    // 1. Get total count for all movies
-    const countResult = await db.select({ count: sql<number>`count(*)` }).from(movies)
+    // 1. Get total count for all movies with optional search query
+    const countResult = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(movies)
+      .where(searchFilter)
     totalCount = countResult[0]?.count || 0
 
     // 2. Fetch movies with pagination
-    paginatedMovies = await db
-      .select()
-      .from(movies)
-      .orderBy(desc(movies.createdAt))
-      .limit(limit)
-      .offset(offset)
+    if (totalCount > 0) {
+      paginatedMovies = await db
+        .select()
+        .from(movies)
+        .where(searchFilter)
+        .orderBy(desc(movies.createdAt))
+        .limit(limit)
+        .offset(offset)
+    }
   }
 
   const movieIds = paginatedMovies.map((m) => m.id)

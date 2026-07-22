@@ -29,7 +29,16 @@ export async function scrapeLastMonthMovies(pages: number = 10) {
   try {
     // Scrape up to the specified pages of globally popular movies
     for (let page = 1; page <= pages; page++) {
-      const discoverUrl = `${TMDB_BASE_URL}/discover/movie?api_key=${apiKey}&sort_by=popularity.desc&page=${page}`
+      // Map virtual page index to TMDB discover request query (TMDB max page limit is 500)
+      let discoverUrl = `${TMDB_BASE_URL}/discover/movie?api_key=${apiKey}&sort_by=popularity.desc&page=${page}`
+      if (page > 500) {
+        const startYear = 2026
+        const virtualPageOffset = page - 501
+        const yearIndex = Math.floor(virtualPageOffset / 500)
+        const targetYear = startYear - yearIndex
+        const targetPage = (virtualPageOffset % 500) + 1
+        discoverUrl = `${TMDB_BASE_URL}/discover/movie?api_key=${apiKey}&sort_by=popularity.desc&primary_release_year=${targetYear}&page=${targetPage}`
+      }
       const res = await fetch(discoverUrl)
       if (!res.ok) {
         console.error(`TMDB Discover failed for page ${page}: ${res.statusText}`)

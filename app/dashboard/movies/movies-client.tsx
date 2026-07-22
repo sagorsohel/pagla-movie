@@ -63,8 +63,52 @@ export function MoviesClient({
   const [modalImageUrl, setModalImageUrl] = useState("")
   const [isUploading, setIsUploading] = useState(false)
 
+  // Search state
+  const [searchQuery, setSearchQuery] = useState(() => {
+    if (typeof window !== "undefined") {
+      return new URLSearchParams(window.location.search).get("q") || ""
+    }
+    return ""
+  })
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    const searchParams = new URLSearchParams(window.location.search)
+    if (searchQuery.trim()) {
+      searchParams.set("q", searchQuery.trim())
+    } else {
+      searchParams.delete("q")
+    }
+    searchParams.delete("page") // reset to page 1 on new search
+    window.location.search = searchParams.toString()
+  }
+
   // Pagination states
   const totalPages = Math.ceil(totalCount / 10)
+
+  const getPageNumbers = () => {
+    const pageNumbers: (number | string)[] = []
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) {
+        pageNumbers.push(i)
+      }
+    } else {
+      pageNumbers.push(1)
+      if (currentPage > 3) {
+        pageNumbers.push("...")
+      }
+      const start = Math.max(2, currentPage - 1)
+      const end = Math.min(totalPages - 1, currentPage + 1)
+      for (let i = start; i <= end; i++) {
+        pageNumbers.push(i)
+      }
+      if (currentPage < totalPages - 2) {
+        pageNumbers.push("...")
+      }
+      pageNumbers.push(totalPages)
+    }
+    return pageNumbers
+  }
 
   React.useEffect(() => {
     setMoviesList(initialMovies)
@@ -128,12 +172,29 @@ export function MoviesClient({
   return (
     <div className="space-y-6 font-sans">
       {/* Header controls */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white border border-slate-200 p-4 rounded-2xl shadow-xs">
-        <div className="flex items-center gap-3">
-          <div className="text-xs text-slate-500">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white border border-slate-200 p-4 rounded-2xl shadow-xs">
+        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+          <div className="text-xs text-slate-500 font-semibold whitespace-nowrap">
             Total Movies: <span className="font-extrabold text-slate-900 font-mono">{totalCount}</span>
           </div>
-          {filterCategoryName && (
+
+          <form onSubmit={handleSearchSubmit} className="relative flex items-center w-full sm:w-60 md:w-72">
+            <input
+              type="text"
+              placeholder="Search movies by title or description..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-slate-50 border border-slate-205 rounded-xl py-1.5 pl-3.5 pr-8 text-xs focus:outline-hidden focus:border-slate-350 focus:bg-white text-slate-950 placeholder:text-slate-400 font-medium h-9"
+            />
+            <button type="submit" className="absolute right-3 text-slate-400 hover:text-slate-600 transition cursor-pointer">
+              <svg className="w-3.5 h-3.5 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+            </button>
+          </form>
+
+          {(filterCategoryName || searchQuery) && (
             <Button
               variant="outline"
               size="sm"
@@ -141,11 +202,12 @@ export function MoviesClient({
                 const searchParams = new URLSearchParams(window.location.search)
                 searchParams.delete("categoryId")
                 searchParams.delete("page")
+                searchParams.delete("q")
                 window.location.search = searchParams.toString()
               }}
-              className="border-slate-200 bg-red-50 text-xs hover:bg-red-100 text-red-600 h-7"
+              className="border-slate-200 bg-red-50 border-red-200 text-xs hover:bg-red-100 text-red-600 h-9 rounded-xl px-3 font-extrabold"
             >
-              Clear Category Filter
+              Clear Filters
             </Button>
           )}
         </div>
@@ -155,11 +217,11 @@ export function MoviesClient({
             <input
               type="number"
               min={1}
-              max={500}
+              max={10000}
               value={importPages}
               disabled={isImportPending}
-              onChange={(e) => setImportPages(Math.max(1, Math.min(500, parseInt(e.target.value) || 1)))}
-              className="w-10 bg-transparent text-slate-900 font-extrabold focus:outline-hidden font-mono text-center"
+              onChange={(e) => setImportPages(Math.max(1, Math.min(10000, parseInt(e.target.value) || 1)))}
+              className="w-16 bg-transparent text-slate-900 font-extrabold focus:outline-hidden font-mono text-center"
             />
           </div>
           <Button
@@ -298,27 +360,49 @@ export function MoviesClient({
 
             {/* Pagination Controls */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-between border-t border-slate-100 px-5 py-4 bg-slate-50">
-                <div className="text-xs text-slate-500">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-slate-100 px-5 py-4 bg-slate-50">
+                <div className="text-xs text-slate-500 font-semibold">
                   Page <span className="text-slate-900 font-bold font-mono">{currentPage}</span> of{" "}
-                  <span className="text-slate-900 font-bold font-mono">{totalPages}</span>
+                  <span className="text-slate-900 font-bold font-mono">{totalPages}</span> (Total: {totalCount} items)
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-1.5">
                   <Button
                     variant="outline"
                     size="sm"
                     disabled={currentPage <= 1}
                     onClick={() => navigateToPage(currentPage - 1)}
-                    className="border-slate-200 bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold"
+                    className="h-8 px-2.5 border-slate-200 bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold rounded-lg"
                   >
                     Previous
                   </Button>
+
+                  {getPageNumbers().map((pageNum, idx) => (
+                    <React.Fragment key={idx}>
+                      {pageNum === "..." ? (
+                        <span className="px-1 text-slate-400 font-mono text-sm select-none">...</span>
+                      ) : (
+                        <Button
+                          variant={currentPage === pageNum ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => navigateToPage(pageNum as number)}
+                          className={`h-8 w-8 p-0 text-xs font-bold font-mono transition rounded-lg ${
+                            currentPage === pageNum
+                              ? "bg-slate-900 text-white hover:bg-slate-800 border-transparent"
+                              : "border-slate-200 bg-white hover:bg-slate-100 text-slate-700"
+                          }`}
+                        >
+                          {pageNum}
+                        </Button>
+                      )}
+                    </React.Fragment>
+                  ))}
+
                   <Button
                     variant="outline"
                     size="sm"
                     disabled={currentPage >= totalPages}
                     onClick={() => navigateToPage(currentPage + 1)}
-                    className="border-slate-200 bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold"
+                    className="h-8 px-2.5 border-slate-200 bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold rounded-lg"
                   >
                     Next
                   </Button>
