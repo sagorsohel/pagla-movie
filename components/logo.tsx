@@ -14,7 +14,7 @@ export function CineMoviesLogo({ className = "" }: CineMoviesLogoProps) {
         </svg>
       </div>
       {/* Brand Name Typography */}
-      <span className="font-sans font-extrabold text-lg sm:text-2xl tracking-tight text-white">
+      <span className="font-sans font-extrabold text-lg sm:text-2xl tracking-tight text-white notranslate" translate="no">
         Cine<span className="bg-gradient-to-r from-red-500 to-orange-500 bg-clip-text text-transparent font-black">Movies</span>
       </span>
     </div>

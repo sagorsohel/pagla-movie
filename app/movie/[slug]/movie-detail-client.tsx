@@ -784,9 +784,11 @@ export function MovieDetailClient({
                 </h3>
                 <div className="space-y-2">
                   {["360p", "480p", "720p", "1080p"].map((res) => (
-                    <div key={`mkv-${res}`} className="flex items-center justify-between px-4 py-3 bg-slate-950/60 border border-slate-900/60 rounded-xl">
-                      <span className="text-[10px] font-black text-slate-300 bg-slate-950 px-3 py-1 rounded border border-slate-900 uppercase font-mono">{res}</span>
-                      <div className="flex items-center gap-2 text-xs font-bold text-red-500 font-mono">
+                    <div key={`mkv-${res}`} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-3 bg-slate-950/60 border border-slate-900/60 rounded-xl">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-black text-slate-300 bg-slate-950 px-3 py-1 rounded border border-slate-900 uppercase font-mono">{res}</span>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 text-xs font-bold text-red-500 font-mono">
                         {["GD2", "CU", "GD1", "ZS", "RC"].map((src, i, arr) => (
                           <React.Fragment key={src}>
                             <button
@@ -794,11 +796,11 @@ export function MovieDetailClient({
                                 setAuthModalReason("download")
                                 setShowAuthModal(true)
                               }}
-                              className="hover:text-red-400 hover:underline transition cursor-pointer select-none"
+                              className="hover:text-red-400 hover:underline transition cursor-pointer select-none py-1"
                             >
                               {src}
                             </button>
-                            {i < arr.length - 1 && <span className="text-slate-700">|</span>}
+                            {i < arr.length - 1 && <span className="text-slate-800 select-none">|</span>}
                           </React.Fragment>
                         ))}
                       </div>
@@ -814,9 +816,11 @@ export function MovieDetailClient({
                 </h3>
                 <div className="space-y-2">
                   {["360p", "480p", "MP4HD", "FULLHD"].map((res) => (
-                    <div key={`mp4-${res}`} className="flex items-center justify-between px-4 py-3 bg-slate-955/60 border border-slate-900/60 rounded-xl">
-                      <span className="text-[10px] font-black text-slate-300 bg-slate-950 px-3 py-1 rounded border border-slate-900 uppercase font-mono">{res}</span>
-                      <div className="flex items-center gap-2 text-xs font-bold text-red-550 font-mono">
+                    <div key={`mp4-${res}`} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-3 bg-slate-955/60 border border-slate-900/60 rounded-xl">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-black text-slate-300 bg-slate-950 px-3 py-1 rounded border border-slate-900 uppercase font-mono">{res}</span>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 text-xs font-bold text-red-550 font-mono">
                         {["GD2", "CU", "GD1", "ZS", "RC"].map((src, i, arr) => (
                           <React.Fragment key={src}>
                             <button
@@ -824,11 +828,11 @@ export function MovieDetailClient({
                                 setAuthModalReason("download")
                                 setShowAuthModal(true)
                               }}
-                              className="hover:text-red-400 hover:underline transition cursor-pointer select-none"
+                              className="hover:text-red-400 hover:underline transition cursor-pointer select-none py-1"
                             >
                               {src}
                             </button>
-                            {i < arr.length - 1 && <span className="text-slate-700">|</span>}
+                            {i < arr.length - 1 && <span className="text-slate-800 select-none">|</span>}
                           </React.Fragment>
                         ))}
                       </div>
