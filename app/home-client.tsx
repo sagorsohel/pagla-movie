@@ -5,11 +5,13 @@ import { useState, useMemo, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { HeroCarousel } from "@/components/hero-carousel"
+import { MobileHeroSlider } from "@/components/mobile-hero-slider"
 import { MovieRow } from "@/components/movie-row"
 import AdCard from "@/components/ad-card"
 import { CineMoviesLogo } from "@/components/logo"
 import { getTranslation, type Locale } from "@/lib/translations"
 import { LanguageSelector } from "@/components/language-selector"
+import { CineNavbar } from "@/components/cine-navbar"
 import {
   SearchIcon,
   BellIcon,
@@ -241,122 +243,35 @@ export function HomeClient({
     <div className="min-h-screen text-slate-100 bg-background relative font-sans antialiased pb-20 selection:bg-red-600 selection:text-white">
       
       {/* Netflix-style Navbar */}
-      <nav className="fixed top-0 left-0 right-0 z-40 bg-linear-to-b from-black/80 via-black/40 to-transparent backdrop-blur-xs transition-colors duration-300 py-3 px-3 sm:px-6 md:px-12 flex items-center justify-between">
-        <div className="flex items-center gap-3 sm:gap-6 md:gap-10">
-          {/* Logo */}
-          <Link
-            href={`/${locale}`}
-            onClick={resetAllFilters}
-          >
-            <CineMoviesLogo />
-          </Link>
-          
-          {/* Main Links */}
-          <div className="hidden lg:flex items-center gap-5 text-sm font-medium text-slate-300">
-            <button onClick={resetAllFilters} className={`hover:text-white cursor-pointer transition ${!isFilterActive ? "text-white font-bold" : ""}`}>
-              {t.home}
-            </button>
-            <button
-              onClick={() => {
-                setSelectedCategoryId(null)
-                setSearchQuery("")
-                setFilterType("series")
-              }}
-              className={`hover:text-white cursor-pointer transition ${filterType === "series" ? "text-white font-bold" : ""}`}
-            >
-              {t.series}
-            </button>
-            <button
-              onClick={() => {
-                setSelectedCategoryId(null)
-                setSearchQuery("")
-                setFilterType("films")
-              }}
-              className={`hover:text-white cursor-pointer transition ${filterType === "films" ? "text-white font-bold" : ""}`}
-            >
-              {t.films}
-            </button>
-            <button
-              onClick={() => {
-                setSelectedCategoryId(null)
-                setSearchQuery("")
-                setFilterType("games")
-              }}
-              className={`hover:text-white cursor-pointer transition ${filterType === "games" ? "text-white font-bold" : ""}`}
-            >
-              {t.games}
-            </button>
-            <button
-              onClick={() => {
-                setSelectedCategoryId(null)
-                setSearchQuery("")
-                setFilterType("new-popular")
-              }}
-              className={`hover:text-white cursor-pointer transition ${filterType === "new-popular" ? "text-white font-bold" : ""}`}
-            >
-              {t.newPopular}
-            </button>
-            <button
-              onClick={() => {
-                setSelectedCategoryId(null)
-                setSearchQuery("")
-                setFilterType("my-list")
-              }}
-              className={`hover:text-white cursor-pointer transition ${filterType === "my-list" ? "text-white font-bold" : ""}`}
-            >
-              {t.myList}
-            </button>
-            <button
-              onClick={() => setIsCategoryModalOpen(true)}
-              className="text-violet-400 hover:text-violet-300 font-semibold flex items-center gap-1 transition cursor-pointer"
-            >
-              {t.browseCategory} <ChevronDownIcon className="w-3.5 h-3.5" />
-            </button>
-          </div>
-          
-          {/* Mobile Browse Dropdown */}
-          <div className="lg:hidden relative">
-            <button
-              onClick={() => setIsCategoryModalOpen(true)}
-              className="bg-slate-900/80 border border-slate-800 text-[10px] sm:text-xs px-2.5 py-1.5 rounded-lg flex items-center gap-1 hover:bg-slate-850 text-slate-200"
-            >
-              <span className="hidden sm:inline">{t.browseCategory}</span>
-              <span className="sm:hidden">{t.genres.replace(':', '')}</span>
-              <ChevronDownIcon className="w-3 h-3 text-slate-400" />
-            </button>
-          </div>
-        </div>
-
-        {/* Right side controls */}
-        <div className="flex items-center gap-2 sm:gap-4 md:gap-6">
-          {/* Search bar */}
-          <div className="relative flex items-center">
-            <SearchIcon className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 pointer-events-none" />
-            <input
-              type="text"
-              placeholder={t.searchPlaceholder}
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value)
-                setSelectedCategoryId(null)
-                setFilterType(null)
-              }}
-              className="bg-slate-900/60 border border-slate-800 rounded-full py-1.5 pl-8 pr-3 text-[11px] w-24 sm:w-36 md:w-48 focus:outline-hidden focus:w-32 sm:focus:w-52 md:focus:w-60 focus:border-red-600 focus:bg-slate-900 transition-all text-slate-100 placeholder:text-slate-500"
-            />
-          </div>
-
-          {/* Language Selector */}
-          <LanguageSelector currentLocale={locale} />
-        </div>
-      </nav>
+      <CineNavbar
+        locale={locale}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        filterType={filterType}
+        setFilterType={setFilterType}
+        selectedCategoryId={selectedCategoryId}
+        setSelectedCategoryId={setSelectedCategoryId}
+        onBrowseCategoryClick={() => setIsCategoryModalOpen(true)}
+      />
 
       {/* Hero Billboard Banner (Carousel) */}
       {!isFilterActive && (
-        <HeroCarousel
-          movies={movies}
-          onPlay={handlePlayMovie}
-          onInfo={handleMovieClick}
-        />
+        <>
+          {/* Desktop Banner Carousel */}
+          <div className="hidden md:block">
+            <HeroCarousel
+              movies={movies}
+              onPlay={handlePlayMovie}
+              onInfo={handleMovieClick}
+            />
+          </div>
+          {/* Mobile Card Swipe Carousel */}
+          <MobileHeroSlider
+            movies={movies}
+            onPlay={handlePlayMovie}
+            onInfo={handleMovieClick}
+          />
+        </>
       )}
 
       {/* Content Section */}

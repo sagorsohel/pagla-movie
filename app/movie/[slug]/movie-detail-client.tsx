@@ -9,6 +9,7 @@ import { CineMoviesLogo } from "@/components/logo"
 import { getTranslation, type Locale } from "@/lib/translations"
 import { getImageUrl } from "@/lib/utils"
 import { LanguageSelector } from "@/components/language-selector"
+import { CineNavbar } from "@/components/cine-navbar"
 import {
   PlayIcon,
   ChevronLeftIcon,
@@ -371,19 +372,7 @@ export function MovieDetailClient({
     <div className="min-h-screen text-slate-100 bg-background relative font-sans antialiased pb-20 selection:bg-red-600 selection:text-white">
       
       {/* Navbar header */}
-      <nav className="fixed top-0 left-0 right-0 z-40 bg-black/80 backdrop-blur-md border-b border-slate-900/60 py-3 px-4 md:px-12 flex items-center justify-between">
-        <div className="flex items-center gap-6">
-          <Link href={`/${locale}`} className="block">
-            <CineMoviesLogo />
-          </Link>
-        </div>
-
-        {/* User profile option */}
-        <div className="flex items-center gap-4">
-          {/* Language Selector */}
-          <LanguageSelector currentLocale={locale} />
-        </div>
-      </nav>
+      <CineNavbar locale={locale} />
 
       {/* Billboard Header (Full Page Style / Player) */}
       <div className="relative w-full min-h-[90vh] md:min-h-screen bg-slate-950 flex items-center overflow-hidden border-b border-slate-900/50">
