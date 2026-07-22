@@ -374,8 +374,15 @@ export function MovieDetailClient({
       {/* Navbar header */}
       <CineNavbar locale={locale} />
 
+      {/* Top Ad Container (Positioned sequentially below fixed navbar) */}
+      {!isPlaying && topAdHtml && (
+        <div className="w-full pt-[57px] bg-slate-950 flex justify-center px-4 py-2 border-b border-slate-900/40 select-none">
+          <AdScriptContainer scriptHtml={topAdHtml} className="w-full max-w-4xl" />
+        </div>
+      )}
+
       {/* Billboard Header (Full Page Style / Player) */}
-      <div className="relative w-full min-h-[90vh] md:min-h-screen bg-slate-950 flex items-center overflow-hidden border-b border-slate-900/50">
+      <div className={`relative w-full min-h-[90vh] md:min-h-screen bg-slate-950 flex items-center overflow-hidden border-b border-slate-900/50 ${(!isPlaying && topAdHtml) ? "" : "pt-[57px] md:pt-0"}`}>
         
         {/* Preloaded Video Player Backdrop Container (Always Rendered, Toggled by CSS) */}
         <div className={`absolute inset-0 w-full h-full bg-[#050505]/95 z-20 flex items-center justify-center p-4 select-none transition-all duration-300 ${
@@ -486,12 +493,7 @@ export function MovieDetailClient({
         {/* Backdrop details header is shown when player is inactive */}
         {!isPlaying && (
           <>
-            {/* Navbar Ad Slot (Immediately below navbar) */}
-            {topAdHtml && (
-              <div className="absolute top-16 left-0 right-0 z-35 flex justify-center px-4 select-none">
-                <AdScriptContainer scriptHtml={topAdHtml} className="w-full max-w-4xl" />
-              </div>
-            )}
+            {/* Top ad is now rendered outside the Billboard Header, directly below the fixed navbar */}
 
             {/* Backdrop on the right */}
             <div className="absolute inset-y-0 right-0 w-full md:w-[65%] h-full opacity-55 md:opacity-90 z-0">
