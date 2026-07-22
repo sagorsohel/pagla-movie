@@ -58,6 +58,7 @@ export function MoviesClient({
   const [editState, updateAction, isUpdatePending] = useActionState(updateMovieAction, null)
   const [isImportPending, startImportTransition] = useTransition()
   const [importStatus, setImportStatus] = useState<string | null>(null)
+  const [importPages, setImportPages] = useState(20)
 
   const [modalImageUrl, setModalImageUrl] = useState("")
   const [isUploading, setIsUploading] = useState(false)
@@ -106,11 +107,11 @@ export function MoviesClient({
   }
 
   const handleImport = () => {
-    setImportStatus("Importing past 30 days...")
+    setImportStatus(`Importing ${importPages} pages...`)
     startImportTransition(async () => {
-      const result: any = await runMovieImportAction()
+      const result: any = await runMovieImportAction(importPages)
       if (result && result.success) {
-        setImportStatus(`Imported ${result.count} movies! Reloading...`)
+        setImportStatus(`Imported ${result.count} new movies! Reloading...`)
         window.location.reload()
       } else {
         setImportStatus(`Import failed: ${result?.error || "Unknown error"}`)
@@ -148,21 +149,35 @@ export function MoviesClient({
             </Button>
           )}
         </div>
-        <Button
-          onClick={handleImport}
-          disabled={isImportPending}
-          className="bg-gradient-to-r from-cyan-600 to-emerald-600 hover:from-cyan-500 hover:to-emerald-500 text-white font-extrabold flex items-center gap-2 shadow-sm text-xs rounded-xl"
-        >
-          {isImportPending ? (
-            <>
-              <Loader2Icon className="w-4 h-4 animate-spin" /> {importStatus}
-            </>
-          ) : (
-            <>
-              <DownloadIcon className="w-4 h-4" /> Import TMDB Movies (Past 30 Days)
-            </>
-          )}
-        </Button>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-xs h-9">
+            <span className="text-slate-500 font-bold">Pages:</span>
+            <input
+              type="number"
+              min={1}
+              max={500}
+              value={importPages}
+              disabled={isImportPending}
+              onChange={(e) => setImportPages(Math.max(1, Math.min(500, parseInt(e.target.value) || 1)))}
+              className="w-10 bg-transparent text-slate-900 font-extrabold focus:outline-hidden font-mono text-center"
+            />
+          </div>
+          <Button
+            onClick={handleImport}
+            disabled={isImportPending}
+            className="bg-gradient-to-r from-cyan-600 to-emerald-600 hover:from-cyan-500 hover:to-emerald-500 text-white font-extrabold flex items-center gap-2 shadow-xs text-xs rounded-xl h-9"
+          >
+            {isImportPending ? (
+              <>
+                <Loader2Icon className="w-4 h-4 animate-spin" /> {importStatus}
+              </>
+            ) : (
+              <>
+                <DownloadIcon className="w-4 h-4" /> Import TMDB Movies
+              </>
+            )}
+          </Button>
+        </div>
       </div>
 
       {/* Movies Table */}

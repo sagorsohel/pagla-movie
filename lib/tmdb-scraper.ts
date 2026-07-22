@@ -16,49 +16,46 @@ function slugify(text: string) {
     .replace(/-+$/, "")
 }
 
-export async function scrapeLastMonthMovies() {
+export async function scrapeLastMonthMovies(pages: number = 10) {
   const apiKey = TMDB_API_KEY
   if (!apiKey) {
     throw new Error("TMDB API Key is missing. Configure it in .env file.")
   }
 
-  // Calculate dates for the last 30 days
-  const today = new Date()
-  const lastMonth = new Date()
-  lastMonth.setDate(today.getDate() - 30)
+  console.log(`Scraping all-time popular movies globally from TMDB (limit: ${pages} pages)...`)
 
-  const formatDate = (date: Date) => {
-    const y = date.getFullYear()
-    const m = String(date.getMonth() + 1).padStart(2, "0")
-    const d = String(date.getDate()).padStart(2, "0")
-    return `${y}-${m}-${d}`
-  }
-
-  const dateGte = formatDate(lastMonth)
-  const dateLte = formatDate(today)
-
-  console.log(`Scraping movies released between ${dateGte} and ${dateLte}...`)
-
-  const languages = ["en", "hi", "bn"] // Hollywood, Bollywood, Bangla
   let totalImported = 0
 
-  for (const lang of languages) {
-    try {
-      console.log(`Fetching movies for language: ${lang}...`)
-      // Discover movies in the date range
-      const discoverUrl = `${TMDB_BASE_URL}/discover/movie?api_key=${apiKey}&primary_release_date.gte=${dateGte}&primary_release_date.lte=${dateLte}&with_original_language=${lang}&sort_by=popularity.desc&page=1`
+  try {
+    // Scrape up to the specified pages of globally popular movies
+    for (let page = 1; page <= pages; page++) {
+      const discoverUrl = `${TMDB_BASE_URL}/discover/movie?api_key=${apiKey}&sort_by=popularity.desc&page=${page}`
       const res = await fetch(discoverUrl)
       if (!res.ok) {
-        console.error(`TMDB Discover failed for ${lang}: ${res.statusText}`)
-        continue
+        console.error(`TMDB Discover failed for page ${page}: ${res.statusText}`)
+        break
       }
 
       const discoverData = await res.json()
       const results = discoverData.results || []
-      console.log(`Discovered ${results.length} movies for language: ${lang}`)
+      if (results.length === 0) break
+
+      console.log(`Discovered ${results.length} movies on page ${page}`)
 
       for (const movieItem of results) {
         const tmdbId = movieItem.id
+
+        // Optimization: Skip fetching detail details if the movie already exists in database
+        const [existingMovie] = await db
+          .select()
+          .from(movies)
+          .where(eq(movies.tmdbId, tmdbId))
+          .limit(1)
+
+        if (existingMovie) {
+          console.log(`Movie with TMDB ID ${tmdbId} already exists. Skipping TMDB fetch.`)
+          continue
+        }
 
         // Fetch details including credits and videos in one request
         const detailsUrl = `${TMDB_BASE_URL}/movie/${tmdbId}?api_key=${apiKey}&append_to_response=credits,videos`
@@ -155,28 +152,14 @@ export async function scrapeLastMonthMovies() {
           videos: videoData,
         }
 
-        const [existingMovie] = await db
-          .select()
-          .from(movies)
-          .where(eq(movies.tmdbId, movieData.id))
-          .limit(1)
-
         let movieId = 0
-        if (existingMovie) {
-          await db
-            .update(movies)
-            .set(movieValues)
-            .where(eq(movies.id, existingMovie.id))
-          movieId = existingMovie.id
-        } else {
-          try {
-            const [inserted] = await db.insert(movies).values(movieValues) as any
-            movieId = inserted.insertId
-          } catch (err) {
-            movieValues.slug = `${movieValues.slug}-${movieData.id}`
-            const [inserted] = await db.insert(movies).values(movieValues) as any
-            movieId = inserted.insertId
-          }
+        try {
+          const [inserted] = await db.insert(movies).values(movieValues) as any
+          movieId = inserted.insertId
+        } catch (err) {
+          movieValues.slug = `${movieValues.slug}-${movieData.id}`
+          const [inserted] = await db.insert(movies).values(movieValues) as any
+          movieId = inserted.insertId
         }
 
         // 5. Connect Movie <-> Categories
@@ -191,9 +174,9 @@ export async function scrapeLastMonthMovies() {
 
         totalImported++
       }
-    } catch (err) {
-      console.error(`Error scraping language ${lang}:`, err)
     }
+  } catch (err) {
+    console.error(`Error scraping TMDB movies:`, err)
   }
 
   return { success: true, count: totalImported }
