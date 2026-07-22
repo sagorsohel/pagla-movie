@@ -112,6 +112,12 @@ export function SearchResultsClient({
                       alt={movie.title}
                       className="w-full h-full object-cover group-hover/card:scale-104 transition-transform duration-300"
                     />
+                  ) : movie.backdropPath ? (
+                    <img
+                      src={`https://image.tmdb.org/t/p/w300${movie.backdropPath}`}
+                      alt={movie.title}
+                      className="w-full h-full object-cover group-hover/card:scale-104 transition-transform duration-300"
+                    />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-[10px] text-slate-600 font-bold p-4 text-center">
                       No Poster Available

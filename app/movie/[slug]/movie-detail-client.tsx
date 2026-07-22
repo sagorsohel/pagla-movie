@@ -705,6 +705,12 @@ export function MovieDetailClient({
                     alt={movie.title}
                     className="w-full h-full object-cover"
                   />
+                ) : movie.backdropPath ? (
+                  <img
+                    src={`https://image.tmdb.org/t/p/w300${movie.backdropPath}`}
+                    alt={movie.title}
+                    className="w-full h-full object-cover"
+                  />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-xs text-slate-500 font-bold bg-slate-950">
                     No Poster

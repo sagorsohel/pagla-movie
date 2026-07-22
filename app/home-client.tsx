@@ -316,6 +316,12 @@ export function HomeClient({
                           alt={movie.title}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
+                      ) : movie.backdropPath ? (
+                        <img
+                          src={`https://image.tmdb.org/t/p/w300${movie.backdropPath}`}
+                          alt={movie.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-xs text-slate-655 font-bold p-4 text-center">
                           No Poster
