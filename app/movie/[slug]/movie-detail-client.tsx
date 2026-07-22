@@ -198,7 +198,7 @@ export function MovieDetailClient({
   const handleClosePlayer = () => {
     setIsPlaying(false)
     setIsVideoPlaying(false)
-    
+
     if ((window as any)._ytPlayTimeout) {
       clearTimeout((window as any)._ytPlayTimeout)
     }
@@ -281,7 +281,7 @@ export function MovieDetailClient({
           setAdsConfig(data.ads)
         }
       })
-      .catch(() => {})
+      .catch(() => { })
   }, [])
   const [topAdHtml, setTopAdHtml] = useState<string>("")
 
@@ -371,18 +371,18 @@ export function MovieDetailClient({
       const parsed = JSON.parse(adsConfig.layoutOrder)
       if (Array.isArray(parsed) && parsed.length > 0) {
         const result = [...parsed]
-        ;["top-ad", "hero", "ad-middle", "movie-info", "download-links", "tabs", "ad-bottom"].forEach((s) => {
-          if (!result.includes(s)) result.push(s)
-        })
+          ;["top-ad", "hero", "ad-middle", "movie-info", "download-links", "tabs", "ad-bottom"].forEach((s) => {
+            if (!result.includes(s)) result.push(s)
+          })
         return result
       }
-    } catch (e) {}
+    } catch (e) { }
     return ["top-ad", "hero", "ad-middle", "movie-info", "download-links", "tabs", "ad-bottom"]
   }, [adsConfig?.layoutOrder])
 
   return (
     <div className="min-h-screen text-slate-100 bg-background relative font-sans antialiased pb-20 selection:bg-red-600 selection:text-white">
-      
+
       {/* Navbar header */}
       <CineNavbar locale={locale} />
 
@@ -395,11 +395,10 @@ export function MovieDetailClient({
 
       {/* Billboard Header (Full Page Style / Player) */}
       <div className={`relative w-full min-h-[90vh] md:min-h-screen bg-slate-950 flex items-center overflow-hidden border-b border-slate-900/50 ${(!isPlaying && topAdHtml) ? "" : "pt-[57px] md:pt-0"}`}>
-        
+
         {/* Preloaded Video Player Backdrop Container (Always Rendered, Toggled by CSS) */}
-        <div className={`absolute inset-0 w-full h-full bg-[#050505]/95 z-20 flex items-center justify-center p-4 select-none transition-all duration-300 ${
-          isPlaying ? "opacity-100 pointer-events-auto visible" : "opacity-0 pointer-events-none invisible -z-10"
-        }`}>
+        <div className={`absolute inset-0 w-full h-full bg-[#050505]/95 z-20 flex items-center justify-center p-4 select-none transition-all duration-300 ${isPlaying ? "opacity-100 pointer-events-auto visible" : "opacity-0 pointer-events-none invisible -z-10"
+          }`}>
           {/* Center Player Box (1280px max width, 16:9 ratio) */}
           <div className="relative w-full max-w-[1280px] aspect-video bg-black flex flex-col justify-between shadow-2xl border border-slate-900 rounded-2xl overflow-hidden">
             {/* Custom Video Player view playing 5s snippet (From User Screenshot 1) */}
@@ -448,47 +447,47 @@ export function MovieDetailClient({
                   />
                 </div>
 
-                  {/* 2. Controls Buttons */}
-                  <div className="flex items-center justify-between text-slate-300">
-                    {/* Left Side: Play/Pause, Volume, Live Status */}
-                    <div className="flex items-center gap-4">
-                      {/* Play/Pause icon */}
-                      <button className="text-white hover:text-red-500 transition cursor-pointer">
-                        <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" />
-                        </svg>
-                      </button>
+                {/* 2. Controls Buttons */}
+                <div className="flex items-center justify-between text-slate-300">
+                  {/* Left Side: Play/Pause, Volume, Live Status */}
+                  <div className="flex items-center gap-4">
+                    {/* Play/Pause icon */}
+                    <button className="text-white hover:text-red-500 transition cursor-pointer">
+                      <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" />
+                      </svg>
+                    </button>
 
-                      {/* Speaker/Volume icon */}
-                      <button className="text-white hover:text-red-500 transition cursor-pointer">
-                        <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                          <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
-                        </svg>
-                      </button>
+                    {/* Speaker/Volume icon */}
+                    <button className="text-white hover:text-red-500 transition cursor-pointer">
+                      <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+                      </svg>
+                    </button>
 
-                      <span className="text-[10px] sm:text-xs font-semibold text-slate-200 font-mono tracking-wide">
-                        -2:08:{59 - Math.floor(playerTime)}
-                      </span>
-                    </div>
+                    <span className="text-[10px] sm:text-xs font-semibold text-slate-200 font-mono tracking-wide">
+                      -2:08:{59 - Math.floor(playerTime)}
+                    </span>
+                  </div>
 
-                    {/* Right Side: CC, Fullscreen */}
-                    <div className="flex items-center gap-4">
-                      {/* CC button */}
-                      <button className="px-1.5 py-0.5 border border-slate-500 rounded text-[9px] font-extrabold text-slate-350 hover:text-white transition cursor-pointer">
-                        CC
-                      </button>
+                  {/* Right Side: CC, Fullscreen */}
+                  <div className="flex items-center gap-4">
+                    {/* CC button */}
+                    <button className="px-1.5 py-0.5 border border-slate-500 rounded text-[9px] font-extrabold text-slate-350 hover:text-white transition cursor-pointer">
+                      CC
+                    </button>
 
-                      {/* Fullscreen icon */}
-                      <button className="text-white hover:text-red-500 transition cursor-pointer">
-                        <svg className="w-4 h-4 fill-none stroke-current" strokeWidth="2.5" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M4 8V4h4M20 8V4h-4M4 16v4h4M20 16v4h-4" />
-                        </svg>
-                      </button>
-                    </div>
+                    {/* Fullscreen icon */}
+                    <button className="text-white hover:text-red-500 transition cursor-pointer">
+                      <svg className="w-4 h-4 fill-none stroke-current" strokeWidth="2.5" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 8V4h4M20 8V4h-4M4 16v4h4M20 16v4h-4" />
+                      </svg>
+                    </button>
                   </div>
                 </div>
               </div>
             </div>
+          </div>
 
           {/* Top close button to exit player mode easily */}
           <button
@@ -530,10 +529,10 @@ export function MovieDetailClient({
               <div className="absolute inset-0 bg-linear-to-r from-background via-background/60 to-transparent" />
               <div className="absolute inset-0 bg-linear-to-t from-background via-transparent to-transparent" />
             </div>
-            
+
             {/* Main Content inside wide container */}
             <div className="relative z-10 w-full max-w-[1400px] mx-auto px-6 md:px-12 lg:px-16 pt-28 pb-12 flex flex-col justify-end min-h-[80vh] md:min-h-[85vh] space-y-6">
-                <div className="space-y-4 max-w-3xl">
+              <div className="space-y-4 max-w-3xl">
                 <div className="flex flex-wrap items-center gap-2">
                   {movie.categories.map((c) => (
                     <span
@@ -544,7 +543,7 @@ export function MovieDetailClient({
                     </span>
                   ))}
                 </div>
-                
+
                 <h1 className="text-3xl sm:text-5xl md:text-7xl font-black text-white drop-shadow-lg leading-tight sm:leading-tight uppercase font-heading tracking-tight">
                   {movie.title}
                 </h1>
@@ -674,10 +673,10 @@ export function MovieDetailClient({
 
       {/* Main Container */}
       <div className="max-w-[1400px] mx-auto w-full px-6 md:px-12 lg:px-16 pt-6">
-        
+
         {/* Content Box */}
         <div className="space-y-6">
-          
+
           {/* Top Ads Slot */}
           {movie.topAds && (
             <div className="p-3.5 bg-slate-900/40 rounded-xl border border-slate-800/40 text-xs font-mono text-center text-slate-400 overflow-x-auto select-all max-h-16">
@@ -688,9 +687,9 @@ export function MovieDetailClient({
           {/* Movie Details Card & Download Table */}
           <div className="space-y-6">
             {/* Movie Info Block */}
-            <div className="w-full bg-[#0b0f17] border border-slate-900 rounded-3xl p-6 flex flex-col md:flex-row gap-6 relative shadow-2xl">
+            <div className="w-full bg-slate-900 border border-slate-800 rounded-3xl p-6 flex flex-col md:flex-row gap-6 relative shadow-2xl">
               {/* Movie Poster (Left) */}
-              <div className="w-[130px] h-[190px] shrink-0 rounded-2xl overflow-hidden border border-slate-900 bg-slate-950 shadow-lg mx-auto md:mx-0">
+              <div className="w-[130px] h-[190px] shrink-0 rounded-2xl overflow-hidden border border-slate-800 bg-slate-900 shadow-lg mx-auto md:mx-0">
                 {movie.posterPath ? (
                   <img
                     src={`https://image.tmdb.org/t/p/w300${movie.posterPath}`}
@@ -753,34 +752,34 @@ export function MovieDetailClient({
 
                 {/* Grid attributes */}
                 <div className="space-y-1.5 pt-2">
-                  <div className="flex flex-col sm:flex-row sm:items-center px-4 py-2 bg-slate-950/60 border border-slate-900/60 rounded-xl text-xs gap-1 sm:gap-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center px-4 py-2 bg-slate-900/40 border border-slate-800/40 rounded-xl text-xs gap-1 sm:gap-4">
                     <span className="text-slate-500 font-bold sm:min-w-[100px]">Released:</span>
                     <span className="text-slate-350">{movie.releaseDate || "N/A"}</span>
                   </div>
 
-                  <div className="flex flex-col sm:flex-row sm:items-center px-4 py-2 bg-slate-950/60 border border-slate-900/60 rounded-xl text-xs gap-1 sm:gap-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center px-4 py-2 bg-slate-900/40 border border-slate-800/40 rounded-xl text-xs gap-1 sm:gap-4">
                     <span className="text-slate-500 font-bold sm:min-w-[100px]">Runtime:</span>
                     <span className="text-slate-350">{((movie.tmdbId || 0) % 40) + 90} minutes</span>
                   </div>
 
-                  <div className="flex flex-col sm:flex-row sm:items-center px-4 py-2 bg-slate-950/60 border border-slate-900/60 rounded-xl text-xs gap-1 sm:gap-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center px-4 py-2 bg-slate-900/40 border border-slate-800/40 rounded-xl text-xs gap-1 sm:gap-4">
                     <span className="text-slate-500 font-bold sm:min-w-[100px]">Genre:</span>
-                    <span className="text-slate-355">{movie.categories.map((c) => c.name).join(", ")}</span>
+                    <span className="text-slate-350">{movie.categories.map((c) => c.name).join(", ")}</span>
                   </div>
 
                   {castList.length > 0 && (
-                    <div className="flex flex-col sm:flex-row sm:items-center px-4 py-2 bg-slate-955/60 border border-slate-900/60 rounded-xl text-xs gap-1 sm:gap-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center px-4 py-2 bg-slate-900/40 border border-slate-800/40 rounded-xl text-xs gap-1 sm:gap-4">
                       <span className="text-slate-500 font-bold sm:min-w-[100px]">Stars:</span>
-                      <span className="text-slate-355 truncate max-w-xl">
+                      <span className="text-slate-350 truncate max-w-xl">
                         {castList.slice(0, 5).map((actor: any) => actor.name).join(", ")}
                       </span>
                     </div>
                   )}
 
                   {directors.length > 0 && (
-                    <div className="flex flex-col sm:flex-row sm:items-center px-4 py-2 bg-slate-955/60 border border-slate-900/60 rounded-xl text-xs gap-1 sm:gap-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center px-4 py-2 bg-slate-900/40 border border-slate-800/40 rounded-xl text-xs gap-1 sm:gap-4">
                       <span className="text-slate-500 font-bold sm:min-w-[100px]">Director:</span>
-                      <span className="text-slate-355">
+                      <span className="text-slate-350">
                         {directors.map((d: any) => d.name).join(", ")}
                       </span>
                     </div>
@@ -790,7 +789,7 @@ export function MovieDetailClient({
             </div>
 
             {/* Download Links Container */}
-            <div className="w-full bg-[#0b0f17] border border-slate-900 rounded-3xl p-6 space-y-6 shadow-2xl">
+            <div className="w-full bg-slate-900/60 border border-slate-800 rounded-3xl p-6 space-y-6 shadow-2xl">
               {/* MKV Row list */}
               <div className="space-y-3">
                 <h3 className="text-xs font-black text-red-500 flex items-center gap-1.5 uppercase tracking-widest font-mono">
@@ -798,9 +797,9 @@ export function MovieDetailClient({
                 </h3>
                 <div className="space-y-2.5">
                   {["360p", "480p", "720p", "1080p"].map((res) => (
-                    <div key={`mkv-${res}`} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-slate-950/80 border border-slate-800/50 rounded-2xl hover:border-slate-700/60 transition duration-205">
+                    <div key={`mkv-${res}`} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-slate-950/60 border border-slate-800/40 rounded-2xl hover:border-slate-700/50 transition duration-205">
                       <div className="flex items-center justify-between sm:justify-start gap-3">
-                        <span className="text-[11px] font-black text-slate-300 bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-800 uppercase font-mono tracking-wider">
+                        <span className="text-[11px] font-black text-slate-300 bg-slate-900/80 px-3 py-1.5 rounded-lg border border-slate-850 uppercase font-mono tracking-wider">
                           {res}
                         </span>
                         <span className="text-[10px] text-slate-400 font-bold sm:hidden uppercase tracking-wider">Select Server:</span>
@@ -813,7 +812,7 @@ export function MovieDetailClient({
                               setAuthModalReason("download")
                               setShowAuthModal(true)
                             }}
-                            className="flex items-center gap-1.5 px-3 py-2 bg-slate-900 hover:bg-slate-800 active:scale-95 text-red-400 hover:text-red-300 border border-red-600/80 hover:border-red-500 rounded-xl transition duration-150 cursor-pointer select-none text-[10px] uppercase font-black tracking-wider shadow-xs"
+                            className="flex items-center gap-1.5 px-3 py-2 bg-slate-900 hover:bg-slate-850 active:scale-95 text-red-400 hover:text-red-300 border border-slate-800 hover:border-slate-700 rounded-xl transition duration-150 cursor-pointer select-none text-[10px] uppercase font-black tracking-wider shadow-xs"
                           >
                             <svg className="w-3.5 h-3.5 text-red-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                               <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -834,9 +833,9 @@ export function MovieDetailClient({
                 </h3>
                 <div className="space-y-2.5">
                   {["360p", "480p", "MP4HD", "FULLHD"].map((res) => (
-                    <div key={`mp4-${res}`} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-slate-950/80 border border-slate-800/50 rounded-2xl hover:border-slate-700/60 transition duration-205">
+                    <div key={`mp4-${res}`} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-slate-950/60 border border-slate-800/40 rounded-2xl hover:border-slate-700/50 transition duration-205">
                       <div className="flex items-center justify-between sm:justify-start gap-3">
-                        <span className="text-[11px] font-black text-slate-300 bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-800 uppercase font-mono tracking-wider">
+                        <span className="text-[11px] font-black text-slate-300 bg-slate-900/80 px-3 py-1.5 rounded-lg border border-slate-850 uppercase font-mono tracking-wider">
                           {res}
                         </span>
                         <span className="text-[10px] text-slate-400 font-bold sm:hidden uppercase tracking-wider">Select Server:</span>
@@ -849,7 +848,7 @@ export function MovieDetailClient({
                               setAuthModalReason("download")
                               setShowAuthModal(true)
                             }}
-                            className="flex items-center gap-1.5 px-3 py-2 bg-slate-900 hover:bg-slate-800 active:scale-95 text-red-400 hover:text-red-300 border border-red-600/80 hover:border-red-500 rounded-xl transition duration-150 cursor-pointer select-none text-[10px] uppercase font-black tracking-wider shadow-xs"
+                            className="flex items-center gap-1.5 px-3 py-2 bg-slate-900 hover:bg-slate-850 active:scale-95 text-red-400 hover:text-red-300 border border-slate-800 hover:border-slate-700 rounded-xl transition duration-150 cursor-pointer select-none text-[10px] uppercase font-black tracking-wider shadow-xs"
                           >
                             <svg className="w-3.5 h-3.5 text-red-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                               <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -869,9 +868,8 @@ export function MovieDetailClient({
           <div className="flex border-b border-slate-900/80 mt-2 select-none gap-6 pb-1.5 mb-6">
             <button
               onClick={() => setActiveTab("related")}
-              className={`pb-2 font-bold text-sm tracking-wide cursor-pointer transition relative ${
-                activeTab === "related" ? "text-white font-extrabold" : "text-slate-450 hover:text-slate-200"
-              }`}
+              className={`pb-2 font-bold text-sm tracking-wide cursor-pointer transition relative ${activeTab === "related" ? "text-white font-extrabold" : "text-slate-450 hover:text-slate-200"
+                }`}
             >
               {t.relatedMovies}
               {activeTab === "related" && (
@@ -880,9 +878,8 @@ export function MovieDetailClient({
             </button>
             <button
               onClick={() => setActiveTab("details")}
-              className={`pb-2 font-bold text-sm tracking-wide cursor-pointer transition relative ${
-                activeTab === "details" ? "text-white font-extrabold" : "text-slate-450 hover:text-slate-200"
-              }`}
+              className={`pb-2 font-bold text-sm tracking-wide cursor-pointer transition relative ${activeTab === "details" ? "text-white font-extrabold" : "text-slate-450 hover:text-slate-200"
+                }`}
             >
               {t.details}
               {activeTab === "details" && (
@@ -900,7 +897,7 @@ export function MovieDetailClient({
                   <h4 className="text-xs font-bold uppercase text-slate-400 tracking-wider">
                     Creators and Cast
                   </h4>
-                  
+
                   {directors.length > 0 && (
                     <div className="text-xs">
                       <span className="font-bold text-slate-500 mr-2">Directors:</span>
@@ -954,7 +951,7 @@ export function MovieDetailClient({
                   <h4 className="text-xs font-bold uppercase text-slate-400 tracking-wider">
                     Additional Details
                   </h4>
-                  
+
                   <div className="space-y-3 text-xs">
                     <div>
                       <span className="font-bold text-slate-500 block mb-1">Content Advisory:</span>
@@ -1045,7 +1042,7 @@ export function MovieDetailClient({
 
             {/* Modal Ads Script Code */}
             {movie.modalAds && (
-              <div className="p-3 bg-slate-955/80 rounded-xl border border-slate-900 text-[10px] font-mono text-slate-500 overflow-x-auto select-all max-h-16">
+              <div className="p-3 bg-slate-900/80 rounded-xl border border-slate-800 text-[10px] font-mono text-slate-500 overflow-x-auto select-all max-h-16">
                 <AdScriptContainer scriptHtml={movie.modalAds} />
               </div>
             )}
@@ -1057,8 +1054,8 @@ export function MovieDetailClient({
       {/* Exclamation Activation Modal */}
       {showAuthModal && (
         <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-in fade-in duration-300 select-none">
-          <div className="w-full max-w-md bg-[#0b0f17] border border-slate-900 rounded-3xl p-6 text-center shadow-2xl relative animate-in fade-in zoom-in-95 duration-300 space-y-5">
-            
+          <div className="w-full max-w-md bg-slate-900/90 border border-slate-800 rounded-3xl p-6 text-center shadow-2xl relative animate-in fade-in zoom-in-95 duration-300 space-y-5">
+
             {/* Warning Icon */}
             <div className="flex justify-center">
               <div className="w-16 h-16 rounded-full bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center text-yellow-500 animate-pulse">
@@ -1072,7 +1069,7 @@ export function MovieDetailClient({
                 Activate your FREE Account!
               </h3>
               <p className="text-xs text-slate-400 font-semibold leading-relaxed">
-                {authModalReason === "watch" 
+                {authModalReason === "watch"
                   ? "You must create an account to continue watching"
                   : "You must create an account to start downloading"
                 }
