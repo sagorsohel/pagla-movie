@@ -505,7 +505,7 @@ export function MovieDetailClient({
             {/* Top ad is now rendered outside the Billboard Header, directly below the fixed navbar */}
 
             {/* Backdrop on the right */}
-            <div className="absolute inset-y-0 right-0 w-full md:w-[65%] h-full opacity-55 md:opacity-90 z-0">
+            <div className="absolute inset-y-0 right-0 w-full md:w-[65%] h-full opacity-80 md:opacity-90 z-0">
               {movie.backdropPath ? (
                 <img
                   src={`https://image.tmdb.org/t/p/original${movie.backdropPath}`}
@@ -524,8 +524,8 @@ export function MovieDetailClient({
                 </div>
               )}
               {/* Linear gradients to blend into background */}
-              <div className="absolute inset-0 bg-linear-to-r from-background via-background/60 to-transparent" />
-              <div className="absolute inset-0 bg-linear-to-t from-background via-transparent to-transparent" />
+              <div className="hidden md:block absolute inset-0 bg-linear-to-r from-background via-background/60 to-transparent" />
+              <div className="absolute inset-0 bg-linear-to-t from-background via-background/30 to-black/30" />
             </div>
 
             {/* Main Content inside wide container */}
