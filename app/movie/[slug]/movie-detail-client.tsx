@@ -540,7 +540,7 @@ export function MovieDetailClient({
             </div>
 
             {/* Main Content inside wide container */}
-            <div className="relative z-10 w-full max-w-[1400px] mx-auto px-6 md:px-12 lg:px-16 pt-3 sm:pt-10  pb-12 flex flex-col justify-end min-h-[80vh] md:min-h-[85vh] space-y-6">
+            <div className="relative z-10 w-full max-w-[1400px] mx-auto px-6 md:px-12 lg:px-16 pt-3 sm:pt-0  pb-12 flex flex-col justify-end min-h-[50vh]  space-y-6">
               <div className="space-y-4 max-w-3xl">
                 <div className="flex flex-wrap items-center gap-2">
                   {movie.categories.map((c) => (
@@ -1061,29 +1061,32 @@ export function MovieDetailClient({
       </div>
 
       {/* Exclamation Activation Modal */}
-      {showAuthModal && (
-        <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-in fade-in duration-300 select-none">
-          <div className="w-full max-w-md bg-slate-900/90 border border-slate-800 rounded-3xl p-6 text-center shadow-2xl relative animate-in fade-in zoom-in-95 duration-300 space-y-5">
+      <div className={`fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 z-50 select-none transition-all duration-300 ${showAuthModal
+        ? "opacity-100 pointer-events-auto visible"
+        : "opacity-0 pointer-events-none invisible"
+        }`}>
+        <div className={`w-full max-w-md bg-slate-900/90 border border-slate-800 rounded-3xl p-6 text-center shadow-2xl relative transition-all duration-300 space-y-5 ${showAuthModal ? "scale-100 opacity-100" : "scale-95 opacity-0"
+          }`}>
 
-            {/* Warning Icon */}
-            <div className="flex justify-center">
-              <div className="w-16 h-16 rounded-full bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center text-yellow-500 animate-pulse">
-                <span className="text-3xl font-black font-sans leading-none">!</span>
-              </div>
+          {/* Warning Icon */}
+          <div className="flex justify-center">
+            <div className="w-16 h-16 rounded-full bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center text-yellow-500 animate-pulse">
+              <span className="text-3xl font-black font-sans leading-none">!</span>
             </div>
+          </div>
 
-            {/* Alert Header */}
-            <div className="space-y-1.5">
-              <h3 className="text-lg font-black text-white uppercase tracking-wide">
-                Activate your FREE Account!
-              </h3>
-              <p className="text-xs text-slate-400 font-semibold leading-relaxed">
-                {authModalReason === "watch"
-                  ? "You must create an account to continue watching"
-                  : "You must create an account to start downloading"
-                }
-              </p>
-              {/* {authModalReason === "watch" && (
+          {/* Alert Header */}
+          <div className="space-y-1.5">
+            <h3 className="text-lg font-black text-white uppercase tracking-wide">
+              Activate your FREE Account!
+            </h3>
+            <p className="text-xs text-slate-400 font-semibold leading-relaxed">
+              {authModalReason === "watch"
+                ? "You must create an account to continue watching"
+                : "You must create an account to start downloading"
+              }
+            </p>
+            {/* {authModalReason === "watch" && (
                 <div className="text-[10px] font-mono text-slate-500 uppercase tracking-wider pt-1.5">
                   {countdown > 0 ? (
                     <span>Redirecting in <span className="text-red-500 font-bold">{countdown}s</span>...</span>
@@ -1092,62 +1095,61 @@ export function MovieDetailClient({
                   )}
                 </div>
               )} */}
-            </div>
-
-            {/* Button link */}
-            <button
-              onClick={() => {
-                const url = movie.redirectUrl || movie.referralUrl
-                if (url) {
-                  window.open(url, "_blank")
-                }
-                setShowAuthModal(false)
-              }}
-              className="w-full py-3.5 bg-red-600 hover:bg-red-500 text-white font-extrabold text-xs tracking-wider rounded-xl transition duration-200 hover:scale-[1.01] active:scale-[0.98] cursor-pointer uppercase flex items-center justify-center gap-1.5 shadow-lg shadow-red-600/10"
-            >
-              <span>Continue to watch for FREE</span>
-              <span className="font-sans font-black">&rarr;</span>
-            </button>
-
-            {/* Modal Ads under the action button */}
-            {(movie.modalAds || adsConfig?.heroAds || adsConfig?.hero2Ads) && (
-              <div className="w-full pt-4 border-t border-slate-900/60 mt-4 flex justify-center">
-                {movie.modalAds ? (
-                  <AdScriptContainer scriptHtml={movie.modalAds} />
-                ) : (
-                  <>
-                    {currentHeroAdIndex === 1 && adsConfig?.heroAds && (
-                      <AdScriptContainer scriptHtml={adsConfig.heroAds} />
-                    )}
-                    {currentHeroAdIndex === 2 && adsConfig?.hero2Ads && (
-                      <AdScriptContainer scriptHtml={adsConfig.hero2Ads} />
-                    )}
-                  </>
-                )}
-              </div>
-            )}
-
-            {/* Subtext info */}
-            <div className="border-t border-slate-900/60 pt-4 text-left">
-              <div className="flex gap-2 items-start text-[10px] text-slate-500 leading-relaxed font-sans">
-                <span className="text-slate-400 font-bold shrink-0">🕒 Quick Sign Up!</span>
-                <p className="font-semibold">
-                  It takes less than 1 minute to Sign Up, then you can enjoy Unlimited Movies & TV titles.
-                </p>
-              </div>
-            </div>
-
-            {/* Close button */}
-            <button
-              onClick={() => setShowAuthModal(false)}
-              className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-slate-900 text-slate-500 hover:text-slate-300 transition cursor-pointer"
-            >
-              <X className="w-4 h-4" />
-            </button>
-
           </div>
+
+          {/* Button link */}
+          <button
+            onClick={() => {
+              const url = movie.redirectUrl || movie.referralUrl
+              if (url) {
+                window.open(url, "_blank")
+              }
+              setShowAuthModal(false)
+            }}
+            className="w-full py-3.5 bg-red-600 hover:bg-red-500 text-white font-extrabold text-xs tracking-wider rounded-xl transition duration-200 hover:scale-[1.01] active:scale-[0.98] cursor-pointer uppercase flex items-center justify-center gap-1.5 shadow-lg shadow-red-600/10"
+          >
+            <span>Continue to watch for FREE</span>
+            <span className="font-sans font-black">&rarr;</span>
+          </button>
+
+          {/* Modal Ads under the action button */}
+          {(movie.modalAds || adsConfig?.heroAds || adsConfig?.hero2Ads) && (
+            <div className="w-full pt-4 border-t border-slate-900/60 mt-4 flex justify-center">
+              {movie.modalAds ? (
+                <AdScriptContainer scriptHtml={movie.modalAds} />
+              ) : (
+                <>
+                  {currentHeroAdIndex === 1 && adsConfig?.heroAds && (
+                    <AdScriptContainer scriptHtml={adsConfig.heroAds} />
+                  )}
+                  {currentHeroAdIndex === 2 && adsConfig?.hero2Ads && (
+                    <AdScriptContainer scriptHtml={adsConfig.hero2Ads} />
+                  )}
+                </>
+              )}
+            </div>
+          )}
+
+          {/* Subtext info */}
+          <div className="border-t border-slate-900/60 pt-4 text-left">
+            <div className="flex gap-2 items-start text-[10px] text-slate-500 leading-relaxed font-sans">
+              <span className="text-slate-400 font-bold shrink-0">🕒 Quick Sign Up!</span>
+              <p className="font-semibold">
+                It takes less than 1 minute to Sign Up, then you can enjoy Unlimited Movies & TV titles.
+              </p>
+            </div>
+          </div>
+
+          {/* Close button */}
+          <button
+            onClick={() => setShowAuthModal(false)}
+            className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-slate-900 text-slate-500 hover:text-slate-300 transition cursor-pointer"
+          >
+            <X className="w-4 h-4" />
+          </button>
+
         </div>
-      )}
+      </div>
 
     </div>
   )
