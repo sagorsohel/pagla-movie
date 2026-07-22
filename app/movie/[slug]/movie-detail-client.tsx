@@ -119,6 +119,19 @@ export function MovieDetailClient({
   const [originUrl, setOriginUrl] = useState("")
   const [isVideoPlaying, setIsVideoPlaying] = useState(false)
 
+  const runtimeMinutes = useMemo(() => {
+    return ((movie.tmdbId || 0) % 40) + 90
+  }, [movie.tmdbId])
+
+  const remainingTimeStr = useMemo(() => {
+    const totalSeconds = runtimeMinutes * 60
+    const remaining = Math.max(0, totalSeconds - Math.floor(playerTime))
+    const h = Math.floor(remaining / 3600)
+    const m = Math.floor((remaining % 3600) / 60)
+    const s = remaining % 60
+    return `-${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`
+  }, [runtimeMinutes, playerTime])
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       setOriginUrl(window.location.origin)
@@ -166,16 +179,6 @@ export function MovieDetailClient({
     setPlayerTime(0)
     setCountdown(movie.redirectTime || 5)
 
-    // Trigger immediate playback on preloaded element
-    if (trailerKey && iframeRef.current) {
-      iframeRef.current.contentWindow?.postMessage(
-        JSON.stringify({ event: "command", func: "playVideo", args: "" }),
-        "*"
-      )
-    } else if (videoRef.current) {
-      videoRef.current.play().catch((e) => console.log("Failed autoplay video:", e))
-    }
-
     // Fail-safe: if the video play event is not resolved in 3 seconds, force start the timer
     const timer = setTimeout(() => {
       setIsVideoPlaying(true)
@@ -195,6 +198,26 @@ export function MovieDetailClient({
     }
   }, [movie])
 
+  useEffect(() => {
+    if (isPlaying && videoRef.current) {
+      const timer = setTimeout(() => {
+        if (videoRef.current) {
+          // Play with muted fallback to bypass browser autoplay policies
+          videoRef.current.muted = false
+          videoRef.current.play()
+            .catch((e) => {
+              console.log("Autoplay with sound blocked, falling back to muted", e)
+              if (videoRef.current) {
+                videoRef.current.muted = true
+                videoRef.current.play().catch((err) => console.error("Playback failed:", err))
+              }
+            })
+        }
+      }, 150)
+      return () => clearTimeout(timer)
+    }
+  }, [isPlaying])
+
   const handleClosePlayer = () => {
     setIsPlaying(false)
     setIsVideoPlaying(false)
@@ -203,16 +226,7 @@ export function MovieDetailClient({
       clearTimeout((window as any)._ytPlayTimeout)
     }
 
-    if (trailerKey && iframeRef.current) {
-      iframeRef.current.contentWindow?.postMessage(
-        JSON.stringify({ event: "command", func: "pauseVideo", args: "" }),
-        "*"
-      )
-      iframeRef.current.contentWindow?.postMessage(
-        JSON.stringify({ event: "command", func: "seekTo", args: [0, true] }),
-        "*"
-      )
-    } else if (videoRef.current) {
+    if (videoRef.current) {
       videoRef.current.pause()
       videoRef.current.currentTime = 0
     }
@@ -403,35 +417,24 @@ export function MovieDetailClient({
           <div className="relative w-full max-w-[1280px] aspect-video bg-black flex flex-col justify-between shadow-2xl border border-slate-900 rounded-2xl overflow-hidden">
             {/* Custom Video Player view playing 5s snippet (From User Screenshot 1) */}
             <div className="absolute inset-0 w-full h-full bg-black select-none">
-              {trailerKey ? (
-                <iframe
-                  ref={iframeRef}
-                  src={`https://www.youtube.com/embed/${trailerKey}?autoplay=0&mute=0&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&enablejsapi=1&origin=${originUrl}`}
-                  className="w-full h-full object-cover"
-                  style={{ border: "none", width: "100%", height: "100%", pointerEvents: "none" }}
-                  allow="autoplay; encrypted-media"
-                  title="Movie Trailer"
-                />
-              ) : (
-                <video
-                  ref={videoRef}
-                  src="https://vjs.zencdn.net/v/oceans.mp4"
-                  className="w-full h-full object-cover"
-                  onPlay={() => setIsVideoPlaying(true)}
-                  onPlaying={() => setIsVideoPlaying(true)}
-                  onTimeUpdate={(e) => {
-                    if (e.currentTarget.currentTime > 0.1) {
-                      setIsVideoPlaying(true)
-                    }
-                  }}
-                  loop
-                  playsInline
-                  preload="auto"
-                  width="100%"
-                  height="100%"
-                  style={{ objectFit: "cover", width: "100%", height: "100%" }}
-                />
-              )}
+              <video
+                ref={videoRef}
+                src="/video.mp4"
+                className="w-full h-full object-cover"
+                onPlay={() => setIsVideoPlaying(true)}
+                onPlaying={() => setIsVideoPlaying(true)}
+                onTimeUpdate={(e) => {
+                  if (e.currentTarget.currentTime > 0.1) {
+                    setIsVideoPlaying(true)
+                  }
+                }}
+                loop
+                playsInline
+                preload="auto"
+                width="100%"
+                height="100%"
+                style={{ objectFit: "cover", width: "100%", height: "100%" }}
+              />
 
               {/* Top/Bottom gradients */}
               <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-black/80 to-transparent pointer-events-none" />
@@ -466,7 +469,7 @@ export function MovieDetailClient({
                     </button>
 
                     <span className="text-[10px] sm:text-xs font-semibold text-slate-200 font-mono tracking-wide">
-                      -2:08:{59 - Math.floor(playerTime)}
+                      {remainingTimeStr}
                     </span>
                   </div>
 
@@ -759,7 +762,7 @@ export function MovieDetailClient({
 
                   <div className="flex flex-col sm:flex-row sm:items-center px-4 py-2 bg-slate-900/40 border border-slate-800/40 rounded-xl text-xs gap-1 sm:gap-4">
                     <span className="text-slate-500 font-bold sm:min-w-[100px]">Runtime:</span>
-                    <span className="text-slate-350">{((movie.tmdbId || 0) % 40) + 90} minutes</span>
+                    <span className="text-slate-350">{runtimeMinutes} minutes</span>
                   </div>
 
                   <div className="flex flex-col sm:flex-row sm:items-center px-4 py-2 bg-slate-900/40 border border-slate-800/40 rounded-xl text-xs gap-1 sm:gap-4">

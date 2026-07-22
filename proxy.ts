@@ -25,7 +25,8 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith("/dashboard") ||
     pathname.startsWith("/api") ||
     pathname.startsWith("/_next") ||
-    pathname === "/favicon.ico"
+    pathname === "/favicon.ico" ||
+    /\.(mp4|mp3|png|jpg|jpeg|gif|svg|webp|ico|json|txt|xml|webmanifest)$/i.test(pathname)
 
   // 3. Redirect to locale path if missing
   if (pathnameIsMissingLocale && !isExcludedPath) {
