@@ -233,18 +233,18 @@ export function MovieDetailClient({
     }
   }
 
-  // Effect to handle the 5-second video preview play time
+  // Effect to handle the 7-second video preview play time
   useEffect(() => {
     if (!isPlaying || !isVideoPlaying) return
 
     const interval = setInterval(() => {
       setPlayerTime((prev) => {
-        if (prev >= 5) {
+        if (prev >= 7) {
           clearInterval(interval)
           setAuthModalReason("watch")
           setShowAuthModal(true)
           handleClosePlayer()
-          return 5
+          return 7
         }
         return prev + 0.1
       })
@@ -441,7 +441,7 @@ export function MovieDetailClient({
                 <div className="relative w-full h-1 bg-white/20 rounded-full overflow-hidden cursor-pointer">
                   <div
                     className="absolute top-0 left-0 h-full bg-red-600 transition-all duration-100"
-                    style={{ width: `${(playerTime / 5) * 100}%` }}
+                    style={{ width: `${(playerTime / (runtimeMinutes * 60)) * 100}%` }}
                   />
                 </div>
 
