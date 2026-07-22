@@ -179,6 +179,18 @@ export function MovieDetailClient({
     setPlayerTime(0)
     setCountdown(movie.redirectTime || 5)
 
+    // Trigger video playback synchronously to preserve user gesture context for iOS Safari
+    if (videoRef.current) {
+      videoRef.current.muted = false
+      videoRef.current.play().catch((e) => {
+        console.log("Direct video playback failed, falling back to muted autoplay", e)
+        if (videoRef.current) {
+          videoRef.current.muted = true
+          videoRef.current.play().catch((err) => console.error("Muted playback failed:", err))
+        }
+      })
+    }
+
     // Fail-safe: if the video play event is not resolved in 3 seconds, force start the timer
     const timer = setTimeout(() => {
       setIsVideoPlaying(true)
@@ -197,26 +209,6 @@ export function MovieDetailClient({
       }
     }
   }, [movie])
-
-  useEffect(() => {
-    if (isPlaying && videoRef.current) {
-      const timer = setTimeout(() => {
-        if (videoRef.current) {
-          // Play with muted fallback to bypass browser autoplay policies
-          videoRef.current.muted = false
-          videoRef.current.play()
-            .catch((e) => {
-              console.log("Autoplay with sound blocked, falling back to muted", e)
-              if (videoRef.current) {
-                videoRef.current.muted = true
-                videoRef.current.play().catch((err) => console.error("Playback failed:", err))
-              }
-            })
-        }
-      }, 150)
-      return () => clearTimeout(timer)
-    }
-  }, [isPlaying])
 
   const handleClosePlayer = () => {
     setIsPlaying(false)
@@ -401,20 +393,20 @@ export function MovieDetailClient({
       <CineNavbar locale={locale} />
 
       {/* Top Ad Container (Positioned sequentially below fixed navbar) */}
-      {!isPlaying && topAdHtml && (
+      {topAdHtml && (
         <div className="w-full pt-[57px] bg-slate-950 flex justify-center px-4 py-2 border-b border-slate-900/40 select-none">
           <AdScriptContainer scriptHtml={topAdHtml} className="w-full max-w-4xl" />
         </div>
       )}
 
       {/* Billboard Header (Full Page Style / Player) */}
-      <div className={`relative w-full min-h-[90vh] md:min-h-screen bg-slate-950 flex items-center overflow-hidden border-b border-slate-900/50 ${(!isPlaying && topAdHtml) ? "" : "pt-[57px] md:pt-0"}`}>
+      <div className={`relative w-full ${isPlaying ? "h-[300px] min-h-0 md:min-h-screen" : "min-h-[90vh] md:min-h-screen"} bg-slate-950 flex items-center overflow-hidden border-b border-slate-900/50 transition-all duration-300 ${topAdHtml ? "" : "pt-[57px] md:pt-0"}`}>
 
         {/* Preloaded Video Player Backdrop Container (Always Rendered, Toggled by CSS) */}
-        <div className={`absolute inset-0 w-full h-full bg-[#050505]/95 z-20 flex items-center justify-center p-4 select-none transition-all duration-300 ${isPlaying ? "opacity-100 pointer-events-auto visible" : "opacity-0 pointer-events-none invisible -z-10"
+        <div className={`absolute inset-0 w-full h-full bg-[#050505]/95 flex items-center justify-center p-0 md:p-4 select-none transition-all duration-300 ${isPlaying ? "opacity-100 pointer-events-auto z-20" : "opacity-0 pointer-events-none -z-10"
           }`}>
-          {/* Center Player Box (1280px max width, 16:9 ratio) */}
-          <div className="relative w-full max-w-[1280px] aspect-video bg-black flex flex-col justify-between shadow-2xl border border-slate-900 rounded-2xl overflow-hidden">
+          {/* Center Player Box */}
+          <div className="relative w-full h-full md:h-auto md:max-w-[1280px] md:aspect-video bg-black flex flex-col justify-between md:shadow-2xl md:border md:border-slate-900 md:rounded-2xl overflow-hidden">
             {/* Custom Video Player view playing 5s snippet (From User Screenshot 1) */}
             <div className="absolute inset-0 w-full h-full bg-black select-none">
               <video
@@ -430,6 +422,9 @@ export function MovieDetailClient({
                 }}
                 loop
                 playsInline
+                {...({
+                  "webkit-playsinline": "true"
+                } as any)}
                 preload="auto"
                 width="100%"
                 height="100%"
