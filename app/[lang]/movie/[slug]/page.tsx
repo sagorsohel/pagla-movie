@@ -1,12 +1,12 @@
 import * as React from "react"
 import { db } from "@/db"
 import { movies, categories, movieCategories } from "@/db/schema"
-import { eq, desc } from "drizzle-orm"
+import { eq, desc, inArray } from "drizzle-orm"
 import { notFound } from "next/navigation"
 import { MovieDetailClient } from "../../../movie/[slug]/movie-detail-client"
 import { type Locale, LANGUAGES } from "@/lib/translations"
 
-export const dynamic = "force-dynamic"
+export const revalidate = 86400 // Incremental Static Regeneration (ISR) - cache page for 24 hours
 
 export default async function MovieDetailPage({
   params,
@@ -47,11 +47,12 @@ export default async function MovieDetailPage({
     .innerJoin(categories, eq(movieCategories.categoryId, categories.id))
     .where(eq(movieCategories.movieId, movieId))
 
-  // 3. Fetch all other movies to show in "Related" row
-  const allMovies = await db.select().from(movies).orderBy(desc(movies.createdAt))
+  // 3. Fetch recent 30 movies to show in "Related" row (optimized database load)
+  const allMovies = await db.select().from(movies).orderBy(desc(movies.createdAt)).limit(30)
 
-  // Fetch movie category links for all movies to compute related items
-  const allMovieCats = await db
+  // Fetch movie category links only for the loaded recent movies
+  const recentMovieIds = allMovies.map((m: any) => m.id)
+  const allMovieCats = recentMovieIds.length > 0 ? await db
     .select({
       movieId: movieCategories.movieId,
       categoryId: categories.id,
@@ -59,6 +60,7 @@ export default async function MovieDetailPage({
     })
     .from(movieCategories)
     .innerJoin(categories, eq(movieCategories.categoryId, categories.id))
+    .where(inArray(movieCategories.movieId, recentMovieIds)) : []
 
   const categoryMap: Record<number, { id: number; name: string }[]> = {}
   allMovieCats.forEach((mc: any) => {
