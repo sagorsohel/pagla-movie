@@ -183,6 +183,18 @@ export function MovieDetailClient({
     (window as any)._ytPlayTimeout = timer
   }
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const searchParams = new URLSearchParams(window.location.search)
+      if (searchParams.get("play") === "true") {
+        const timer = setTimeout(() => {
+          handlePlayMovie()
+        }, 150)
+        return () => clearTimeout(timer)
+      }
+    }
+  }, [movie])
+
   const handleClosePlayer = () => {
     setIsPlaying(false)
     setIsVideoPlaying(false)

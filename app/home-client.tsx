@@ -218,17 +218,7 @@ export function HomeClient({
   }, [selectedCategoryId, filterType, categories])
 
   const handlePlayMovie = (movie: Movie) => {
-    if (movie.redirectUrl) {
-      const delay = (movie.redirectTime || 5) * 1000
-      alert(`Redirecting to movie player in ${movie.redirectTime || 5} seconds...`)
-      setTimeout(() => {
-        window.open(movie.redirectUrl!, "_blank")
-      }, delay)
-    } else if (movie.referralUrl) {
-      window.open(movie.referralUrl, "_blank")
-    } else {
-      alert(`Playing: ${movie.title} (No external stream link configured)`)
-    }
+    router.push(`/${locale}/movie/${movie.slug || movie.id}?play=true`)
   }
 
   const resetAllFilters = () => {
