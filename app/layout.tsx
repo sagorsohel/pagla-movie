@@ -13,10 +13,10 @@ import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "CineMovies - Watch Unlimited Movies & TV Shows in 4K UHD",
-  description: "Stream your favorite movies and TV shows on CineMovies. Enjoy unlimited high-speed streaming in 4K UHD with no interruptions. Discover new releases, top hits, and curated genres.",
+  description: "Your portal to movies, shows and streaming news. CineMovies is your ultimate destination for celebrity interviews, movie trailers, on Netflix, Prime Video, and more.",
   openGraph: {
     title: "CineMovies - Watch Unlimited Movies & TV Shows in 4K UHD",
-    description: "Stream your favorite movies and TV shows on CineMovies. Enjoy unlimited high-speed streaming in 4K UHD with no interruptions.",
+    description: "Your portal to movies, shows and streaming news. CineMovies is your ultimate destination for celebrity interviews, movie trailers, on Netflix, Prime Video, and more.",
     type: "website",
   },
 }
