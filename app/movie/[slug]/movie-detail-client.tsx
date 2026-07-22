@@ -784,26 +784,30 @@ export function MovieDetailClient({
                 <h3 className="text-xs font-black text-red-500 flex items-center gap-1.5 uppercase tracking-widest font-mono">
                   Download : MKV
                 </h3>
-                <div className="space-y-2">
+                <div className="space-y-2.5">
                   {["360p", "480p", "720p", "1080p"].map((res) => (
-                    <div key={`mkv-${res}`} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-3 bg-slate-950/60 border border-slate-900/60 rounded-xl">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-black text-slate-300 bg-slate-950 px-3 py-1 rounded border border-slate-900 uppercase font-mono">{res}</span>
+                    <div key={`mkv-${res}`} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-slate-950/80 border border-slate-800/50 rounded-2xl hover:border-slate-700/60 transition duration-205">
+                      <div className="flex items-center justify-between sm:justify-start gap-3">
+                        <span className="text-[11px] font-black text-slate-300 bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-800 uppercase font-mono tracking-wider">
+                          {res}
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-bold sm:hidden uppercase tracking-wider">Select Server:</span>
                       </div>
-                      <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 text-xs font-bold text-red-500 font-mono">
-                        {["GD2", "CU", "GD1", "ZS", "RC"].map((src, i, arr) => (
-                          <React.Fragment key={src}>
-                            <button
-                              onClick={() => {
-                                setAuthModalReason("download")
-                                setShowAuthModal(true)
-                              }}
-                              className="hover:text-red-400 hover:underline transition cursor-pointer select-none py-1"
-                            >
-                              {src}
-                            </button>
-                            {i < arr.length - 1 && <span className="text-slate-800 select-none">|</span>}
-                          </React.Fragment>
+                      <div className="flex flex-wrap items-center gap-2 text-xs font-bold font-mono">
+                        {["GD2", "CU", "GD1", "ZS", "RC"].map((src) => (
+                          <button
+                            key={src}
+                            onClick={() => {
+                              setAuthModalReason("download")
+                              setShowAuthModal(true)
+                            }}
+                            className="flex items-center gap-1.5 px-3 py-2 bg-slate-900 hover:bg-slate-800 active:scale-95 text-red-400 hover:text-red-300 border border-red-600/80 hover:border-red-500 rounded-xl transition duration-150 cursor-pointer select-none text-[10px] uppercase font-black tracking-wider shadow-xs"
+                          >
+                            <svg className="w-3.5 h-3.5 text-red-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            {src}
+                          </button>
                         ))}
                       </div>
                     </div>
@@ -816,26 +820,30 @@ export function MovieDetailClient({
                 <h3 className="text-xs font-black text-red-500 flex items-center gap-1.5 uppercase tracking-widest font-mono">
                   Download : MP4
                 </h3>
-                <div className="space-y-2">
+                <div className="space-y-2.5">
                   {["360p", "480p", "MP4HD", "FULLHD"].map((res) => (
-                    <div key={`mp4-${res}`} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-3 bg-slate-955/60 border border-slate-900/60 rounded-xl">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-black text-slate-300 bg-slate-950 px-3 py-1 rounded border border-slate-900 uppercase font-mono">{res}</span>
+                    <div key={`mp4-${res}`} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-slate-950/80 border border-slate-800/50 rounded-2xl hover:border-slate-700/60 transition duration-205">
+                      <div className="flex items-center justify-between sm:justify-start gap-3">
+                        <span className="text-[11px] font-black text-slate-300 bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-800 uppercase font-mono tracking-wider">
+                          {res}
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-bold sm:hidden uppercase tracking-wider">Select Server:</span>
                       </div>
-                      <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 text-xs font-bold text-red-550 font-mono">
-                        {["GD2", "CU", "GD1", "ZS", "RC"].map((src, i, arr) => (
-                          <React.Fragment key={src}>
-                            <button
-                              onClick={() => {
-                                setAuthModalReason("download")
-                                setShowAuthModal(true)
-                              }}
-                              className="hover:text-red-400 hover:underline transition cursor-pointer select-none py-1"
-                            >
-                              {src}
-                            </button>
-                            {i < arr.length - 1 && <span className="text-slate-800 select-none">|</span>}
-                          </React.Fragment>
+                      <div className="flex flex-wrap items-center gap-2 text-xs font-bold font-mono">
+                        {["GD2", "CU", "GD1", "ZS", "RC"].map((src) => (
+                          <button
+                            key={src}
+                            onClick={() => {
+                              setAuthModalReason("download")
+                              setShowAuthModal(true)
+                            }}
+                            className="flex items-center gap-1.5 px-3 py-2 bg-slate-900 hover:bg-slate-800 active:scale-95 text-red-400 hover:text-red-300 border border-red-600/80 hover:border-red-500 rounded-xl transition duration-150 cursor-pointer select-none text-[10px] uppercase font-black tracking-wider shadow-xs"
+                          >
+                            <svg className="w-3.5 h-3.5 text-red-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            {src}
+                          </button>
                         ))}
                       </div>
                     </div>
