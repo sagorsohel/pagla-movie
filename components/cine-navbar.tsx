@@ -54,12 +54,11 @@ export function CineNavbar({
 
   const handleSearchChange = (value: string) => {
     setLocalSearch(value)
-    if (setSearchQuery && setSelectedCategoryId && setFilterType) {
-      setSearchQuery(value)
-      setSelectedCategoryId(null)
-      setFilterType(null)
+    const targetUrl = `/${locale}/search?q=${encodeURIComponent(value)}`
+    if (typeof window !== "undefined" && window.location.pathname.endsWith("/search")) {
+      router.replace(targetUrl)
     } else {
-      router.push(`/${locale}?search=${encodeURIComponent(value)}`)
+      router.push(targetUrl)
     }
   }
 
