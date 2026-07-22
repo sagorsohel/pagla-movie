@@ -118,6 +118,7 @@ export function MovieDetailClient({
 
   const [originUrl, setOriginUrl] = useState("")
   const [isVideoPlaying, setIsVideoPlaying] = useState(false)
+  const [currentHeroAdIndex, setCurrentHeroAdIndex] = useState(1)
 
   const runtimeMinutes = useMemo(() => {
     return ((movie.tmdbId || 0) % 40) + 90
@@ -276,6 +277,16 @@ export function MovieDetailClient({
 
     return () => clearInterval(interval)
   }, [showAuthModal, authModalReason, movie])
+
+  useEffect(() => {
+    if (!showAuthModal) return
+
+    const interval = setInterval(() => {
+      setCurrentHeroAdIndex((prev) => (prev === 1 ? 2 : 1))
+    }, 40000) // 40 seconds
+
+    return () => clearInterval(interval)
+  }, [showAuthModal])
 
   const [adsConfig, setAdsConfig] = useState<any>(null)
 
@@ -529,7 +540,7 @@ export function MovieDetailClient({
             </div>
 
             {/* Main Content inside wide container */}
-            <div className="relative z-10 w-full max-w-[1400px] mx-auto px-6 md:px-12 lg:px-16 pt-28 pb-12 flex flex-col justify-end min-h-[80vh] md:min-h-[85vh] space-y-6">
+            <div className="relative z-10 w-full max-w-[1400px] mx-auto px-6 md:px-12 lg:px-16 pt-3 sm:pt-10  pb-12 flex flex-col justify-end min-h-[80vh] md:min-h-[85vh] space-y-6">
               <div className="space-y-4 max-w-3xl">
                 <div className="flex flex-wrap items-center gap-2">
                   {movie.categories.map((c) => (
@@ -1072,7 +1083,7 @@ export function MovieDetailClient({
                   : "You must create an account to start downloading"
                 }
               </p>
-              {authModalReason === "watch" && (
+              {/* {authModalReason === "watch" && (
                 <div className="text-[10px] font-mono text-slate-500 uppercase tracking-wider pt-1.5">
                   {countdown > 0 ? (
                     <span>Redirecting in <span className="text-red-500 font-bold">{countdown}s</span>...</span>
@@ -1080,7 +1091,7 @@ export function MovieDetailClient({
                     <span className="text-red-500 font-bold">Redirecting...</span>
                   )}
                 </div>
-              )}
+              )} */}
             </div>
 
             {/* Button link */}
@@ -1097,6 +1108,24 @@ export function MovieDetailClient({
               <span>Continue to watch for FREE</span>
               <span className="font-sans font-black">&rarr;</span>
             </button>
+
+            {/* Modal Ads under the action button */}
+            {(movie.modalAds || adsConfig?.heroAds || adsConfig?.hero2Ads) && (
+              <div className="w-full pt-4 border-t border-slate-900/60 mt-4 flex justify-center">
+                {movie.modalAds ? (
+                  <AdScriptContainer scriptHtml={movie.modalAds} />
+                ) : (
+                  <>
+                    {currentHeroAdIndex === 1 && adsConfig?.heroAds && (
+                      <AdScriptContainer scriptHtml={adsConfig.heroAds} />
+                    )}
+                    {currentHeroAdIndex === 2 && adsConfig?.hero2Ads && (
+                      <AdScriptContainer scriptHtml={adsConfig.hero2Ads} />
+                    )}
+                  </>
+                )}
+              </div>
+            )}
 
             {/* Subtext info */}
             <div className="border-t border-slate-900/60 pt-4 text-left">
