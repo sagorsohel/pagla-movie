@@ -426,19 +426,19 @@ export function MovieDetailClient({
       )}
 
       {/* Billboard Header (Full Page Style / Player) */}
-      <div className={`relative w-full ${isPlaying ? "h-[500px] min-h-[500px] md:min-h-[500px]" : "min-h-[90vh] md:min-h-screen"} bg-slate-950 flex items-center overflow-hidden border-b border-slate-900/50 transition-all duration-300 ${topAdHtml ? "" : "pt-[57px] md:pt-0"}`}>
+      <div className={`relative w-full ${isPlaying ? "h-auto py-6 md:py-0 md:h-[500px] min-h-[260px] md:min-h-[500px]" : "min-h-[90vh] md:min-h-screen"} bg-slate-950 flex items-center justify-center overflow-hidden border-b border-slate-900/50 transition-all duration-300 ${topAdHtml ? "" : "pt-[57px] md:pt-0"}`}>
 
         {/* Preloaded Video Player Backdrop Container (Always Rendered, Toggled by CSS) */}
-        <div className={`absolute inset-0 w-full h-full bg-[#050505]/95 flex items-center justify-center p-0 select-none transition-all duration-300 ${isPlaying ? "opacity-100 pointer-events-auto z-20" : "opacity-0 pointer-events-none -z-10"
+        <div className={`absolute inset-0 w-full h-full bg-[#050505]/95 flex items-center justify-center p-3 md:p-6 select-none transition-all duration-300 ${isPlaying ? "opacity-100 pointer-events-auto z-20" : "opacity-0 pointer-events-none -z-10"
           }`}>
-          {/* Center Player Box */}
-          <div className="relative w-full h-[500px] md:h-[500px] md:max-w-[1280px] bg-black flex flex-col justify-between md:shadow-2xl md:border md:border-slate-900 md:rounded-2xl overflow-hidden">
-            {/* Custom Video Player view playing 5s snippet (From User Screenshot 1) */}
-            <div className="absolute inset-0 w-full h-[500px] bg-black select-none">
+          {/* Center Player Box with Red Border & Rounded Corners (From User Screenshot) */}
+          <div className="relative w-full max-w-[420px] md:max-w-[1280px] aspect-[16/10] md:aspect-auto md:h-[500px] bg-black flex flex-col justify-between shadow-2xl shadow-red-950/40 border-2 border-red-600 rounded-2xl md:rounded-3xl overflow-hidden">
+            {/* Custom Video Player view */}
+            <div className="absolute inset-0 w-full h-full bg-black select-none">
               <video
                 ref={videoRef}
                 src="/video.mp4"
-                className="w-full h-[300px] object-cover"
+                className="w-full h-full object-cover"
                 onPlay={() => setIsVideoPlaying(true)}
                 onPlaying={() => setIsVideoPlaying(true)}
                 onTimeUpdate={(e) => {
@@ -456,6 +456,16 @@ export function MovieDetailClient({
                 height="100%"
                 style={{ objectFit: "cover", width: "100%", height: "100%" }}
               />
+
+              {/* Loading Stream Badge (Matching User Screenshot) */}
+              {playerTime < 2.5 && (
+                <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+                  <div className="px-5 py-2.5 rounded-full bg-black/85 border border-slate-700/80 backdrop-blur-md flex items-center gap-3 shadow-2xl">
+                    <div className="w-4 h-4 rounded-full border-2 border-red-600 border-t-transparent animate-spin" />
+                    <span className="text-xs font-black text-white uppercase tracking-wider font-mono">LOADING STREAM...</span>
+                  </div>
+                </div>
+              )}
 
               {/* Top/Bottom gradients */}
               <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-black/80 to-transparent pointer-events-none" />
