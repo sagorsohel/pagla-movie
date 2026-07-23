@@ -40,14 +40,12 @@ export async function proxy(request: NextRequest) {
     (locale) => !pathname.startsWith(locale + "/") && pathname !== locale
   )
 
-  // 3. Redirect to locale path if missing
+  // 3. Redirect to locale path if missing (Defaults to English 'en' for India, BD & all regions)
   if (pathnameIsMissingLocale && !isExcludedPath) {
-    const acceptLanguage = request.headers.get("accept-language") || ""
+    const savedLang = request.cookies.get("user_lang_pref")?.value
     let targetLang = "en"
-    if (acceptLanguage.toLowerCase().includes("bn")) {
-      targetLang = "bn"
-    } else if (acceptLanguage.toLowerCase().includes("hi")) {
-      targetLang = "hi"
+    if (savedLang && LOCALE_CODES.includes(savedLang)) {
+      targetLang = savedLang
     }
 
     const redirectUrl = new URL(`/${targetLang}${pathname}`, request.url)

@@ -62,6 +62,7 @@ export function LanguageSelector({ currentLocale }: { currentLocale: Locale }) {
 
   const handleLanguageChange = (langCode: string) => {
     localStorage.setItem("user_lang_pref", langCode)
+    document.cookie = `user_lang_pref=${langCode}; path=/; max-age=31536000; SameSite=Lax`
     setIsOpen(false)
 
     // Set the google translate cookie client-side
