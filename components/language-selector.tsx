@@ -26,6 +26,12 @@ export function LanguageSelector({ currentLocale }: { currentLocale: Locale }) {
   }, [])
 
   useEffect(() => {
+    // Only load Google Translate if the active locale is not English or if a translation cookie exists
+    const hasTranslationCookie = typeof document !== "undefined" && document.cookie.includes("googtrans=/en/");
+    const isTranslated = currentLocale !== "en" || hasTranslationCookie;
+
+    if (!isTranslated) return;
+
     // 1. Define the global translate callback if it doesn't exist
     if (!(window as any).googleTranslateElementInit) {
       (window as any).googleTranslateElementInit = function () {
@@ -34,7 +40,7 @@ export function LanguageSelector({ currentLocale }: { currentLocale: Locale }) {
             pageLanguage: "en",
             includedLanguages: "en,ar,az,bn,cs,da,de,el,es,fr,hi,hr,hu,id,it,nl,no,pl,pt,ro,ru,sk,sl,sr,sv,tr,zh,ja,ko,vi,he,th",
             layout: 0,
-            autoDisplay: true,
+            autoDisplay: false,
           },
           "google_translate_element"
         );

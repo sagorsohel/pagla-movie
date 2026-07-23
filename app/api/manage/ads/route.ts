@@ -42,7 +42,14 @@ export async function GET() {
         footerAds: ""
       }
     }
-    return NextResponse.json({ success: true, ads: adsData })
+    return NextResponse.json(
+      { success: true, ads: adsData },
+      {
+        headers: {
+          "Cache-Control": "public, max-age=300, s-maxage=3600, stale-while-revalidate=86400",
+        },
+      }
+    )
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 })
   }

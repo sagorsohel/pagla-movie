@@ -28,9 +28,10 @@ const fontMono = Geist_Mono({
   variable: "--font-mono",
 })
 
-async function getAds() {
+import { cache } from "react"
+
+const getAds = cache(async () => {
   try {
-    await headers()
     const adsData = await db.select().from(ads).where(eq(ads.id, "global")).then((r: any) => r[0])
     return {
       headerAds: adsData?.headerAds || "",
@@ -57,7 +58,7 @@ async function getAds() {
       footerAds: ""
     }
   }
-}
+})
 
 function parseScriptTags(html: string) {
   const scripts: Array<{ src?: string; content?: string; async?: boolean; defer?: boolean }> = []

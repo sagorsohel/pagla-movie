@@ -158,17 +158,45 @@
   }
 }
 
-/* Hide Google Translate toolbar, banners, and tooltips to keep the UI premium */
-iframe.VIpgJd-yD0-IBn-LgbsSe-MX30fg,
-iframe[class*="VIpgJd-yD0-IBn-LgbsSe"],
+/* Hide Google Translate toolbar, banners, floating icons, and tooltips to keep UI clean */
+.goog-te-banner-frame,
+.goog-te-banner,
+.goog-te-spinner-pos,
+.goog-te-balloon-frame,
+#goog-gt-tt,
+.goog-te-gadget-icon,
+.goog-te-gadget-simple,
+.VIpgJd-yF125-r5584e-hTVeYe,
+.VIpgJd-ZJuicv-r5584e,
+.VIpgJd-yF125-bN9bZe,
+.VIpgJd-yF125-bN9bZe-YdaUZ,
+.VIpgJd-yD0-IBn-LgbsSe,
 .VIpgJd-yD0-IBn-LgbsSe-MX30fg,
+iframe.VIpgJd-yD0-IBn-LgbsSe-MX30fg,
+iframe[class*="VIpgJd"],
+div[class*="VIpgJd"],
+iframe.goog-te-banner-frame,
 .skiptranslate,
 #google_translate_element {
   display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  height: 0 !important;
+  width: 0 !important;
+  position: absolute !important;
+  top: -9999px !important;
+  left: -9999px !important;
+}
+
+.goog-text-highlight {
+  background-color: transparent !important;
+  box-shadow: none !important;
 }
 
 body {
   top: 0 !important;
+  position: static !important;
 }
 
 /* Prevent third-party scripts from injecting floating or absolute ad elements */

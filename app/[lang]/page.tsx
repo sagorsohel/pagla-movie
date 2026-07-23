@@ -1,11 +1,11 @@
 import * as React from "react"
 import { db } from "@/db"
 import { movies, categories, movieCategories } from "@/db/schema"
-import { eq, desc } from "drizzle-orm"
+import { eq, desc, inArray } from "drizzle-orm"
 import { HomeClient } from "../home-client"
 import { type Locale, LANGUAGES } from "@/lib/translations"
 
-export const dynamic = "force-dynamic"
+export const revalidate = 3600 // Incremental Static Regeneration (ISR) - cache page for 1 hour
 
 export default async function Page({
   params,
@@ -17,14 +17,15 @@ export default async function Page({
   // Resolve language and fallback to en if not supported
   const locale: Locale = LANGUAGES.some(l => l.code === lang) ? (lang as Locale) : "en"
 
-  // 1. Fetch categories
-  const allCategories = await db.select().from(categories).orderBy(categories.name)
+  // 1. Fetch categories & top 60 recent movies concurrently for super fast render
+  const [allCategories, allMovies] = await Promise.all([
+    db.select().from(categories).orderBy(categories.name),
+    db.select().from(movies).orderBy(desc(movies.createdAt)).limit(60),
+  ])
 
-  // 2. Fetch movies
-  const allMovies = await db.select().from(movies).orderBy(desc(movies.createdAt))
-
-  // 3. Fetch movie category links
-  const movieCats = await db
+  // 3. Fetch category links for the loaded movies
+  const movieIds = allMovies.map((m: any) => m.id)
+  const movieCats = movieIds.length > 0 ? await db
     .select({
       movieId: movieCategories.movieId,
       categoryId: categories.id,
@@ -32,6 +33,7 @@ export default async function Page({
     })
     .from(movieCategories)
     .innerJoin(categories, eq(movieCategories.categoryId, categories.id))
+    .where(inArray(movieCategories.movieId, movieIds)) : []
 
   // Group category links by movie ID
   const categoryMap: Record<number, { id: number; name: string }[]> = {}

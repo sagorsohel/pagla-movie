@@ -6,27 +6,39 @@ const JWT_SECRET = new TextEncoder().encode(
   process.env.JWT_SECRET || "super-secret-pagla-movie-jwt-token-2026-07"
 )
 
+const LOCALES = [
+  "/en", "/ar", "/az", "/bn", "/cs", "/da", "/de", "/el", "/es", "/fr",
+  "/hi", "/hr", "/hu", "/id", "/it", "/nl", "/no", "/pl", "/pt", "/ro",
+  "/ru", "/sk", "/sl", "/sr", "/sv", "/tr", "/zh", "/jp", "/kr", "/vn",
+  "/he", "/th"
+]
+
+const LOCALE_CODES = [
+  "ar", "az", "bn", "cs", "da", "de", "el", "es", "fr", "hi", "hr", "hu",
+  "id", "it", "nl", "no", "pl", "pt", "ro", "ru", "sk", "sl", "sr", "sv",
+  "tr", "zh", "jp", "kr", "vn", "he", "th"
+]
+
+const LOGIN_PATHS = new Set([
+  "/login",
+  ...LOCALES.map((l: string) => `${l}/login`)
+])
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // 1. Identify if the pathname already starts with a locale
-  const locales = [
-    "/en", "/ar", "/az", "/bn", "/cs", "/da", "/de", "/el", "/es", "/fr",
-    "/hi", "/hr", "/hu", "/id", "/it", "/nl", "/no", "/pl", "/pt", "/ro",
-    "/ru", "/sk", "/sl", "/sr", "/sv", "/tr", "/zh", "/jp", "/kr", "/vn",
-    "/he", "/th"
-  ]
-  const pathnameIsMissingLocale = locales.every(
-    (locale) => !pathname.startsWith(locale + "/") && pathname !== locale
-  )
-
-  // 2. Exclude system paths from locale redirects
+  // 1. Exclude system paths immediately for maximum speed
   const isExcludedPath =
     pathname.startsWith("/dashboard") ||
     pathname.startsWith("/api") ||
     pathname.startsWith("/_next") ||
     pathname === "/favicon.ico" ||
     /\.(mp4|mp3|png|jpg|jpeg|gif|svg|webp|ico|json|txt|xml|webmanifest)$/i.test(pathname)
+
+  // 2. Identify if the pathname already starts with a locale
+  const pathnameIsMissingLocale = LOCALES.every(
+    (locale) => !pathname.startsWith(locale + "/") && pathname !== locale
+  )
 
   // 3. Redirect to locale path if missing
   if (pathnameIsMissingLocale && !isExcludedPath) {
@@ -45,12 +57,7 @@ export async function proxy(request: NextRequest) {
 
   // 4. Resolve the locale for cookie setting/routing context
   let currentLocale = "en"
-  const localeCodes = [
-    "ar", "az", "bn", "cs", "da", "de", "el", "es", "fr", "hi", "hr", "hu",
-    "id", "it", "nl", "no", "pl", "pt", "ro", "ru", "sk", "sl", "sr", "sv",
-    "tr", "zh", "jp", "kr", "vn", "he", "th"
-  ]
-  for (const loc of localeCodes) {
+  for (const loc of LOCALE_CODES) {
     if (pathname.startsWith(`/${loc}/`) || pathname === `/${loc}`) {
       currentLocale = loc
       break
@@ -83,7 +90,7 @@ export async function proxy(request: NextRequest) {
         response.cookies.delete("admin_token")
       }
     }
-  } else if (pathname === "/login" || locales.map(l => l + "/login").includes(pathname)) {
+  } else if (LOGIN_PATHS.has(pathname)) {
     const token = request.cookies.get("admin_token")?.value
     let isLoggedIn = false
     if (token) {
