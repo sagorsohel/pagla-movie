@@ -16,19 +16,21 @@ function slugify(text: string) {
     .replace(/-+$/, "")
 }
 
-export async function scrapeLastMonthMovies(pages: number = 10) {
+export async function scrapeLastMonthMovies(startPage: number = 1, endPage: number = 10) {
   const apiKey = TMDB_API_KEY
   if (!apiKey) {
     throw new Error("TMDB API Key is missing. Configure it in .env file.")
   }
 
-  console.log(`Scraping all-time popular movies globally from TMDB (limit: ${pages} pages)...`)
+  const fromPage = Math.max(1, startPage)
+  const toPage = Math.max(fromPage, endPage)
+
+  console.log(`Scraping popular movies from TMDB (pages ${fromPage} to ${toPage})...`)
 
   let totalImported = 0
 
   try {
-    // Scrape up to the specified pages of globally popular movies
-    for (let page = 1; page <= pages; page++) {
+    for (let page = fromPage; page <= toPage; page++) {
       // Map virtual page index to TMDB discover request query (TMDB max page limit is 500)
       let discoverUrl = `${TMDB_BASE_URL}/discover/movie?api_key=${apiKey}&sort_by=popularity.desc&page=${page}`
       if (page > 500) {

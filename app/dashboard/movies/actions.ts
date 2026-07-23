@@ -58,9 +58,10 @@ export async function updateMovieAction(prevState: any, formData: FormData) {
   }
 }
 
-export async function runMovieImportAction(pages: number = 10) {
+export async function runMovieImportAction(startPage: number = 1, endPage?: number) {
   try {
-    const result = await scrapeLastMonthMovies(pages)
+    const finalEndPage = endPage !== undefined ? endPage : startPage
+    const result = await scrapeLastMonthMovies(startPage, finalEndPage)
     revalidatePath("/dashboard/movies")
     return result
   } catch (error: any) {

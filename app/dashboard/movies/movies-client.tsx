@@ -151,15 +151,42 @@ export function MoviesClient({
   }
 
   const handleImport = () => {
-    setImportStatus(`Importing ${importPages} pages...`)
+    const targetPages = Math.max(1, importPages)
+    const BATCH_SIZE = 5 // Process 5 pages per request batch so requests never time out (NO 504 errors)!
+    
+    setImportStatus(`Starting import for ${targetPages} pages...`)
+
     startImportTransition(async () => {
-      const result: any = await runMovieImportAction(importPages)
-      if (result && result.success) {
-        setImportStatus(`Imported ${result.count} new movies! Reloading...`)
-        window.location.reload()
-      } else {
-        setImportStatus(`Import failed: ${result?.error || "Unknown error"}`)
+      let totalImportedCount = 0
+      let currentBatchStart = 1
+
+      while (currentBatchStart <= targetPages) {
+        const currentBatchEnd = Math.min(currentBatchStart + BATCH_SIZE - 1, targetPages)
+        const progressPercent = Math.round((currentBatchStart / targetPages) * 100)
+        
+        setImportStatus(
+          `Importing pages ${currentBatchStart}-${currentBatchEnd} of ${targetPages} (${progressPercent}%)... [${totalImportedCount} new movies]`
+        )
+
+        try {
+          const result: any = await runMovieImportAction(currentBatchStart, currentBatchEnd)
+          if (result && result.success) {
+            totalImportedCount += (result.count || 0)
+            currentBatchStart = currentBatchEnd + 1
+          } else {
+            setImportStatus(`Import paused at page ${currentBatchStart}: ${result?.error || "Error"}`)
+            return
+          }
+        } catch (err: any) {
+          setImportStatus(`Import paused at page ${currentBatchStart}: ${err?.message || "Network timeout"}`)
+          return
+        }
       }
+
+      setImportStatus(`Successfully imported ${totalImportedCount} new movies! Reloading...`)
+      setTimeout(() => {
+        window.location.reload()
+      }, 800)
     })
   }
 
