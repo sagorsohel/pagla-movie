@@ -26,11 +26,12 @@ export function LanguageSelector({ currentLocale }: { currentLocale: Locale }) {
   }, [])
 
   useEffect(() => {
-    // Only load Google Translate if the active locale is not English or if a translation cookie exists
-    const hasTranslationCookie = typeof document !== "undefined" && document.cookie.includes("googtrans=/en/");
-    const isTranslated = currentLocale !== "en" || hasTranslationCookie;
-
-    if (!isTranslated) return;
+    if (currentLocale === "en") {
+      document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;"
+      document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=" + window.location.hostname
+      document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=." + window.location.hostname
+      return;
+    }
 
     // 1. Define the global translate callback if it doesn't exist
     if (!(window as any).googleTranslateElementInit) {
@@ -58,7 +59,7 @@ export function LanguageSelector({ currentLocale }: { currentLocale: Locale }) {
       script.defer = true;
       document.body.appendChild(script);
     }
-  }, [])
+  }, [currentLocale])
 
   const handleLanguageChange = (langCode: string) => {
     localStorage.setItem("user_lang_pref", langCode)
@@ -75,6 +76,8 @@ export function LanguageSelector({ currentLocale }: { currentLocale: Locale }) {
       document.cookie = "googtrans=/en/" + translateLocale + "; path=/;"
     } else {
       document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;"
+      document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=" + window.location.hostname
+      document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=." + window.location.hostname
     }
 
     // Replace the locale segment in the URL pathname

@@ -125,7 +125,7 @@ export async function proxy(request: NextRequest) {
   if (!pathname.startsWith("/dashboard") && currentLocale !== "en") {
     response.cookies.set("googtrans", `/en/${translateLocale}`, { path: "/" })
   } else if (currentLocale === "en") {
-    response.cookies.delete("googtrans")
+    response.cookies.set("googtrans", "", { path: "/", expires: new Date(0) })
   }
 
   return response
