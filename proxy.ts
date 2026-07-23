@@ -40,17 +40,22 @@ export async function proxy(request: NextRequest) {
     (locale) => !pathname.startsWith(locale + "/") && pathname !== locale
   )
 
-  // 3. Redirect to locale path if missing (Defaults to English 'en' for India, BD & all regions)
+  // 3. Redirect to locale path if missing (Defaults strictly to English 'en' for India, BD & all regions)
   if (pathnameIsMissingLocale && !isExcludedPath) {
     const savedLang = request.cookies.get("user_lang_pref")?.value
     let targetLang = "en"
-    if (savedLang && LOCALE_CODES.includes(savedLang)) {
+    if (savedLang && LOCALE_CODES.includes(savedLang) && savedLang !== "bn" && savedLang !== "hi") {
       targetLang = savedLang
     }
 
     const redirectUrl = new URL(`/${targetLang}${pathname}`, request.url)
     redirectUrl.search = request.nextUrl.search
-    return NextResponse.redirect(redirectUrl)
+    const response = NextResponse.redirect(redirectUrl)
+    if (!savedLang || savedLang === "bn" || savedLang === "hi") {
+      response.cookies.set("user_lang_pref", "en", { path: "/", maxAge: 31536000 })
+      response.cookies.set("googtrans", "", { path: "/", expires: new Date(0) })
+    }
+    return response
   }
 
   // 4. Resolve the locale for cookie setting/routing context

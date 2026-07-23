@@ -27,6 +27,7 @@ export function LanguageSelector({ currentLocale }: { currentLocale: Locale }) {
 
   useEffect(() => {
     if (currentLocale === "en") {
+      document.cookie = "user_lang_pref=en; path=/; max-age=31536000; SameSite=Lax"
       document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;"
       document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=" + window.location.hostname
       document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=." + window.location.hostname
