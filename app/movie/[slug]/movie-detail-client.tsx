@@ -539,8 +539,8 @@ export function MovieDetailClient({
               <div className="absolute inset-0 bg-linear-to-t from-background via-background/30 to-black/30" />
             </div>
 
-            {/* Main Content inside wide container */}
-            <div className="relative z-10 w-full max-w-[1400px] mx-auto px-6 md:px-12 lg:px-16 pt-3 sm:pt-0  pb-12 flex flex-col justify-end min-h-[50vh]  space-y-6">
+            {/* Main Content inside wide container (Aligned with CineNavbar logo) */}
+            <div className="relative z-10 w-full px-4 sm:px-6 md:px-12 pt-3 sm:pt-0 pb-12 flex flex-col justify-end min-h-[50vh] space-y-6">
               <div className="space-y-4 max-w-3xl">
                 <div className="flex flex-wrap items-center gap-2">
                   {movie.categories.map((c) => (
@@ -681,7 +681,7 @@ export function MovieDetailClient({
       </div>
 
       {/* Main Container */}
-      <div className="max-w-[1400px] mx-auto w-full px-6 md:px-12 lg:px-16 pt-6">
+      <div className="w-full px-4 sm:px-6 md:px-12 pt-6">
 
         {/* Content Box */}
         <div className="space-y-6">

@@ -87,12 +87,7 @@ export default function FloatingDesktopAd({ floatingDesktopAds }: FloatingDeskto
     <div
       className="fixed bottom-0 left-0 right-0 z-50 bg-transparent hidden md:flex justify-center items-center pt-2 pb-2 animate-in slide-in-from-bottom duration-300"
     >
-      <button
-        onClick={() => setIsDismissed(true)}
-        className="absolute top-1 right-3 p-1 rounded-md bg-slate-900/80 hover:bg-slate-855 text-slate-400 hover:text-slate-200 transition-all border border-slate-800 cursor-pointer z-50"
-      >
-        <X className="w-3.5 h-3.5" />
-      </button>
+
 
       <AdScriptContainer key={pathname} scriptHtml={floatingDesktopAds} />
     </div>

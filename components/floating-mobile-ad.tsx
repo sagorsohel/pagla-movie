@@ -119,12 +119,7 @@ export default function FloatingMobileAd({ floatingAds, heroAds, hero2Ads }: Flo
     <div
       className="fixed bottom-0 left-0 right-0 z-50 bg-transparent flex justify-center items-center pt-[5px] pb-[calc(5px+env(safe-area-inset-bottom))] animate-in slide-in-from-bottom duration-300 md:hidden"
     >
-      <button
-        onClick={() => setIsDismissed(true)}
-        className="absolute top-1 right-2 p-1 rounded-md bg-slate-900/80 hover:bg-slate-855 text-slate-400 hover:text-slate-200 transition-all border border-slate-800 cursor-pointer z-50"
-      >
-        <X className="w-3.5 h-3.5" />
-      </button>
+
 
       <AdScriptContainer key={pathname} scriptHtml={activeAdHtml} />
     </div>
