@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useRef } from "react"
-import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
+import { ChevronLeftIcon, ChevronRightIcon, Film } from "lucide-react"
 
 type Movie = {
   id: number
@@ -100,8 +100,9 @@ export function MovieRow({
                     className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-300"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-xs text-slate-600 font-bold p-4 text-center">
-                    No Poster
+                  <div className="w-full h-full bg-gradient-to-br from-slate-900 via-slate-850 to-red-950 flex flex-col items-center justify-center p-3 text-center border border-slate-850">
+                    <Film className="w-8 h-8 text-red-500/60 mb-2" />
+                    <span className="text-xs font-black text-slate-200 line-clamp-3 leading-tight">{movie.title}</span>
                   </div>
                 )}
                 {/* Rating Badge */}

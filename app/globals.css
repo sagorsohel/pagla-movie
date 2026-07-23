@@ -199,24 +199,20 @@ body {
   position: static !important;
 }
 
-/* Prevent third-party scripts from injecting floating or absolute ad elements */
-body>[id^="atContainer-"],
-body>[id^="atLink-"],
-body>[id^="atIframe-"],
-[id^="atContainer-"][style*="fixed"],
-[id^="atContainer-"][style*="absolute"],
-[id^="atLink-"][style*="fixed"],
-[id^="atLink-"][style*="absolute"],
-[id^="atIframe-"][style*="fixed"],
-[id^="atIframe-"][style*="absolute"] {
+/* Prevent third-party scripts from injecting floating or absolute bottom-left ad elements */
+body > [id^="atContainer-"],
+body > [id^="atLink-"],
+body > [id^="atIframe-"],
+[id^="atContainer-"],
+[id^="atLink-"],
+[id^="atIframe-"],
+div[id*="atContainer-"],
+a[id*="atLink-"],
+iframe[src="about:blank"][width="320"][height="50"] {
   display: none !important;
   opacity: 0 !important;
   pointer-events: none !important;
   visibility: hidden !important;
   width: 0 !important;
   height: 0 !important;
-}
-
-#atContainer-6d94ec95bf2bef70a60b77ffb5b5ca33 {
-  display: none !important;
 }

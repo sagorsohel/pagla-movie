@@ -323,8 +323,9 @@ export function HomeClient({
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-xs text-slate-655 font-bold p-4 text-center">
-                          No Poster
+                        <div className="w-full h-full bg-gradient-to-br from-slate-900 via-slate-850 to-red-950 flex flex-col items-center justify-center p-3 text-center border border-slate-850">
+                          <FilmIcon className="w-8 h-8 text-red-500/60 mb-2" />
+                          <span className="text-xs font-black text-slate-200 line-clamp-3 leading-tight">{movie.title}</span>
                         </div>
                       )}
                       <span className="absolute top-2 right-2 bg-black/75 backdrop-blur-xs text-[10px] font-bold text-yellow-500 px-1.5 py-0.5 rounded border border-yellow-500/20">
@@ -352,50 +353,62 @@ export function HomeClient({
           /* Default state: Horizontal categories scrolling lists */
           <div className="space-y-10">
             {/* 1. Today's Top Row */}
-            <MovieRow
-              title={t.topHits}
-              movies={todaysTopMovies}
-              onMovieClick={handleMovieClick}
-              onSeeMore={() => setFilterType("todays-top")}
-            />
-
-            {/* Ad Card 1 */}
-            <div className="w-full max-w-[1400px] mx-auto py-2">
-              <AdCard scriptHtml={adsConfig?.heroAds} scriptHtml2={adsConfig?.hero2Ads} />
-            </div>
+            {todaysTopMovies.length >= 10 && (
+              <>
+                <MovieRow
+                  title={t.topHits}
+                  movies={todaysTopMovies}
+                  onMovieClick={handleMovieClick}
+                  onSeeMore={() => setFilterType("todays-top")}
+                />
+                <div className="w-full max-w-[1400px] mx-auto py-2">
+                  <AdCard scriptHtml={adsConfig?.heroAds} scriptHtml2={adsConfig?.hero2Ads} />
+                </div>
+              </>
+            )}
 
             {/* 2. Top Rated Row */}
-            <MovieRow
-              title={t.topRated}
-              movies={topRatedMovies}
-              onMovieClick={handleMovieClick}
-              onSeeMore={() => setFilterType("top-rated")}
-            />
-
-            {/* Ad Card after Top Rated */}
-            <div className="w-full max-w-[1400px] mx-auto py-2">
-              <AdCard scriptHtml={adsConfig?.heroAds} scriptHtml2={adsConfig?.hero2Ads} />
-            </div>
+            {topRatedMovies.length >= 10 && (
+              <>
+                <MovieRow
+                  title={t.topRated}
+                  movies={topRatedMovies}
+                  onMovieClick={handleMovieClick}
+                  onSeeMore={() => setFilterType("top-rated")}
+                />
+                <div className="w-full max-w-[1400px] mx-auto py-2">
+                  <AdCard scriptHtml={adsConfig?.heroAds} scriptHtml2={adsConfig?.hero2Ads} />
+                </div>
+              </>
+            )}
 
             {/* 3. Upcoming Row */}
-            <MovieRow
-              title={t.upcoming}
-              movies={upcomingMovies}
-              onMovieClick={handleMovieClick}
-              onSeeMore={() => setFilterType("upcoming")}
-            />
+            {upcomingMovies.length >= 10 && (
+              <>
+                <MovieRow
+                  title={t.upcoming}
+                  movies={upcomingMovies}
+                  onMovieClick={handleMovieClick}
+                  onSeeMore={() => setFilterType("upcoming")}
+                />
+                <div className="w-full max-w-[1400px] mx-auto py-2">
+                  <AdCard scriptHtml={adsConfig?.heroAds} scriptHtml2={adsConfig?.hero2Ads} />
+                </div>
+              </>
+            )}
 
-            {/* Ad Card after Upcoming */}
-            <div className="w-full max-w-[1400px] mx-auto py-2">
-              <AdCard scriptHtml={adsConfig?.heroAds} scriptHtml2={adsConfig?.hero2Ads} />
-            </div>
+            {/* 4. Category-Wise Rows dynamically rendered (only categories with 10+ movies) */}
+            {(() => {
+              const validCategories = categories
+                .map((cat) => ({
+                  cat,
+                  catMovies: movies.filter((m) =>
+                    m.categories.some((c) => c.id === cat.id)
+                  ),
+                }))
+                .filter(({ catMovies }) => catMovies.length >= 10)
 
-            {/* 4. Category-Wise Rows dynamically rendered with AdCard after each row */}
-            {categories.map((cat) => {
-              const catMovies = movies.filter((m) =>
-                m.categories.some((c) => c.id === cat.id)
-              )
-              return (
+              return validCategories.map(({ cat, catMovies }) => (
                 <React.Fragment key={cat.id}>
                   <MovieRow
                     title={cat.name}
@@ -407,8 +420,8 @@ export function HomeClient({
                     <AdCard scriptHtml={adsConfig?.heroAds} scriptHtml2={adsConfig?.hero2Ads} />
                   </div>
                 </React.Fragment>
-              )
-            })}
+              ))
+            })()}
           </div>
         )}
       </div>

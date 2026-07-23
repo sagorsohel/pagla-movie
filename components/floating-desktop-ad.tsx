@@ -28,15 +28,20 @@ function AdScriptContainer({ scriptHtml, className }: { scriptHtml?: string; cla
         <meta name="color-scheme" content="dark">
         <style>
           html, body {
-            margin: 0;
+            margin: 0 auto !important;
             padding: 0;
             overflow: hidden;
             background: transparent !important;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            height: 100%;
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            width: 100% !important;
+            height: 100% !important;
+            text-align: center !important;
+          }
+          div, iframe, a, img {
+            margin: 0 auto !important;
+            text-align: center !important;
           }
         </style>
       </head>
