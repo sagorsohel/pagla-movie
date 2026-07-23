@@ -411,19 +411,19 @@ export function MovieDetailClient({
       )}
 
       {/* Billboard Header (Full Page Style / Player) */}
-      <div className={`relative w-full ${isPlaying ? "h-[300px] min-h-0 md:min-h-screen" : "min-h-[90vh] md:min-h-screen"} bg-slate-950 flex items-center overflow-hidden border-b border-slate-900/50 transition-all duration-300 ${topAdHtml ? "" : "pt-[57px] md:pt-0"}`}>
+      <div className={`relative w-full ${isPlaying ? "h-[500px] min-h-[500px] md:min-h-[500px]" : "min-h-[90vh] md:min-h-screen"} bg-slate-950 flex items-center overflow-hidden border-b border-slate-900/50 transition-all duration-300 ${topAdHtml ? "" : "pt-[57px] md:pt-0"}`}>
 
         {/* Preloaded Video Player Backdrop Container (Always Rendered, Toggled by CSS) */}
-        <div className={`absolute inset-0 w-full h-full bg-[#050505]/95 flex items-center justify-center p-0 md:p-4 select-none transition-all duration-300 ${isPlaying ? "opacity-100 pointer-events-auto z-20" : "opacity-0 pointer-events-none -z-10"
+        <div className={`absolute inset-0 w-full h-full bg-[#050505]/95 flex items-center justify-center p-0 select-none transition-all duration-300 ${isPlaying ? "opacity-100 pointer-events-auto z-20" : "opacity-0 pointer-events-none -z-10"
           }`}>
           {/* Center Player Box */}
-          <div className="relative w-full h-full md:h-auto md:max-w-[1280px] md:aspect-video bg-black flex flex-col justify-between md:shadow-2xl md:border md:border-slate-900 md:rounded-2xl overflow-hidden">
+          <div className="relative w-full h-[500px] md:h-[500px] md:max-w-[1280px] bg-black flex flex-col justify-between md:shadow-2xl md:border md:border-slate-900 md:rounded-2xl overflow-hidden">
             {/* Custom Video Player view playing 5s snippet (From User Screenshot 1) */}
-            <div className="absolute inset-0 w-full h-full bg-black select-none">
+            <div className="absolute inset-0 w-full h-[500px] bg-black select-none">
               <video
                 ref={videoRef}
                 src="/video.mp4"
-                className="w-full h-full object-cover"
+                className="w-full h-[300px] object-cover"
                 onPlay={() => setIsVideoPlaying(true)}
                 onPlaying={() => setIsVideoPlaying(true)}
                 onTimeUpdate={(e) => {
@@ -499,15 +499,7 @@ export function MovieDetailClient({
           </div>
 
           {/* Top close button to exit player mode easily */}
-          <button
-            onClick={handleClosePlayer}
-            className="absolute top-4 right-4 p-2 bg-black/60 hover:bg-black/90 text-white rounded-full border border-slate-800 transition cursor-pointer z-30 shadow-lg"
-            title="Close Player"
-          >
-            <svg className="w-5 h-5 fill-none stroke-current" strokeWidth="2.5" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+
         </div>
 
         {/* Backdrop details header is shown when player is inactive */}
