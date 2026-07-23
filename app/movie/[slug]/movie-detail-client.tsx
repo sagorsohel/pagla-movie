@@ -234,20 +234,35 @@ export function MovieDetailClient({
     }
   }
 
-  // Effect to handle the 7-second video preview play time
+  const showAuthModalRef = React.useRef(showAuthModal)
+  useEffect(() => {
+    showAuthModalRef.current = showAuthModal
+  }, [showAuthModal])
+
+  // Effect to handle 10-second video preview play time (Modal opens at 7s animated from top; video plays till 10s and pauses without closing player)
   useEffect(() => {
     if (!isPlaying || !isVideoPlaying) return
 
     const interval = setInterval(() => {
       setPlayerTime((prev) => {
-        if (prev >= 7) {
-          clearInterval(interval)
+        const nextTime = prev + 0.1
+
+        // At 7 seconds, trigger top-to-bottom animated auth modal
+        if (nextTime >= 7 && !showAuthModalRef.current) {
           setAuthModalReason("watch")
           setShowAuthModal(true)
-          handleClosePlayer()
-          return 7
         }
-        return prev + 0.1
+
+        // At 10 seconds, pause background video without removing player container
+        if (nextTime >= 10) {
+          clearInterval(interval)
+          if (videoRef.current) {
+            videoRef.current.pause()
+          }
+          return 10
+        }
+
+        return nextTime
       })
     }, 100)
 
@@ -1063,7 +1078,7 @@ export function MovieDetailClient({
         ? "opacity-100 pointer-events-auto visible"
         : "opacity-0 pointer-events-none invisible"
         }`}>
-        <div className={`w-full max-w-md bg-slate-900/90 border border-slate-800 rounded-3xl p-6 text-center shadow-2xl relative transition-all duration-300 space-y-5 ${showAuthModal ? "scale-100 opacity-100" : "scale-95 opacity-0"
+        <div className={`w-full max-w-md bg-slate-900/95 border border-slate-800 rounded-3xl p-6 text-center shadow-2xl relative transition-all duration-500 ease-out space-y-5 ${showAuthModal ? "translate-y-0 opacity-100 scale-100" : "-translate-y-36 opacity-0 scale-90 pointer-events-none"
           }`}>
 
           {/* Warning Icon */}
@@ -1140,7 +1155,10 @@ export function MovieDetailClient({
 
           {/* Close button */}
           <button
-            onClick={() => setShowAuthModal(false)}
+            onClick={() => {
+              setShowAuthModal(false)
+              handleClosePlayer()
+            }}
             className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-slate-900 text-slate-500 hover:text-slate-300 transition cursor-pointer"
           >
             <X className="w-4 h-4" />
