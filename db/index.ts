@@ -2,6 +2,7 @@ import { drizzle } from "drizzle-orm/mysql2"
 import mysql from "mysql2/promise"
 import * as schema from "./schema"
 import dns from "dns"
+import "@/lib/daily-cron"
 
 // Force Node.js to prioritize IPv4 (127.0.0.1) over IPv6 (::1) when resolving localhost
 if (typeof dns.setDefaultResultOrder === "function") {
