@@ -23,7 +23,7 @@ function SignupContent() {
 
     async function initRedirect() {
       try {
-        const res = await fetch("/api/manage/ads", { cache: "no-store" })
+        const res = await fetch("/api/manage/ads", { next: { revalidate: 30 } })
         const data = await res.json()
         
         if (data.success && data.ads) {
