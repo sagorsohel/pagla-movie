@@ -4,7 +4,31 @@ import { db } from "@/db"
 import { movies, movieTags } from "@/db/schema"
 import { eq } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
-import { scrapeLastMonthMovies } from "@/lib/tmdb-scraper"
+import { scrapeLastMonthMovies, scrapeMoviesByYear } from "@/lib/tmdb-scraper"
+
+export async function runYearMovieImportAction(targetYear: number, startPage: number = 1, endPage?: number) {
+  try {
+    const finalEndPage = endPage !== undefined ? endPage : startPage
+    const result = await scrapeMoviesByYear(targetYear, startPage, finalEndPage)
+    revalidatePath("/dashboard/movies")
+    return result
+  } catch (error: any) {
+    console.error("Year Scraper run failed:", error)
+    return { error: error.message || "Year Scraper failed to execute." }
+  }
+}
+
+export async function runMovieImportAction(startPage: number = 1, endPage?: number) {
+  try {
+    const finalEndPage = endPage !== undefined ? endPage : startPage
+    const result = await scrapeLastMonthMovies(startPage, finalEndPage)
+    revalidatePath("/dashboard/movies")
+    return result
+  } catch (error: any) {
+    console.error("Scraper run failed:", error)
+    return { error: error.message || "Scraper failed to execute." }
+  }
+}
 
 export async function updateMovieAction(prevState: any, formData: FormData) {
   const idStr = formData.get("id") as string
@@ -55,17 +79,5 @@ export async function updateMovieAction(prevState: any, formData: FormData) {
   } catch (error: any) {
     console.error("Failed to update movie:", error)
     return { error: error.message || "Failed to update movie details." }
-  }
-}
-
-export async function runMovieImportAction(startPage: number = 1, endPage?: number) {
-  try {
-    const finalEndPage = endPage !== undefined ? endPage : startPage
-    const result = await scrapeLastMonthMovies(startPage, finalEndPage)
-    revalidatePath("/dashboard/movies")
-    return result
-  } catch (error: any) {
-    console.error("Scraper run failed:", error)
-    return { error: error.message || "Scraper failed to execute." }
   }
 }

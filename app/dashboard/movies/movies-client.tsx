@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useActionState, useState, useTransition } from "react"
-import { updateMovieAction, runMovieImportAction } from "./actions"
+import { updateMovieAction, runMovieImportAction, runYearMovieImportAction } from "./actions"
 import { uploadImageAction } from "@/lib/upload-action"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -13,6 +13,7 @@ import {
   ExternalLinkIcon,
   XIcon,
   UploadIcon,
+  CalendarIcon,
 } from "lucide-react"
 
 type MovieData = {
@@ -150,23 +151,149 @@ export function MoviesClient({
     }
   }
 
-  const handleImport = () => {
-    const targetPages = Math.max(1, importPages)
-    const BATCH_SIZE = 5 // Process 5 pages per request batch so requests never time out (NO 504 errors)!
-    
-    setImportStatus(`Starting import for ${targetPages} pages...`)
+  // Selected Year Importer State
+  const [selectedYear, setSelectedYear] = useState<number>(2026)
+
+  // Live Import Progress States
+  const [showImportModal, setShowImportModal] = useState(false)
+  const [importProgress, setImportProgress] = useState({
+    currentBatchStart: 1,
+    currentBatchEnd: 5,
+    targetPages: 500,
+    importedCount: 0,
+    percent: 0,
+    etaSeconds: 0,
+    status: "idle", // "idle" | "running" | "completed" | "error"
+    errorMsg: "",
+  })
+
+  const formatETA = (totalSec: number) => {
+    if (totalSec <= 0) return "Calculating..."
+    const m = Math.floor(totalSec / 60)
+    const s = totalSec % 60
+    if (m === 0) return `${s}s remaining`
+    return `${m}m ${s}s remaining`
+  }
+
+  const handleRunYearImport = (targetYear: number, targetTotalPages: number = 500) => {
+    const BATCH_SIZE = 5
+    const startTime = Date.now()
+
+    setShowImportModal(true)
+    setImportProgress({
+      currentBatchStart: 1,
+      currentBatchEnd: 5,
+      targetPages: targetTotalPages,
+      importedCount: 0,
+      percent: 0,
+      etaSeconds: 0,
+      status: "running",
+      errorMsg: "",
+    })
 
     startImportTransition(async () => {
       let totalImportedCount = 0
       let currentBatchStart = 1
 
-      while (currentBatchStart <= targetPages) {
-        const currentBatchEnd = Math.min(currentBatchStart + BATCH_SIZE - 1, targetPages)
-        const progressPercent = Math.round((currentBatchStart / targetPages) * 100)
-        
-        setImportStatus(
-          `Importing pages ${currentBatchStart}-${currentBatchEnd} of ${targetPages} (${progressPercent}%)... [${totalImportedCount} new movies]`
-        )
+      while (currentBatchStart <= targetTotalPages) {
+        const currentBatchEnd = Math.min(currentBatchStart + BATCH_SIZE - 1, targetTotalPages)
+        const progressPercent = Math.round((currentBatchStart / targetTotalPages) * 100)
+
+        // Calculate ETA
+        const elapsedSec = (Date.now() - startTime) / 1000
+        const pagesDone = currentBatchStart - 1
+        const pagesLeft = targetTotalPages - pagesDone
+        const secPerPage = pagesDone > 0 ? elapsedSec / pagesDone : 2.5
+        const etaSec = Math.round(pagesLeft * secPerPage)
+
+        setImportProgress({
+          currentBatchStart,
+          currentBatchEnd,
+          targetPages: targetTotalPages,
+          importedCount: totalImportedCount,
+          percent: progressPercent,
+          etaSeconds: etaSec,
+          status: "running",
+          errorMsg: "",
+        })
+
+        try {
+          const result: any = await runYearMovieImportAction(targetYear, currentBatchStart, currentBatchEnd)
+          if (result && result.success) {
+            totalImportedCount += (result.count || 0)
+            currentBatchStart = currentBatchEnd + 1
+          } else {
+            setImportProgress((prev) => ({
+              ...prev,
+              status: "error",
+              errorMsg: result?.error || `Year ${targetYear} import encountered an error`,
+            }))
+            return
+          }
+        } catch (err: any) {
+          setImportProgress((prev) => ({
+            ...prev,
+            status: "error",
+            errorMsg: err?.message || "Network timeout",
+          }))
+          return
+        }
+      }
+
+      setImportProgress({
+        currentBatchStart: targetTotalPages,
+        currentBatchEnd: targetTotalPages,
+        targetPages: targetTotalPages,
+        importedCount: totalImportedCount,
+        percent: 100,
+        etaSeconds: 0,
+        status: "completed",
+        errorMsg: "",
+      })
+    })
+  }
+
+  const handleRunFullImport = (targetTotalPages: number = 10000) => {
+    const BATCH_SIZE = 5
+    const startTime = Date.now()
+
+    setShowImportModal(true)
+    setImportProgress({
+      currentBatchStart: 1,
+      currentBatchEnd: 5,
+      targetPages: targetTotalPages,
+      importedCount: 0,
+      percent: 0,
+      etaSeconds: 0,
+      status: "running",
+      errorMsg: "",
+    })
+
+    startImportTransition(async () => {
+      let totalImportedCount = 0
+      let currentBatchStart = 1
+
+      while (currentBatchStart <= targetTotalPages) {
+        const currentBatchEnd = Math.min(currentBatchStart + BATCH_SIZE - 1, targetTotalPages)
+        const progressPercent = Math.round((currentBatchStart / targetTotalPages) * 100)
+
+        // Calculate ETA
+        const elapsedSec = (Date.now() - startTime) / 1000
+        const pagesDone = currentBatchStart - 1
+        const pagesLeft = targetTotalPages - pagesDone
+        const secPerPage = pagesDone > 0 ? elapsedSec / pagesDone : 2.5
+        const etaSec = Math.round(pagesLeft * secPerPage)
+
+        setImportProgress({
+          currentBatchStart,
+          currentBatchEnd,
+          targetPages: targetTotalPages,
+          importedCount: totalImportedCount,
+          percent: progressPercent,
+          etaSeconds: etaSec,
+          status: "running",
+          errorMsg: "",
+        })
 
         try {
           const result: any = await runMovieImportAction(currentBatchStart, currentBatchEnd)
@@ -174,20 +301,38 @@ export function MoviesClient({
             totalImportedCount += (result.count || 0)
             currentBatchStart = currentBatchEnd + 1
           } else {
-            setImportStatus(`Import paused at page ${currentBatchStart}: ${result?.error || "Error"}`)
+            setImportProgress((prev) => ({
+              ...prev,
+              status: "error",
+              errorMsg: result?.error || "Import encountered an error",
+            }))
             return
           }
         } catch (err: any) {
-          setImportStatus(`Import paused at page ${currentBatchStart}: ${err?.message || "Network timeout"}`)
+          setImportProgress((prev) => ({
+            ...prev,
+            status: "error",
+            errorMsg: err?.message || "Network timeout",
+          }))
           return
         }
       }
 
-      setImportStatus(`Successfully imported ${totalImportedCount} new movies! Reloading...`)
-      setTimeout(() => {
-        window.location.reload()
-      }, 800)
+      setImportProgress({
+        currentBatchStart: targetTotalPages,
+        currentBatchEnd: targetTotalPages,
+        targetPages: targetTotalPages,
+        importedCount: totalImportedCount,
+        percent: 100,
+        etaSeconds: 0,
+        status: "completed",
+        errorMsg: "",
+      })
     })
+  }
+
+  const handleImport = () => {
+    handleRunFullImport(importPages)
   }
 
   const navigateToPage = (pageNum: number) => {
@@ -254,7 +399,7 @@ export function MoviesClient({
           <Button
             onClick={handleImport}
             disabled={isImportPending}
-            className="bg-gradient-to-r from-cyan-600 to-emerald-600 hover:from-cyan-500 hover:to-emerald-500 text-white font-extrabold flex items-center gap-2 shadow-xs text-xs rounded-xl h-9"
+            className="bg-gradient-to-r from-cyan-600 to-emerald-600 hover:from-cyan-500 hover:to-emerald-500 text-white font-extrabold flex items-center gap-2 shadow-xs text-xs rounded-xl h-9 cursor-pointer"
           >
             {isImportPending ? (
               <>
@@ -265,6 +410,85 @@ export function MoviesClient({
                 <DownloadIcon className="w-4 h-4" /> Import TMDB Movies
               </>
             )}
+          </Button>
+        </div>
+      </div>
+
+      {/* TMDB Bulk Auto-Importer Banner */}
+      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-red-950 p-5 rounded-2xl border border-slate-700/60 shadow-lg text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2 text-red-400 font-mono text-xs uppercase tracking-wider font-bold mb-1">
+            <DownloadIcon className="w-4 h-4" /> TMDB Bulk Auto-Importer
+          </div>
+          <h2 className="text-lg font-black text-white tracking-tight">Import All Movies from TMDB</h2>
+          <p className="text-slate-300 text-xs mt-1">
+            Fetch popular and newly released movies from TMDB directly into your database.
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            type="button"
+            onClick={() => handleRunFullImport(100)}
+            disabled={isImportPending}
+            className="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold rounded-xl h-9 px-3 cursor-pointer"
+          >
+            +100 Pages (~2,000)
+          </Button>
+          <Button
+            type="button"
+            onClick={() => handleRunFullImport(1000)}
+            disabled={isImportPending}
+            className="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold rounded-xl h-9 px-3 cursor-pointer"
+          >
+            +1,000 Pages (~20,000)
+          </Button>
+          <Button
+            type="button"
+            onClick={() => handleRunFullImport(10000)}
+            disabled={isImportPending}
+            className="bg-gradient-to-r from-red-600 via-rose-600 to-amber-600 hover:from-red-500 hover:to-amber-500 text-white font-extrabold text-xs rounded-xl h-9 px-4 shadow-md flex items-center gap-1.5 cursor-pointer"
+          >
+            <DownloadIcon className="w-4 h-4 animate-bounce" /> Import ALL TMDB Movies (10,000 Pages)
+          </Button>
+        </div>
+      </div>
+
+      {/* Year-Specific Movie Importer Card */}
+      <div className="bg-white border border-slate-200 p-5 rounded-2xl shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2 text-red-600 font-mono text-xs uppercase tracking-wider font-bold mb-1">
+            <CalendarIcon className="w-4 h-4 text-red-600" /> Filtered Year TMDB Importer
+          </div>
+          <h3 className="text-base font-extrabold text-slate-900">Import Movies by Release Year</h3>
+          <p className="text-slate-500 text-xs mt-0.5">
+            Select a specific release year to fetch all movies produced in that year from TMDB.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-3 w-full md:w-auto">
+          <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl text-xs h-9">
+            <span className="text-slate-500 font-bold">Select Year:</span>
+            <select
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(Number(e.target.value))}
+              className="bg-transparent font-extrabold text-slate-900 focus:outline-hidden font-mono cursor-pointer"
+            >
+              {Array.from({ length: 35 }, (_, i) => 2026 - i).map((year) => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <Button
+            type="button"
+            onClick={() => handleRunYearImport(selectedYear, 500)}
+            disabled={isImportPending}
+            className="bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs rounded-xl h-9 px-4 shadow-xs flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
+          >
+            <DownloadIcon className="w-4 h-4" /> Import All Movies of {selectedYear}
           </Button>
         </div>
       </div>
@@ -593,6 +817,115 @@ export function MoviesClient({
                 </Button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Live Import Progress Modal */}
+      {showImportModal && (
+        <div className="fixed inset-x-0 inset-y-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in-50 duration-200 select-none">
+          <div className="w-full max-w-xl bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 text-white text-center relative overflow-hidden">
+            {/* Background Glow */}
+            <div className="absolute -top-12 -right-12 w-40 h-40 bg-red-600/20 rounded-full blur-3xl pointer-events-none" />
+
+            {/* Header Badge */}
+            <div className="flex justify-center">
+              <div className="px-4 py-1.5 rounded-full bg-red-950/80 border border-red-800/80 text-red-400 font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-2">
+                <DownloadIcon className="w-4 h-4 animate-bounce text-red-500" /> TMDB Full Database Auto-Importer
+              </div>
+            </div>
+
+            {/* Status Title */}
+            <div>
+              <h3 className="text-2xl font-black tracking-tight text-white">
+                {importProgress.status === "completed"
+                  ? "🎉 Import Completed Successfully!"
+                  : importProgress.status === "error"
+                  ? "⚠️ Import Paused / Error"
+                  : "Importing Movies from TMDB..."}
+              </h3>
+              <p className="text-slate-400 text-xs mt-1 leading-relaxed">
+                {importProgress.status === "completed"
+                  ? `All requested movies from TMDB have been fetched and added to your database!`
+                  : importProgress.status === "error"
+                  ? importProgress.errorMsg
+                  : "Running background sub-batches of 5 pages to prevent server timeouts."}
+              </p>
+            </div>
+
+            {/* Big Percentage Display */}
+            <div className="py-2 space-y-2">
+              <div className="flex items-baseline justify-center gap-2">
+                <span className="text-5xl font-black font-mono text-red-500 tracking-tight">
+                  {importProgress.percent}%
+                </span>
+                <span className="text-sm font-bold text-slate-400">Complete</span>
+              </div>
+
+              {/* Animated Progress Bar */}
+              <div className="w-full bg-slate-800 h-3.5 rounded-full overflow-hidden p-0.5 border border-slate-700">
+                <div
+                  className="bg-gradient-to-r from-red-600 via-rose-500 to-amber-500 h-full rounded-full transition-all duration-300 shadow-lg"
+                  style={{ width: `${importProgress.percent}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Metrics Statistics Grid */}
+            <div className="grid grid-cols-3 gap-3 bg-slate-950/70 border border-slate-800 rounded-2xl p-4 text-xs font-mono">
+              <div>
+                <div className="text-slate-500 text-[10px] uppercase font-bold">Progress</div>
+                <div className="text-white font-extrabold text-xs sm:text-sm mt-0.5">
+                  Page {importProgress.currentBatchStart} / {importProgress.targetPages}
+                </div>
+              </div>
+              <div>
+                <div className="text-slate-500 text-[10px] uppercase font-bold">New Movies</div>
+                <div className="text-emerald-400 font-extrabold text-xs sm:text-sm mt-0.5">
+                  +{importProgress.importedCount}
+                </div>
+              </div>
+              <div>
+                <div className="text-slate-500 text-[10px] uppercase font-bold">Est. Time Left</div>
+                <div className="text-amber-400 font-extrabold text-xs sm:text-sm mt-0.5">
+                  {importProgress.status === "completed"
+                    ? "0s"
+                    : formatETA(importProgress.etaSeconds)}
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="pt-2 flex justify-center gap-3">
+              {importProgress.status === "completed" ? (
+                <Button
+                  onClick={() => window.location.reload()}
+                  className="bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold px-6 py-2.5 rounded-xl text-xs shadow-lg cursor-pointer"
+                >
+                  Reload Dashboard & View Movies
+                </Button>
+              ) : importProgress.status === "error" ? (
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => handleRunFullImport(importProgress.targetPages)}
+                    className="bg-red-600 hover:bg-red-500 text-white font-bold px-4 py-2 rounded-xl text-xs cursor-pointer"
+                  >
+                    Retry Import
+                  </Button>
+                  <Button
+                    onClick={() => window.location.reload()}
+                    className="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold px-4 py-2 rounded-xl text-xs cursor-pointer"
+                  >
+                    Close & Reload
+                  </Button>
+                </div>
+              ) : (
+                <div className="text-[11px] text-slate-400 font-mono animate-pulse flex items-center gap-2">
+                  <Loader2Icon className="w-4 h-4 animate-spin text-red-500" />
+                  Processing background batches... Please keep browser tab open.
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}

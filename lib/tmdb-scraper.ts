@@ -192,3 +192,119 @@ export async function scrapeLastMonthMovies(startPage: number = 1, endPage: numb
 
   return { success: true, count: totalImported }
 }
+
+export async function scrapeMoviesByYear(targetYear: number, startPage: number = 1, endPage: number = 10) {
+  const apiKey = TMDB_API_KEY
+  if (!apiKey) {
+    throw new Error("TMDB API Key is missing. Configure it in .env file.")
+  }
+
+  const fromPage = Math.max(1, startPage)
+  const toPage = Math.min(500, Math.max(fromPage, endPage))
+
+  console.log(`Scraping movies from TMDB for year ${targetYear} (pages ${fromPage} to ${toPage})...`)
+
+  let totalImported = 0
+
+  try {
+    for (let page = fromPage; page <= toPage; page++) {
+      const discoverUrl = `${TMDB_BASE_URL}/discover/movie?api_key=${apiKey}&sort_by=popularity.desc&primary_release_year=${targetYear}&page=${page}`
+      const res = await fetch(discoverUrl)
+      if (!res.ok) {
+        console.error(`TMDB Discover failed for year ${targetYear} page ${page}: ${res.statusText}`)
+        break
+      }
+
+      const discoverData = await res.json()
+      const results = discoverData.results || []
+      if (results.length === 0) break
+
+      for (const movieItem of results) {
+        const tmdbId = movieItem.id
+
+        const [existingMovie] = await db
+          .select()
+          .from(movies)
+          .where(eq(movies.tmdbId, tmdbId))
+          .limit(1)
+
+        if (existingMovie) continue
+
+        const detailsUrl = `${TMDB_BASE_URL}/movie/${tmdbId}?api_key=${apiKey}&append_to_response=credits,videos`
+        const detailRes = await fetch(detailsUrl)
+        if (!detailRes.ok) continue
+
+        const movieData = await detailRes.json()
+
+        const genreIds: number[] = []
+        const movieGenres = movieData.genres || []
+        for (const genre of movieGenres) {
+          const [existingGenre] = await db
+            .select()
+            .from(categories)
+            .where(eq(categories.tmdbGenreId, genre.id))
+            .limit(1)
+
+          let finalGenreId = 0
+          if (!existingGenre) {
+            const slug = slugify(genre.name)
+            try {
+              const [inserted] = await db.insert(categories).values({
+                tmdbGenreId: genre.id,
+                name: genre.name,
+                slug: slug,
+              }) as any
+              finalGenreId = inserted.insertId
+            } catch {
+              const [cat] = await db.select().from(categories).where(eq(categories.slug, slug)).limit(1)
+              if (cat) finalGenreId = cat.id
+            }
+          } else {
+            finalGenreId = existingGenre.id
+          }
+          if (finalGenreId) genreIds.push(finalGenreId)
+        }
+
+        const baseSlug = slugify(movieData.title || `movie-${tmdbId}`)
+        let finalSlug = baseSlug
+
+        const [existingSlug] = await db
+          .select()
+          .from(movies)
+          .where(eq(movies.slug, baseSlug))
+          .limit(1)
+
+        if (existingSlug) {
+          finalSlug = `${baseSlug}-${tmdbId}`
+        }
+
+        const [insertedMovie] = await db.insert(movies).values({
+          tmdbId: tmdbId,
+          title: movieData.title || "Untitled Movie",
+          slug: finalSlug,
+          overview: movieData.overview || "",
+          posterPath: movieData.poster_path || "",
+          backdropPath: movieData.backdrop_path || "",
+          releaseDate: movieData.release_date || "",
+          voteAverage: movieData.vote_average ? String(movieData.vote_average) : "0.0",
+          cast: movieData.credits?.cast ? movieData.credits.cast.slice(0, 10) : [],
+          crew: movieData.credits?.crew ? movieData.credits.crew.slice(0, 5) : [],
+          videos: movieData.videos?.results || [],
+        }) as any
+
+        const newId = insertedMovie.insertId
+        for (const gId of genreIds) {
+          await db.insert(movieCategories).values({
+            movieId: newId,
+            categoryId: gId,
+          })
+        }
+        totalImported++
+      }
+    }
+  } catch (err) {
+    console.error(`Error scraping movies for year ${targetYear}:`, err)
+  }
+
+  return { success: true, count: totalImported }
+}
