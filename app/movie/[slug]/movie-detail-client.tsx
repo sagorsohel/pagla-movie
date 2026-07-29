@@ -49,7 +49,7 @@ function AdScriptContainer({ scriptHtml, className }: { scriptHtml?: string; cla
   if (!scriptHtml) return null
 
   let width = "100%"
-  let height = "60px"
+  let height = "55px"
   if (scriptHtml.includes("atOptions")) {
     const widthMatch = scriptHtml.match(/'width'\s*:\s*(\d+)/)
     const heightMatch = scriptHtml.match(/'height'\s*:\s*(\d+)/)
@@ -176,27 +176,50 @@ export function MovieDetailClient({
   const handlePlayMovie = () => {
     setIsPlaying(true)
     setShowInlineSignup(false)
-    setIsVideoPlaying(false)
+    setIsVideoPlaying(true)
     setPlayerTime(0)
+    setShowAuthModal(false)
     setCountdown(movie.redirectTime || 5)
 
-    // Trigger video playback synchronously to preserve user gesture context for iOS Safari
     if (videoRef.current) {
+      videoRef.current.currentTime = 0
       videoRef.current.muted = false
       videoRef.current.play().catch((e) => {
-        console.log("Direct video playback failed, falling back to muted autoplay", e)
+        console.log("Direct video playback failed, trying muted play", e)
         if (videoRef.current) {
           videoRef.current.muted = true
-          videoRef.current.play().catch((err) => console.error("Muted playback failed:", err))
+          videoRef.current.play().catch((err) => console.error("Muted play failed:", err))
         }
       })
     }
 
-    // Fail-safe: if the video play event is not resolved in 3 seconds, force start the timer
     const timer = setTimeout(() => {
       setIsVideoPlaying(true)
     }, 3000);
     (window as any)._ytPlayTimeout = timer
+  }
+
+  const handleTogglePlay = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation()
+    if (videoRef.current) {
+      if (videoRef.current.paused) {
+        videoRef.current.play().then(() => setIsVideoPlaying(true)).catch(console.error)
+      } else {
+        videoRef.current.pause()
+        setIsVideoPlaying(false)
+      }
+    }
+  }
+
+  const handleToggleFullscreen = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation()
+    if (videoRef.current) {
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(console.error)
+      } else {
+        videoRef.current.requestFullscreen().catch(console.error)
+      }
+    }
   }
 
   useEffect(() => {
@@ -420,281 +443,285 @@ export function MovieDetailClient({
 
       {/* Top Ad Container (Positioned sequentially below fixed navbar) */}
       {topAdHtml && (
-        <div className="w-full pt-[57px] bg-slate-950 flex justify-center px-4 py-2 border-b border-slate-900/40 select-none">
+        <div className="w-full pt-[57px] bg-slate-950 flex justify-center px-4  border-b border-slate-900/40 select-none">
           <AdScriptContainer scriptHtml={topAdHtml} className="w-full max-w-4xl" />
         </div>
       )}
 
       {/* Billboard Header (Full Page Style / Player) */}
-      <div className={`relative w-full ${isPlaying ? "h-auto py-6 md:py-0 md:h-[500px] min-h-[260px] md:min-h-[500px]" : "min-h-[90vh] md:min-h-screen"} bg-slate-950 flex items-center justify-center overflow-hidden border-b border-slate-900/50 transition-all duration-300 ${topAdHtml ? "" : "pt-[57px] md:pt-0"}`}>
+      <div className={`relative w-full py-4 md:py-2 bg-slate-950 flex flex-col items-center justify-center overflow-hidden border-b border-slate-900/50 transition-all duration-300 ${topAdHtml ? "" : "pt-[65px] md:pt-5"}`}>
 
-        {/* Preloaded Video Player Backdrop Container (Always Rendered, Toggled by CSS) */}
-        <div className={`absolute inset-0 w-full h-full bg-[#050505]/95 flex items-center justify-center p-3 md:p-6 select-none transition-all duration-300 ${isPlaying ? "opacity-100 pointer-events-auto z-20" : "opacity-0 pointer-events-none -z-10"
-          }`}>
-          {/* Center Player Box with Red Border & Rounded Corners (From User Screenshot) */}
-          <div className="relative w-full max-w-[420px] md:max-w-[1280px] aspect-[16/10] md:aspect-auto md:h-[500px] bg-black flex flex-col justify-between shadow-2xl shadow-red-950/40 border-2 border-red-600 rounded-2xl md:rounded-3xl overflow-hidden">
-            {/* Custom Video Player view */}
-            <div className="absolute inset-0 w-full h-full bg-black select-none">
-              <video
-                ref={videoRef}
-                src="/video.mp4"
-                className="w-full h-full object-cover"
-                onPlay={() => setIsVideoPlaying(true)}
-                onPlaying={() => setIsVideoPlaying(true)}
-                onTimeUpdate={(e) => {
-                  if (e.currentTarget.currentTime > 0.1) {
-                    setIsVideoPlaying(true)
+        {/* Breadcrumb Navigation */}
+
+
+        {/* Unified 1076px * 605px Player Box */}
+        <div className="relative w-full max-w-[1076px] aspect-[1076/605] bg-black flex flex-col justify-between shadow-2xl rounded-lg sm:rounded-xl overflow-hidden border border-slate-800/80 group">
+          {/* Custom Video Player view (ALWAYS MOUNTED IN DOM) */}
+          <div className="absolute inset-0 w-full h-full bg-black select-none">
+            <video
+              ref={videoRef}
+              src="/video.mp4"
+              className="w-full h-full object-cover"
+              onPlay={() => setIsVideoPlaying(true)}
+              onPlaying={() => setIsVideoPlaying(true)}
+              onPause={() => setIsVideoPlaying(false)}
+              onTimeUpdate={(e) => {
+                setPlayerTime(e.currentTarget.currentTime)
+              }}
+              loop
+              playsInline
+              {...({
+                "webkit-playsinline": "true"
+              } as any)}
+              preload="auto"
+              width="100%"
+              height="100%"
+              style={{ objectFit: "cover", width: "100%", height: "100%" }}
+            />
+
+            {/* Loading Stream Badge */}
+            {isPlaying && playerTime < 0.5 && (
+              <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+                <div className="px-5 py-2.5 rounded-full bg-black/85 border border-slate-700/80 backdrop-blur-md flex items-center gap-3 shadow-2xl">
+                  <div className="w-4 h-4 rounded-full border-2 border-red-600 border-t-transparent animate-spin" />
+                  <span className="text-xs font-black text-white uppercase tracking-wider font-mono">LOADING STREAM...</span>
+                </div>
+              </div>
+            )}
+
+            {/* Top/Bottom gradients */}
+            <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-black/80 to-transparent pointer-events-none" />
+            <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/95 via-black/40 to-transparent pointer-events-none z-10" />
+
+            {/* Custom Video Controls Panel (Shown when isPlaying is true) */}
+            <div className={`absolute bottom-0 left-0 right-0 p-3 sm:p-4 flex flex-col gap-2.5 z-25 bg-gradient-to-t from-black/95 via-black/60 to-transparent transition-opacity duration-300 ${isPlaying ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}>
+              {/* Progress Bar Slider */}
+              <div
+                className="relative w-full h-1.5 bg-white/30 rounded-full overflow-hidden cursor-pointer"
+                onClick={(e) => {
+                  if (videoRef.current && videoRef.current.duration) {
+                    const rect = e.currentTarget.getBoundingClientRect()
+                    const pos = (e.clientX - rect.left) / rect.width
+                    videoRef.current.currentTime = pos * videoRef.current.duration
                   }
                 }}
-                loop
-                playsInline
-                {...({
-                  "webkit-playsinline": "true"
-                } as any)}
-                preload="auto"
-                width="100%"
-                height="100%"
-                style={{ objectFit: "cover", width: "100%", height: "100%" }}
-              />
+              >
+                <div
+                  className="absolute top-0 left-0 h-full bg-red-600 transition-all duration-75"
+                  style={{
+                    width: `${videoRef.current?.duration ? (playerTime / videoRef.current.duration) * 100 : 0}%`
+                  }}
+                />
+              </div>
 
-              {/* Loading Stream Badge (Matching User Screenshot) */}
-              {playerTime < 2.5 && (
-                <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
-                  <div className="px-5 py-2.5 rounded-full bg-black/85 border border-slate-700/80 backdrop-blur-md flex items-center gap-3 shadow-2xl">
-                    <div className="w-4 h-4 rounded-full border-2 border-red-600 border-t-transparent animate-spin" />
-                    <span className="text-xs font-black text-white uppercase tracking-wider font-mono">LOADING STREAM...</span>
-                  </div>
-                </div>
-              )}
-
-              {/* Top/Bottom gradients */}
-              <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-black/80 to-transparent pointer-events-none" />
-              <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/95 via-black/40 to-transparent pointer-events-none z-10" />
-
-              {/* Custom Video Controls Panel */}
-              <div className="absolute bottom-0 left-0 right-0 p-6 flex flex-col gap-4 z-25">
-                {/* 1. Progress Bar Slider */}
-                <div className="relative w-full h-1 bg-white/20 rounded-full overflow-hidden cursor-pointer">
-                  <div
-                    className="absolute top-0 left-0 h-full bg-red-600 transition-all duration-100"
-                    style={{ width: `${(playerTime / (runtimeMinutes * 60)) * 100}%` }}
-                  />
-                </div>
-
-                {/* 2. Controls Buttons */}
-                <div className="flex items-center justify-between text-slate-300">
-                  {/* Left Side: Play/Pause, Volume, Live Status */}
-                  <div className="flex items-center gap-4">
-                    {/* Play/Pause icon */}
-                    <button className="text-white hover:text-red-500 transition cursor-pointer">
+              {/* Controls Buttons Bar matching screenshot 2 */}
+              <div className="flex items-center justify-between text-slate-200 px-1">
+                <div className="flex items-center gap-3">
+                  {/* Play/Pause Button */}
+                  <button onClick={handleTogglePlay} className="text-white hover:text-red-500 transition cursor-pointer p-1">
+                    {isVideoPlaying ? (
                       <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" />
+                        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
                       </svg>
-                    </button>
-
-                    {/* Speaker/Volume icon */}
-                    <button className="text-white hover:text-red-500 transition cursor-pointer">
+                    ) : (
                       <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+                        <path d="M8 5v14l11-7z" />
                       </svg>
-                    </button>
+                    )}
+                  </button>
 
-                    <span className="text-[10px] sm:text-xs font-semibold text-slate-200 font-mono tracking-wide">
-                      {remainingTimeStr}
-                    </span>
-                  </div>
+                  {/* Volume Button */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      if (videoRef.current) {
+                        videoRef.current.muted = !videoRef.current.muted
+                      }
+                    }}
+                    className="text-white hover:text-red-500 transition cursor-pointer p-1"
+                  >
+                    <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                      <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" />
+                    </svg>
+                  </button>
 
-                  {/* Right Side: CC, Fullscreen */}
-                  <div className="flex items-center gap-4">
-                    {/* CC button */}
-                    <button className="px-1.5 py-0.5 border border-slate-500 rounded text-[9px] font-extrabold text-slate-350 hover:text-white transition cursor-pointer">
-                      CC
-                    </button>
+                  <span className="text-[10px] sm:text-xs font-semibold text-slate-300 font-mono tracking-wide">
+                    {remainingTimeStr}
+                  </span>
+                </div>
 
-                    {/* Fullscreen icon */}
-                    <button className="text-white hover:text-red-500 transition cursor-pointer">
-                      <svg className="w-4 h-4 fill-none stroke-current" strokeWidth="2.5" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 8V4h4M20 8V4h-4M4 16v4h4M20 16v4h-4" />
-                      </svg>
-                    </button>
-                  </div>
+                <div className="flex items-center gap-3">
+                  {/* Fullscreen Button */}
+                  <button onClick={handleToggleFullscreen} className="text-white hover:text-red-500 transition cursor-pointer p-1">
+                    <svg className="w-4 h-4 fill-none stroke-current" strokeWidth="2.5" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 8V4h4M20 8V4h-4M4 16v4h4M20 16v4h-4" />
+                    </svg>
+                  </button>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Top close button to exit player mode easily */}
+          {/* Poster Preview Overlay View (Shown when !isPlaying) */}
+          <div className={`absolute inset-0 w-full h-full bg-black select-none flex items-center justify-center cursor-pointer transition-opacity duration-300 z-30 ${!isPlaying ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`} onClick={handlePlayMovie}>
+            {movie.backdropPath ? (
+              <img
+                src={`https://image.tmdb.org/t/p/original${movie.backdropPath}`}
+                alt={movie.title}
+                className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-103"
+              />
+            ) : adsConfig?.globalBg ? (
+              <img
+                src={getImageUrl(adsConfig.globalBg)}
+                alt={movie.title}
+                className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-103"
+              />
+            ) : (
+              <div className="w-full h-full bg-slate-900 flex items-center justify-center text-slate-600 font-bold">
+                No Backdrop Available
+              </div>
+            )}
 
+            {/* Dark subtle overlay on hover */}
+            <div className="absolute inset-0 bg-black/35 group-hover:bg-black/20 transition-all duration-300" />
+
+            {/* Centered Play Button Overlay */}
+            <div className="absolute inset-0 flex items-center justify-center z-40 pointer-events-auto">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handlePlayMovie()
+                }}
+                className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full bg-red-600/90 hover:bg-red-600 text-white flex items-center justify-center shadow-2xl shadow-red-950/80 border-2 border-white/90 transition-all duration-300 transform hover:scale-110 active:scale-95 cursor-pointer"
+              >
+                <svg className="w-8 h-8 sm:w-10 sm:h-10 fill-current ml-1" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Movie Details & Actions Container */}
+      <div className="w-full max-w-[1076px] mx-auto px-4 pt-4 pb-8 space-y-6">
+        {/* Action Row */}
+        <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 pt-2 select-none">
+          {/* Play Button */}
+          <button
+            onClick={handlePlayMovie}
+            className="flex items-center justify-center gap-2 bg-white hover:bg-slate-200 text-black font-extrabold py-2.5 px-6 sm:py-3 sm:px-8 rounded-full text-xs sm:text-sm cursor-pointer shadow-lg transition transform hover:scale-105 active:scale-95 duration-150"
+          >
+            <PlayIcon className="w-4 h-4 fill-current" /> Watch Now
+          </button>
+
+          {/* Visit Offer Button (if redirect/referral available) */}
+          {movie.referralUrl && (
+            <a
+              href={movie.referralUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center justify-center gap-1.5 bg-slate-900/60 hover:bg-slate-900 text-cyan-400 hover:text-cyan-300 border border-slate-800 font-bold py-2.5 px-5 sm:py-3 sm:px-6 rounded-full text-xs sm:text-sm cursor-pointer transition backdrop-blur-xs transform hover:scale-105 active:scale-95 duration-150"
+            >
+              Visit Offer <ExternalLinkIcon className="w-3.5 h-3.5" />
+            </a>
+          )}
+
+          {/* Watch Trailer / Play Icon */}
+          <button
+            onClick={handlePlayMovie}
+            title={t.watchTrailer}
+            className="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-slate-700/60 bg-slate-900/40 hover:bg-slate-850 hover:border-slate-500 text-white cursor-pointer transition transform hover:scale-105 active:scale-95"
+          >
+            <PlayIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          </button>
+
+          {/* Plus Icon */}
+          <button
+            title={t.addToWatchlist}
+            className="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-slate-700/60 bg-slate-900/40 hover:bg-slate-850 hover:border-slate-500 text-white cursor-pointer transition transform hover:scale-105 active:scale-95"
+          >
+            <PlusIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          </button>
+
+          {/* Thumbs Up Icon */}
+          <button
+            title={t.like}
+            className="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-slate-700/60 bg-slate-900/40 hover:bg-slate-850 hover:border-slate-500 text-white cursor-pointer transition transform hover:scale-105 active:scale-95"
+          >
+            <ThumbsUpIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          </button>
+
+          {/* Thumbs Down Icon */}
+          <button
+            title={t.dislike}
+            className="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-slate-700/60 bg-slate-900/40 hover:bg-slate-850 hover:border-slate-500 text-white cursor-pointer transition transform hover:scale-105 active:scale-95"
+          >
+            <ThumbsDownIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          </button>
+
+          {/* Share Icon */}
+          <button
+            title={t.share}
+            className="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-slate-700/60 bg-slate-900/40 hover:bg-slate-850 hover:border-slate-500 text-white cursor-pointer transition transform hover:scale-105 active:scale-95"
+          >
+            <Share2Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          </button>
         </div>
 
-        {/* Backdrop details header is shown when player is inactive */}
-        {!isPlaying && (
-          <>
-            {/* Top ad is now rendered outside the Billboard Header, directly below the fixed navbar */}
+        {/* Metadata Grid */}
+        <div className="grid md:grid-cols-3 gap-8 pt-6 border-t border-slate-900/40 z-10">
+          {/* Description & Genres */}
+          <div className="md:col-span-2 space-y-4">
+            <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-sans font-light max-w-4xl drop-shadow-md">
+              {movie.overview || "No overview description available for this title."}
+            </p>
 
-            {/* Backdrop on the right */}
-            <div className="absolute inset-y-0 right-0 w-full md:w-[65%] h-full opacity-80 md:opacity-90 z-0">
-              {movie.backdropPath ? (
-                <img
-                  src={`https://image.tmdb.org/t/p/original${movie.backdropPath}`}
-                  alt={movie.title}
-                  className="w-full h-full object-cover object-center md:object-right-top scale-102"
-                />
-              ) : adsConfig?.globalBg ? (
-                <img
-                  src={getImageUrl(adsConfig.globalBg)}
-                  alt={movie.title}
-                  className="w-full h-full object-cover object-center md:object-right-top scale-102"
-                />
-              ) : (
-                <div className="w-full h-full bg-slate-900 flex items-center justify-center text-slate-600 font-bold">
-                  No Backdrop Available
-                </div>
-              )}
-              {/* Linear gradients to blend into background */}
-              <div className="hidden md:block absolute inset-0 bg-linear-to-r from-background via-background/60 to-transparent" />
-              <div className="absolute inset-0 bg-linear-to-t from-background via-background/30 to-black/30" />
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs sm:text-sm font-medium">
+              <span className="text-red-500 font-bold uppercase tracking-wider">
+                {movie.categories.map((c) => c.name).join(" • ")}
+              </span>
+              <span className="text-slate-750">•</span>
+              <span className="text-yellow-500 font-bold bg-black/40 px-2 py-0.5 rounded backdrop-blur-xs">★ {movie.voteAverage}/10</span>
+              <span className="text-slate-750">•</span>
+              <span className="font-mono text-slate-350 bg-black/40 px-2 py-0.5 rounded backdrop-blur-xs">{movie.releaseDate || "Release Date N/A"}</span>
+              <span className="text-slate-750">•</span>
+              <span className="px-1.5 py-0.2 rounded bg-slate-900 text-[10px] text-slate-400 font-bold border border-slate-800">UHD</span>
+              <span className="px-1.5 py-0.2 rounded bg-slate-900 text-[10px] text-slate-440 font-bold border border-slate-800">HDR</span>
             </div>
+          </div>
 
-            {/* Main Content inside wide container (Aligned with CineNavbar logo) */}
-            <div className="relative z-10 w-full px-4 sm:px-6 md:px-12 pt-3 sm:pt-0 pb-12 flex flex-col justify-end min-h-[50vh] space-y-6">
-              <div className="space-y-4 max-w-3xl">
-                <div className="flex flex-wrap items-center gap-2">
-                  {movie.categories.map((c) => (
-                    <span
-                      key={c.id}
-                      className="px-2.5 py-0.5 rounded bg-red-600/90 text-white text-[9px] font-bold uppercase tracking-wider animate-pulse"
-                    >
-                      {c.name}
-                    </span>
-                  ))}
-                </div>
-
-                <h1 className="text-3xl sm:text-5xl md:text-7xl font-black text-white drop-shadow-lg leading-tight sm:leading-tight uppercase font-heading tracking-tight">
-                  {movie.title}
-                </h1>
+          {/* Cast & Advisory Info */}
+          <div className="space-y-3 text-xs sm:text-sm md:border-l border-slate-900/40 pl-0 md:pl-8">
+            {directors.length > 0 && (
+              <div>
+                <span className="text-slate-500 font-semibold mr-2">{t.director}:</span>
+                <span className="text-slate-300 hover:text-white transition cursor-pointer">
+                  {directors.map((d: any) => d.name).join(", ")}
+                </span>
               </div>
-
-              {/* Action Row */}
-              <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 pt-2 select-none">
-                {/* Play Button */}
-                <button
-                  onClick={handlePlayMovie}
-                  className="flex items-center justify-center gap-2 bg-white hover:bg-slate-200 text-black font-extrabold py-2.5 px-6 sm:py-3 sm:px-8 rounded-full text-xs sm:text-sm cursor-pointer shadow-lg transition transform hover:scale-105 active:scale-95 duration-150"
-                >
-                  <PlayIcon className="w-4 h-4 fill-current" /> Watch Now
-                </button>
-
-                {/* Visit Offer Button (if redirect/referral available) */}
-                {movie.referralUrl && (
-                  <a
-                    href={movie.referralUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center justify-center gap-1.5 bg-slate-900/60 hover:bg-slate-900 text-cyan-400 hover:text-cyan-300 border border-slate-800 font-bold py-2.5 px-5 sm:py-3 sm:px-6 rounded-full text-xs sm:text-sm cursor-pointer transition backdrop-blur-xs transform hover:scale-105 active:scale-95 duration-150"
-                  >
-                    Visit Offer <ExternalLinkIcon className="w-3.5 h-3.5" />
-                  </a>
-                )}
-
-                {/* Watch Trailer / Play Icon */}
-                <button
-                  onClick={handlePlayMovie}
-                  title={t.watchTrailer}
-                  className="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-slate-700/60 bg-slate-900/40 hover:bg-slate-850 hover:border-slate-500 text-white cursor-pointer transition transform hover:scale-105 active:scale-95"
-                >
-                  <PlayIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                </button>
-
-                {/* Plus Icon */}
-                <button
-                  title={t.addToWatchlist}
-                  className="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-slate-700/60 bg-slate-900/40 hover:bg-slate-850 hover:border-slate-500 text-white cursor-pointer transition transform hover:scale-105 active:scale-95"
-                >
-                  <PlusIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                </button>
-
-                {/* Thumbs Up Icon */}
-                <button
-                  title={t.like}
-                  className="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-slate-700/60 bg-slate-900/40 hover:bg-slate-850 hover:border-slate-500 text-white cursor-pointer transition transform hover:scale-105 active:scale-95"
-                >
-                  <ThumbsUpIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                </button>
-
-                {/* Thumbs Down Icon */}
-                <button
-                  title={t.dislike}
-                  className="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-slate-700/60 bg-slate-900/40 hover:bg-slate-850 hover:border-slate-500 text-white cursor-pointer transition transform hover:scale-105 active:scale-95"
-                >
-                  <ThumbsDownIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                </button>
-
-                {/* Share Icon */}
-                <button
-                  title={t.share}
-                  className="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-slate-700/60 bg-slate-900/40 hover:bg-slate-850 hover:border-slate-500 text-white cursor-pointer transition transform hover:scale-105 active:scale-95"
-                >
-                  <Share2Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                </button>
+            )}
+            {castList.length > 0 && (
+              <div>
+                <span className="text-slate-500 font-semibold mr-2">{t.cast}:</span>
+                <span className="text-slate-300 hover:text-white transition cursor-pointer">
+                  {castList.slice(0, 4).map((actor: any) => actor.name).join(", ")}
+                </span>
               </div>
-
-              {/* Metadata Grid */}
-              <div className="grid md:grid-cols-3 gap-8 pt-6 border-t border-slate-900/40 z-10">
-                {/* Description & Genres */}
-                <div className="md:col-span-2 space-y-4">
-                  <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-sans font-light max-w-4xl drop-shadow-md">
-                    {movie.overview || "No overview description available for this title."}
-                  </p>
-
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs sm:text-sm font-medium">
-                    <span className="text-red-500 font-bold uppercase tracking-wider">
-                      {movie.categories.map((c) => c.name).join(" • ")}
-                    </span>
-                    <span className="text-slate-750">•</span>
-                    <span className="text-yellow-500 font-bold bg-black/40 px-2 py-0.5 rounded backdrop-blur-xs">★ {movie.voteAverage}/10</span>
-                    <span className="text-slate-750">•</span>
-                    <span className="font-mono text-slate-350 bg-black/40 px-2 py-0.5 rounded backdrop-blur-xs">{movie.releaseDate || "Release Date N/A"}</span>
-                    <span className="text-slate-750">•</span>
-                    <span className="px-1.5 py-0.2 rounded bg-slate-900 text-[10px] text-slate-400 font-bold border border-slate-800">UHD</span>
-                    <span className="px-1.5 py-0.2 rounded bg-slate-900 text-[10px] text-slate-440 font-bold border border-slate-800">HDR</span>
-                  </div>
-                </div>
-
-                {/* Cast & Advisory Info */}
-                <div className="space-y-3 text-xs sm:text-sm md:border-l border-slate-900/40 pl-0 md:pl-8">
-                  {directors.length > 0 && (
-                    <div>
-                      <span className="text-slate-500 font-semibold mr-2">{t.director}:</span>
-                      <span className="text-slate-300 hover:text-white transition cursor-pointer">
-                        {directors.map((d: any) => d.name).join(", ")}
-                      </span>
-                    </div>
-                  )}
-                  {castList.length > 0 && (
-                    <div>
-                      <span className="text-slate-500 font-semibold mr-2">{t.cast}:</span>
-                      <span className="text-slate-300 hover:text-white transition cursor-pointer">
-                        {castList.slice(0, 4).map((actor: any) => actor.name).join(", ")}
-                      </span>
-                    </div>
-                  )}
-                  <div className="flex gap-2 items-center pt-2">
-                    <span className="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-400 font-bold text-[10px]">
-                      16+
-                    </span>
-                    <span className="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-400 font-bold text-[10px]">
-                      Subtitles
-                    </span>
-                    <span className="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-400 font-bold text-[10px]">
-                      AD
-                    </span>
-                  </div>
-                </div>
-              </div>
+            )}
+            <div className="flex gap-2 items-center pt-2">
+              <span className="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-400 font-bold text-[10px]">
+                16+
+              </span>
+              <span className="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-400 font-bold text-[10px]">
+                Subtitles
+              </span>
+              <span className="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-400 font-bold text-[10px]">
+                AD
+              </span>
             </div>
-          </>
-        )}
+          </div>
+        </div>
       </div>
 
       {/* Main Container */}
