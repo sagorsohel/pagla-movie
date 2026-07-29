@@ -192,17 +192,12 @@ export function HeroCarousel({
 
           <div className="flex items-center gap-3 pt-2 relative z-25">
             <button
-              onClick={() => onPlay(activeMovie)}
+              onClick={() => onInfo(activeMovie)}
               className="flex items-center gap-2 bg-white hover:bg-slate-200 text-black font-bold px-6 py-2.5 rounded-lg shadow-lg hover:scale-102 active:scale-98 transition cursor-pointer text-sm"
             >
-              <PlayIcon className="w-4 h-4 fill-current" /> Watch Trailer
+              <PlayIcon className="w-4 h-4 fill-current" /> Watch Full Movie
             </button>
-            <button
-              onClick={() => onInfo(activeMovie)}
-              className="flex items-center gap-2 bg-slate-500/30 hover:bg-slate-500/40 text-white font-bold px-5 py-2.5 rounded-lg backdrop-blur-xs hover:scale-102 transition cursor-pointer text-sm"
-            >
-              <InfoIcon className="w-4 h-4" /> More Info
-            </button>
+
           </div>
         </div>
       </div>
@@ -236,9 +231,8 @@ export function HeroCarousel({
                 setCurrentIndex(idx)
                 resetTimer()
               }}
-              className={`h-1.5 rounded-full cursor-pointer transition-all duration-300 ${
-                idx === currentIndex ? "w-6 bg-red-600" : "w-1.5 bg-slate-500/50 hover:bg-slate-400"
-              }`}
+              className={`h-1.5 rounded-full cursor-pointer transition-all duration-300 ${idx === currentIndex ? "w-6 bg-red-600" : "w-1.5 bg-slate-500/50 hover:bg-slate-400"
+                }`}
             />
           ))}
         </div>
