@@ -23,7 +23,10 @@ export async function GET() {
         floatingDesktopAds: "",
         floatingDesktopAdsStatus: "on",
         layoutOrder: '["top-ad", "hero", "ad-middle", "tabs", "ad-bottom"]',
-        footerAds: ""
+        footerAds: "",
+        signupRedirectUrl: "",
+        signupRedirectTime: 5,
+        signupRedirectTimeUnit: "sec"
       })
       adsData = { 
         id: "global", 
@@ -39,7 +42,10 @@ export async function GET() {
         floatingDesktopAds: "",
         floatingDesktopAdsStatus: "on",
         layoutOrder: '["top-ad", "hero", "ad-middle", "tabs", "ad-bottom"]',
-        footerAds: ""
+        footerAds: "",
+        signupRedirectUrl: "",
+        signupRedirectTime: 5,
+        signupRedirectTimeUnit: "sec"
       }
     }
     return NextResponse.json(
@@ -57,6 +63,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const payload = await request.json()
     let { 
       heroAds, 
       hero2Ads, 
@@ -70,8 +77,11 @@ export async function POST(request: Request) {
       floatingDesktopAds,
       floatingDesktopAdsStatus,
       layoutOrder,
-      footerAds
-    } = await request.json()
+      footerAds,
+      signupRedirectUrl,
+      signupRedirectTime,
+      signupRedirectTimeUnit
+    } = payload
 
     const isBase64 = request.headers.get("x-encoded-payload") === "base64"
     if (isBase64) {
@@ -96,24 +106,29 @@ export async function POST(request: Request) {
       floatingDesktopAdsStatus = safeDecode(floatingDesktopAdsStatus)
       layoutOrder = safeDecode(layoutOrder)
       footerAds = safeDecode(footerAds)
+      signupRedirectUrl = safeDecode(signupRedirectUrl)
     }
 
+    const updateObj: Record<string, any> = {}
+    if (heroAds !== undefined) updateObj.heroAds = heroAds
+    if (hero2Ads !== undefined) updateObj.hero2Ads = hero2Ads
+    if (modalAds !== undefined) updateObj.modalAds = modalAds
+    if (headerAds !== undefined) updateObj.headerAds = headerAds
+    if (membershipRefLink !== undefined) updateObj.membershipRefLink = membershipRefLink
+    if (signinRefLink !== undefined) updateObj.signinRefLink = signinRefLink
+    if (globalBg !== undefined) updateObj.globalBg = globalBg
+    if (floatingAds !== undefined) updateObj.floatingAds = floatingAds
+    if (floatingAdsStatus !== undefined) updateObj.floatingAdsStatus = floatingAdsStatus
+    if (floatingDesktopAds !== undefined) updateObj.floatingDesktopAds = floatingDesktopAds
+    if (floatingDesktopAdsStatus !== undefined) updateObj.floatingDesktopAdsStatus = floatingDesktopAdsStatus
+    if (layoutOrder !== undefined) updateObj.layoutOrder = layoutOrder
+    if (footerAds !== undefined) updateObj.footerAds = footerAds
+    if (signupRedirectUrl !== undefined) updateObj.signupRedirectUrl = signupRedirectUrl
+    if (signupRedirectTime !== undefined) updateObj.signupRedirectTime = Number(signupRedirectTime)
+    if (signupRedirectTimeUnit !== undefined) updateObj.signupRedirectTimeUnit = signupRedirectTimeUnit
+
     await db.update(ads)
-      .set({
-        heroAds: heroAds ?? "",
-        hero2Ads: hero2Ads ?? "",
-        modalAds: modalAds ?? "",
-        headerAds: headerAds ?? "",
-        membershipRefLink: membershipRefLink ?? "",
-        signinRefLink: signinRefLink ?? "",
-        globalBg: globalBg ?? "",
-        floatingAds: floatingAds ?? "",
-        floatingAdsStatus: floatingAdsStatus ?? "on",
-        floatingDesktopAds: floatingDesktopAds ?? "",
-        floatingDesktopAdsStatus: floatingDesktopAdsStatus ?? "on",
-        layoutOrder: layoutOrder ?? '["top-ad", "hero", "ad-middle", "tabs", "ad-bottom"]',
-        footerAds: footerAds ?? ""
-      })
+      .set(updateObj)
       .where(eq(ads.id, "global"))
 
     return NextResponse.json({ success: true })
@@ -121,3 +136,4 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
 }
+

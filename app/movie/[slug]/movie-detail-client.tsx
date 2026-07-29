@@ -1123,11 +1123,9 @@ export function MovieDetailClient({
           {/* Button link */}
           <button
             onClick={() => {
-              const url = movie.redirectUrl || movie.referralUrl
-              if (url) {
-                window.open(url, "_blank")
-              }
               setShowAuthModal(false)
+              const slugVal = movie.slug || String(movie.id) || ""
+              window.location.href = `/signup?movies=${encodeURIComponent(slugVal)}`
             }}
             className="w-full py-3.5 bg-red-600 hover:bg-red-500 text-white font-extrabold text-xs tracking-wider rounded-xl transition duration-200 hover:scale-[1.01] active:scale-[0.98] cursor-pointer uppercase flex items-center justify-center gap-1.5 shadow-lg shadow-red-600/10"
           >

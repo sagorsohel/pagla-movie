@@ -30,6 +30,7 @@ export async function proxy(request: NextRequest) {
   // 1. Exclude system paths immediately for maximum speed
   const isExcludedPath =
     pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/signup") ||
     pathname.startsWith("/api") ||
     pathname.startsWith("/_next") ||
     pathname === "/favicon.ico" ||

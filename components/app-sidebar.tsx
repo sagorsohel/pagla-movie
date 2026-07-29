@@ -22,6 +22,7 @@ import {
   FileTextIcon,
   SlidersHorizontalIcon,
   LayoutGridIcon,
+  UserPlusIcon,
 } from "lucide-react"
 
 // Dashboard Navigation Data (Flat structure, no dropdowns)
@@ -64,6 +65,11 @@ const data = {
       title: "Manage Pages",
       url: "/dashboard/pages",
       icon: <FileTextIcon className="w-5 h-5" />,
+    },
+    {
+      title: "Signup Settings",
+      url: "/dashboard/signup",
+      icon: <UserPlusIcon className="w-5 h-5" />,
     },
     {
       title: "Ads Control",

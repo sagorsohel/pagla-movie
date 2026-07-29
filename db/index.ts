@@ -222,6 +222,15 @@ async function initializeDatabase() {
     try {
       await connection.execute("ALTER TABLE `ads` ADD COLUMN `layout_order` TEXT NULL;")
     } catch (e) {}
+    try {
+      await connection.execute("ALTER TABLE `ads` ADD COLUMN `signup_redirect_url` TEXT NULL;")
+    } catch (e) {}
+    try {
+      await connection.execute("ALTER TABLE `ads` ADD COLUMN `signup_redirect_time` INT DEFAULT 5;")
+    } catch (e) {}
+    try {
+      await connection.execute("ALTER TABLE `ads` ADD COLUMN `signup_redirect_time_unit` VARCHAR(10) DEFAULT 'sec';")
+    } catch (e) {}
 
     // Seed default global ads configurations
     const [adRows] = await connection.execute(

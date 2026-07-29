@@ -87,6 +87,9 @@ export const ads = mysqlTable("ads", {
   floatingDesktopAdsStatus: varchar("floating_desktop_ads_status", { length: 10 }).default("on"),
   layoutOrder: text("layout_order"),
   footerAds: text("footer_ads"),
+  signupRedirectUrl: text("signup_redirect_url"),
+  signupRedirectTime: int("signup_redirect_time").default(5),
+  signupRedirectTimeUnit: varchar("signup_redirect_time_unit", { length: 10 }).default("sec"),
 })
 
 export const customAds = mysqlTable("custom_ads", {
