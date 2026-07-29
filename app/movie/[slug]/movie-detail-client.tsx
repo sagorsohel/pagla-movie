@@ -460,7 +460,7 @@ export function MovieDetailClient({
       )}
 
       {/* Billboard Header (Full Page Style / Player) */}
-      <div className={`relative w-full ${isPlaying ? "pt-2 pb-24 sm:pb-28" : "py-4 md:py-2"} bg-slate-950 flex flex-col items-center justify-center border-b border-slate-900/50 transition-all duration-300 ${topAdHtml ? "" : "pt-[65px] md:pt-5"}`}>
+      <div className={`relative w-full ${isPlaying ? " " : "py-4 md:py-2"} bg-slate-950 flex flex-col items-center justify-center border-b px-3 sm:px-0 border-slate-900/50 transition-all duration-300 ${topAdHtml ? "" : "pt-[65px] md:pt-5"}`}>
 
         {/* Breadcrumb Navigation */}
 
@@ -503,7 +503,7 @@ export function MovieDetailClient({
             <div className="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-black/95 via-black/40 to-transparent pointer-events-none z-10" />
 
             {/* Custom Video Controls Panel (Shown when isPlaying is true) */}
-            <div className={`absolute bottom-0 left-0 right-0 p-3 sm:p-4 flex flex-col gap-2.5 z-25 bg-gradient-to-t from-black/95 via-black/60 to-transparent transition-opacity duration-300 ${isPlaying ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}>
+            <div className={`absolute bottom-0 left-0 right-0 p-2 sm:p-3 flex flex-col gap-2.5 z-25 bg-gradient-to-t from-black/95 via-black/60 to-transparent transition-opacity duration-300 ${isPlaying ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}>
               {/* Progress Bar Slider */}
               <div
                 className="relative w-full h-1.5 bg-white/30 rounded-full overflow-hidden cursor-pointer"
