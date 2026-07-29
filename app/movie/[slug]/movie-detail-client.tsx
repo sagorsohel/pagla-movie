@@ -120,18 +120,32 @@ export function MovieDetailClient({
   const [isVideoPlaying, setIsVideoPlaying] = useState(false)
   const [currentHeroAdIndex, setCurrentHeroAdIndex] = useState(1)
 
+  const iframeRef = React.useRef<HTMLIFrameElement>(null)
+  const videoRef = React.useRef<HTMLVideoElement>(null)
+
   const runtimeMinutes = useMemo(() => {
     return ((movie.tmdbId || 0) % 40) + 90
   }, [movie.tmdbId])
 
+  const totalMovieDuration = useMemo(() => {
+    if (videoRef.current?.duration && !isNaN(videoRef.current.duration) && videoRef.current.duration > 300) {
+      return videoRef.current.duration
+    }
+    return runtimeMinutes * 60
+  }, [runtimeMinutes])
+
+  const progressPercentage = useMemo(() => {
+    if (!totalMovieDuration || totalMovieDuration <= 0) return 0
+    return Math.min(100, Math.max(0, (playerTime / totalMovieDuration) * 100))
+  }, [playerTime, totalMovieDuration])
+
   const remainingTimeStr = useMemo(() => {
-    const totalSeconds = runtimeMinutes * 60
-    const remaining = Math.max(0, totalSeconds - Math.floor(playerTime))
+    const remaining = Math.max(0, totalMovieDuration - Math.floor(playerTime))
     const h = Math.floor(remaining / 3600)
     const m = Math.floor((remaining % 3600) / 60)
     const s = remaining % 60
     return `-${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`
-  }, [runtimeMinutes, playerTime])
+  }, [totalMovieDuration, playerTime])
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -169,9 +183,6 @@ export function MovieDetailClient({
     }
     return null
   }, [movie.videos])
-
-  const iframeRef = React.useRef<HTMLIFrameElement>(null)
-  const videoRef = React.useRef<HTMLVideoElement>(null)
 
   const handlePlayMovie = () => {
     setIsPlaying(true)
@@ -449,19 +460,18 @@ export function MovieDetailClient({
       )}
 
       {/* Billboard Header (Full Page Style / Player) */}
-      <div className={`relative w-full py-4 md:py-2 bg-slate-950 flex flex-col items-center justify-center overflow-hidden border-b border-slate-900/50 transition-all duration-300 ${topAdHtml ? "" : "pt-[65px] md:pt-5"}`}>
+      <div className={`relative w-full ${isPlaying ? "pt-2 pb-24 sm:pb-28" : "py-4 md:py-2"} bg-slate-950 flex flex-col items-center justify-center border-b border-slate-900/50 transition-all duration-300 ${topAdHtml ? "" : "pt-[65px] md:pt-5"}`}>
 
         {/* Breadcrumb Navigation */}
-
 
         {/* Unified 1076px * 605px Player Box */}
         <div className="relative w-full max-w-[1076px] aspect-[1076/605] bg-black flex flex-col justify-between shadow-2xl rounded-lg sm:rounded-xl overflow-hidden border border-slate-800/80 group">
           {/* Custom Video Player view (ALWAYS MOUNTED IN DOM) */}
-          <div className="absolute inset-0 w-full h-full bg-black select-none">
+          <div className="absolute inset-0 w-full h-full bg-black select-none overflow-hidden flex items-center justify-center">
             <video
               ref={videoRef}
               src="/video.mp4"
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover object-center scale-[1.18] transition-transform duration-300"
               onPlay={() => setIsVideoPlaying(true)}
               onPlaying={() => setIsVideoPlaying(true)}
               onPause={() => setIsVideoPlaying(false)}
@@ -489,9 +499,8 @@ export function MovieDetailClient({
               </div>
             )}
 
-            {/* Top/Bottom gradients */}
-            <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-black/80 to-transparent pointer-events-none" />
-            <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/95 via-black/40 to-transparent pointer-events-none z-10" />
+            {/* Bottom gradient */}
+            <div className="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-black/95 via-black/40 to-transparent pointer-events-none z-10" />
 
             {/* Custom Video Controls Panel (Shown when isPlaying is true) */}
             <div className={`absolute bottom-0 left-0 right-0 p-3 sm:p-4 flex flex-col gap-2.5 z-25 bg-gradient-to-t from-black/95 via-black/60 to-transparent transition-opacity duration-300 ${isPlaying ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}>
@@ -499,17 +508,19 @@ export function MovieDetailClient({
               <div
                 className="relative w-full h-1.5 bg-white/30 rounded-full overflow-hidden cursor-pointer"
                 onClick={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect()
+                  const clickRatio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width))
+                  const targetTime = clickRatio * totalMovieDuration
+                  setPlayerTime(targetTime)
                   if (videoRef.current && videoRef.current.duration) {
-                    const rect = e.currentTarget.getBoundingClientRect()
-                    const pos = (e.clientX - rect.left) / rect.width
-                    videoRef.current.currentTime = pos * videoRef.current.duration
+                    videoRef.current.currentTime = clickRatio * videoRef.current.duration
                   }
                 }}
               >
                 <div
                   className="absolute top-0 left-0 h-full bg-red-600 transition-all duration-75"
                   style={{
-                    width: `${videoRef.current?.duration ? (playerTime / videoRef.current.duration) * 100 : 0}%`
+                    width: `${progressPercentage}%`
                   }}
                 />
               </div>
