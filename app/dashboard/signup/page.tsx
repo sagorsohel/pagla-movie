@@ -185,14 +185,14 @@ export default function SignupSettingsPage() {
                   Loading Time Duration
                 </label>
                 <p className="text-xs text-slate-500">
-                  Enter the loading duration for the spinner before performing the redirect.
+                  Enter the loading duration before performing redirect. <span className="font-bold text-red-600">(Set to 0 to disable automatic redirect completely)</span>.
                 </p>
                 <input
                   type="number"
                   min="0"
                   step="any"
                   required
-                  placeholder="e.g. 5 or 5000"
+                  placeholder="0 (Disables redirect) or 5"
                   value={redirectTime}
                   onChange={(e) => setRedirectTime(e.target.value)}
                   className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-red-600 focus:ring-2 focus:ring-red-100 outline-none text-slate-800 font-mono text-sm transition"
@@ -220,11 +220,14 @@ export default function SignupSettingsPage() {
               <div>• Register Link: <span className="text-slate-900 font-semibold">{membershipRefLink || "/signup"}</span></div>
               <div>• Redirect Target URL: <span className="text-slate-900 font-semibold">{redirectUrl || "(Not set yet)"}</span></div>
               <div>
-                • Total Loading Time:{" "}
-                <span className="text-red-600 font-bold">
-                  {redirectTime || 0} {redirectTimeUnit}
-                </span>{" "}
-                ({redirectTimeUnit === "sec" ? `${(Number(redirectTime) || 0) * 1000} ms` : `${Number(redirectTime) || 0} ms`})
+                • Redirect Status:{" "}
+                {Number(redirectTime) === 0 ? (
+                  <span className="text-emerald-700 font-bold bg-emerald-100 px-2 py-0.5 rounded">DISABLED (No Redirect)</span>
+                ) : (
+                  <span className="text-red-600 font-bold">
+                    ACTIVE ({redirectTime || 0} {redirectTimeUnit})
+                  </span>
+                )}
               </div>
             </div>
 

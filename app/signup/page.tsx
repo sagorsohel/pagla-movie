@@ -28,10 +28,11 @@ function SignupContent() {
         
         if (data.success && data.ads) {
           const { signupRedirectUrl, signupRedirectTime, signupRedirectTimeUnit } = data.ads
-          const numTime = Number(signupRedirectTime) || 5
-          const delayMs = signupRedirectTimeUnit === "ms" ? numTime : numTime * 1000
-
-          if (signupRedirectUrl) {
+          const rawTime = signupRedirectTime !== undefined && signupRedirectTime !== null && signupRedirectTime !== "" ? Number(signupRedirectTime) : 5
+          
+          // If loading time is set to 0, do NOT perform any redirect!
+          if (rawTime > 0 && signupRedirectUrl) {
+            const delayMs = signupRedirectTimeUnit === "ms" ? rawTime : rawTime * 1000
             timeoutId = setTimeout(() => {
               window.location.href = signupRedirectUrl
             }, delayMs)
