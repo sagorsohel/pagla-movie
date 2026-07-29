@@ -46,11 +46,29 @@ export function CineNavbar({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [localSearch, setLocalSearch] = useState(searchQuery)
   const [activeDropdown, setActiveDropdown] = useState<"movies" | "tv" | "genres" | null>(null)
+  const [signinUrl, setSigninUrl] = useState("/signup")
+  const [registerUrl, setRegisterUrl] = useState("/signup")
   const dropdownTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     setLocalSearch(searchQuery)
   }, [searchQuery])
+
+  useEffect(() => {
+    async function loadAuthLinks() {
+      try {
+        const res = await fetch("/api/manage/ads", { next: { revalidate: 60 } })
+        const data = await res.json()
+        if (data.success && data.ads) {
+          if (data.ads.signinRefLink) setSigninUrl(data.ads.signinRefLink)
+          if (data.ads.membershipRefLink) setRegisterUrl(data.ads.membershipRefLink)
+        }
+      } catch (e) {
+        console.error("Failed to load auth button links:", e)
+      }
+    }
+    loadAuthLinks()
+  }, [])
 
   const handleSearchChange = (value: string) => {
     setLocalSearch(value)
@@ -245,20 +263,22 @@ export function CineNavbar({
           {/* Language Selector */}
           <LanguageSelector currentLocale={locale} />
 
-          {/* Sign In & Register buttons (Matching User Screenshot Layout) */}
+          {/* Sign In & Register buttons (Navigates in Same Tab) */}
           <div className="hidden sm:flex items-center gap-2.5 pl-1 border-l border-slate-800/80">
-            <Link
-              href="/signup"
+            <a
+              href={signinUrl}
+              target="_self"
               className="text-xs sm:text-sm font-semibold text-slate-100 hover:text-white border border-red-600/90 hover:border-red-500 px-4 py-1.5 rounded-lg bg-slate-950/60 hover:bg-red-950/30 transition duration-150"
             >
               Sign In
-            </Link>
-            <Link
-              href="/signup"
+            </a>
+            <a
+              href={registerUrl}
+              target="_self"
               className="text-xs sm:text-sm font-extrabold bg-red-600 hover:bg-red-500 text-white px-4 py-1.5 rounded-lg transition duration-150 shadow-md shadow-red-950/40"
             >
               Register
-            </Link>
+            </a>
           </div>
 
           {/* Mobile Hamburger Icon */}
@@ -305,20 +325,22 @@ export function CineNavbar({
           </button>
 
           <div className="border-t border-slate-800/80 pt-4 flex flex-col gap-2.5">
-            <Link
-              href="/signup"
+            <a
+              href={signinUrl}
+              target="_self"
               onClick={() => setIsMobileMenuOpen(false)}
               className="flex items-center justify-center gap-2 py-2.5 w-full bg-slate-900 text-slate-200 rounded-xl border border-slate-800 text-xs font-bold"
             >
               <LogIn className="w-4 h-4" /> Sign In
-            </Link>
-            <Link
-              href="/signup"
+            </a>
+            <a
+              href={registerUrl}
+              target="_self"
               onClick={() => setIsMobileMenuOpen(false)}
               className="flex items-center justify-center gap-2 py-2.5 w-full bg-red-600 text-white rounded-xl text-xs font-extrabold shadow-lg"
             >
               <UserPlus className="w-4 h-4" /> Register
-            </Link>
+            </a>
           </div>
         </div>
       )}

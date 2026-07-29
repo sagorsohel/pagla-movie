@@ -209,6 +209,7 @@ export default async function RootLayout({
                 src={s.src}
                 async={s.async}
                 defer={s.defer}
+                suppressHydrationWarning
               />
             )
           }
@@ -217,17 +218,18 @@ export default async function RootLayout({
               <script
                 key={`head-scr-inline-${idx}`}
                 dangerouslySetInnerHTML={{ __html: s.content }}
+                suppressHydrationWarning
               />
             )
           }
           return null
         })}
       </head>
-      <body>
-        <div id="google_translate_element" style={{ display: "none" }} className="hidden" />
+      <body suppressHydrationWarning>
+        <div id="google_translate_element" style={{ display: "none" }} className="hidden" suppressHydrationWarning />
         <ThemeProvider>
           {headerNonScriptHtml && (
-            <div dangerouslySetInnerHTML={{ __html: headerNonScriptHtml }} />
+            <div suppressHydrationWarning dangerouslySetInnerHTML={{ __html: headerNonScriptHtml }} />
           )}
           {children}
           {floatingAdsStatus !== "off" && (
@@ -238,7 +240,7 @@ export default async function RootLayout({
           )}
         </ThemeProvider>
         {bodyEndNonScriptHtml && (
-          <div dangerouslySetInnerHTML={{ __html: bodyEndNonScriptHtml }} />
+          <div suppressHydrationWarning dangerouslySetInnerHTML={{ __html: bodyEndNonScriptHtml }} />
         )}
         {bodyEndScripts.map((s, idx) => {
           if (s.src) {
@@ -248,6 +250,7 @@ export default async function RootLayout({
                 src={s.src}
                 async={s.async}
                 defer={s.defer}
+                suppressHydrationWarning
               />
             )
           }
@@ -256,6 +259,7 @@ export default async function RootLayout({
               <script
                 key={`body-end-scr-inline-${idx}`}
                 dangerouslySetInnerHTML={{ __html: s.content }}
+                suppressHydrationWarning
               />
             )
           }
@@ -263,7 +267,7 @@ export default async function RootLayout({
         })}
 
         {footerNonScriptHtml && (
-          <div dangerouslySetInnerHTML={{ __html: footerNonScriptHtml }} />
+          <div suppressHydrationWarning dangerouslySetInnerHTML={{ __html: footerNonScriptHtml }} />
         )}
         {footerScripts.map((s, idx) => {
           if (s.src) {
@@ -273,6 +277,7 @@ export default async function RootLayout({
                 src={s.src}
                 async={s.async}
                 defer={s.defer}
+                suppressHydrationWarning
               />
             )
           }
@@ -281,6 +286,7 @@ export default async function RootLayout({
               <script
                 key={`footer-scr-inline-${idx}`}
                 dangerouslySetInnerHTML={{ __html: s.content }}
+                suppressHydrationWarning
               />
             )
           }

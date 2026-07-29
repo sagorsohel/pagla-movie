@@ -296,8 +296,10 @@ async function initializeDatabase() {
   }
 }
 
-// Trigger initialization in background on import once
+// Trigger initialization in background on import once asynchronously so it never blocks page queries
 if (!globalThis.dbInitialized) {
   globalThis.dbInitialized = true
-  initializeDatabase()
+  setTimeout(() => {
+    initializeDatabase().catch((e) => console.error("Async DB init error:", e))
+  }, 50)
 }
