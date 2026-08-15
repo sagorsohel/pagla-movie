@@ -62,20 +62,44 @@ const getAds = cache(async () => {
 
 function parseScriptTags(html: string) {
   const scripts: Array<{ src?: string; content?: string; async?: boolean; defer?: boolean }> = []
-  const scriptRegex = /<script([^>]*)>([\s\S]*?)<\/script>/gi
+  if (!html) return scripts
+
+  // 1. Convert any document.write(atob("...")) to decoded script string
+  let processedHtml = html.replace(/document\.write\(\s*atob\(\s*["']([^"']+)["']\s*\)\s*\);?/gi, (_, b64) => {
+    try {
+      return Buffer.from(b64, "base64").toString("utf-8")
+    } catch {
+      return _
+    }
+  })
+
+  // 2. Convert any document.write('<script ...>') to script string
+  processedHtml = processedHtml.replace(/document\.write\(\s*["'](<script[\s\S]*?>[\s\S]*?<\/script>|<script[\s\S]*?>)["']\s*\);?/gi, "$1")
+
+  // 3. Match standard <script>...</script>, self-closing, and unclosed script tags
+  const scriptRegex = /<script([^>]*)>(?:([\s\S]*?)<\/script>)?/gi
   let match
-  while ((match = scriptRegex.exec(html)) !== null) {
-    const attrsStr = match[1]
-    const content = match[2].trim()
+  while ((match = scriptRegex.exec(processedHtml)) !== null) {
+    const attrsStr = match[1] || ""
+    const content = (match[2] || "").trim()
     const srcMatch = attrsStr.match(/src=["']([^"']+)["']/i)
     const asyncMatch = /\basync\b/i.test(attrsStr)
     const deferMatch = /\bdefer\b/i.test(attrsStr)
-    scripts.push({
-      src: srcMatch ? srcMatch[1] : undefined,
-      content: content || undefined,
-      async: asyncMatch,
-      defer: deferMatch
-    })
+    
+    if (!srcMatch && content.includes("<script")) {
+      const innerScripts = parseScriptTags(content)
+      scripts.push(...innerScripts)
+    } else {
+      const srcUrl = srcMatch ? srcMatch[1] : undefined
+      if (srcUrl || content) {
+        scripts.push({
+          src: srcUrl,
+          content: srcUrl ? undefined : (content || undefined),
+          async: srcUrl ? true : asyncMatch,
+          defer: deferMatch
+        })
+      }
+    }
   }
   return scripts
 }
@@ -238,13 +262,18 @@ export default async function RootLayout({
           }
           return null
         })}
+        {headerNonScriptHtml && (
+          <script
+            id="header-ads-non-script"
+            dangerouslySetInnerHTML={{
+              __html: `if (typeof document !== 'undefined') { document.head.insertAdjacentHTML('beforeend', ${JSON.stringify(headerNonScriptHtml)}); }`
+            }}
+          />
+        )}
       </head>
       <body suppressHydrationWarning>
         <div id="google_translate_element" style={{ display: "none" }} className="hidden" suppressHydrationWarning />
         <ThemeProvider>
-          {headerNonScriptHtml && (
-            <div suppressHydrationWarning dangerouslySetInnerHTML={{ __html: headerNonScriptHtml }} />
-          )}
           {children}
           {floatingAdsStatus !== "off" && (
             <FloatingMobileAd floatingAds={floatingAds} heroAds={heroAds} hero2Ads={hero2Ads} />
