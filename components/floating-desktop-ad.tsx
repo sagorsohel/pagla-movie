@@ -79,7 +79,17 @@ export default function FloatingDesktopAd({ floatingDesktopAds }: FloatingDeskto
     setIsDismissed(false)
   }, [pathname])
 
-  if (!mounted || isDismissed || !floatingDesktopAds) {
+  const cleanPath = (pathname || "").toLowerCase()
+  const isNoAdsPath =
+    cleanPath.startsWith("/dashboard") ||
+    cleanPath === "/login" ||
+    cleanPath.endsWith("/login") ||
+    cleanPath.includes("/login/") ||
+    cleanPath === "/signup" ||
+    cleanPath.endsWith("/signup") ||
+    cleanPath.includes("/signup/")
+
+  if (!mounted || isDismissed || !floatingDesktopAds || isNoAdsPath) {
     return null
   }
 

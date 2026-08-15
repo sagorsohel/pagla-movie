@@ -20,7 +20,7 @@ export default function SignupSettingsPage() {
   const fetchSettings = async () => {
     try {
       setLoading(true)
-      const res = await fetch("/api/manage/ads", { cache: "no-store" })
+      const res = await fetch(`/api/manage/ads?t=${Date.now()}`, { cache: "no-store" })
       const data = await res.json()
       if (data.success && data.ads) {
         setSigninRefLink(data.ads.signinRefLink || "")
@@ -126,7 +126,7 @@ export default function SignupSettingsPage() {
                   Target URL when users click the <span className="font-bold text-slate-700">Sign In</span> button on the top navbar (opens in same tab).
                 </p>
                 <input
-                  type="url"
+                  type="text"
                   placeholder="https://example.com/signin or /signup"
                   value={signinRefLink}
                   onChange={(e) => setSigninRefLink(e.target.value)}
@@ -144,7 +144,7 @@ export default function SignupSettingsPage() {
                   Target URL when users click the <span className="font-bold text-slate-700">Register</span> button on the top navbar (opens in same tab).
                 </p>
                 <input
-                  type="url"
+                  type="text"
                   placeholder="https://example.com/register or /signup"
                   value={membershipRefLink}
                   onChange={(e) => setMembershipRefLink(e.target.value)}
@@ -170,7 +170,7 @@ export default function SignupSettingsPage() {
                 The URL users will be redirected to after the loading spinner completes on <code className="bg-slate-100 px-1.5 py-0.5 rounded font-mono text-slate-700">/signup?movies={"{slug}"}</code>.
               </p>
               <input
-                type="url"
+                type="text"
                 placeholder="https://example.com/signup-final"
                 value={redirectUrl}
                 onChange={(e) => setRedirectUrl(e.target.value)}

@@ -52,7 +52,7 @@ export async function GET() {
       { success: true, ads: adsData },
       {
         headers: {
-          "Cache-Control": "public, max-age=300, s-maxage=3600, stale-while-revalidate=86400",
+          "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
         },
       }
     )
@@ -127,9 +127,17 @@ export async function POST(request: Request) {
     if (signupRedirectTime !== undefined) updateObj.signupRedirectTime = Number(signupRedirectTime)
     if (signupRedirectTimeUnit !== undefined) updateObj.signupRedirectTimeUnit = signupRedirectTimeUnit
 
-    await db.update(ads)
-      .set(updateObj)
-      .where(eq(ads.id, "global"))
+    const existing = await db.select().from(ads).where(eq(ads.id, "global")).then((r: any) => r[0])
+    if (!existing) {
+      await db.insert(ads).values({
+        id: "global",
+        ...updateObj,
+      })
+    } else {
+      await db.update(ads)
+        .set(updateObj)
+        .where(eq(ads.id, "global"))
+    }
 
     return NextResponse.json({ success: true })
   } catch (err: any) {

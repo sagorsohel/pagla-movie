@@ -54,7 +54,7 @@ export default function AdsControlPage() {
 
   // Fetch Ads settings on load
   useEffect(() => {
-    fetch("/api/manage/ads")
+    fetch(`/api/manage/ads?t=${Date.now()}`, { cache: "no-store" })
       .then(res => res.json())
       .then(data => {
         if (data && data.ads) {

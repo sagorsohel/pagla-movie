@@ -84,6 +84,20 @@ function getNonScriptHtml(html: string) {
   return html.replace(/<script([^>]*)>([\s\S]*?)<\/script>/gi, "").trim()
 }
 
+function isNoAdsPath(pathname: string): boolean {
+  if (!pathname) return false
+  const p = pathname.toLowerCase()
+  return (
+    p.startsWith("/dashboard") ||
+    p === "/login" ||
+    p.endsWith("/login") ||
+    p.includes("/login/") ||
+    p === "/signup" ||
+    p.endsWith("/signup") ||
+    p.includes("/signup/")
+  )
+}
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -91,7 +105,7 @@ export default async function RootLayout({
 }>) {
   const headersList = await headers()
   const pathname = headersList.get("x-url") || ""
-  const isManage = pathname.startsWith("/dashboard")
+  const isNoAds = isNoAdsPath(pathname)
 
   const {
     headerAds,
@@ -103,16 +117,16 @@ export default async function RootLayout({
     floatingDesktopAds,
     floatingDesktopAdsStatus,
     footerAds
-  } = isManage
+  } = isNoAds
       ? {
         headerAds: "",
         modalAds: "",
         heroAds: "",
         hero2Ads: "",
         floatingAds: "",
-        floatingAdsStatus: "on",
+        floatingAdsStatus: "off",
         floatingDesktopAds: "",
-        floatingDesktopAdsStatus: "on",
+        floatingDesktopAdsStatus: "off",
         footerAds: ""
       }
       : await getAds()

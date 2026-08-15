@@ -97,7 +97,17 @@ export default function FloatingMobileAd({ floatingAds, heroAds, hero2Ads }: Flo
     setIsDismissed(false)
   }, [pathname])
 
-  if (!mounted || !isMobile || isDismissed) {
+  const cleanPath = (pathname || "").toLowerCase()
+  const isNoAdsPath =
+    cleanPath.startsWith("/dashboard") ||
+    cleanPath === "/login" ||
+    cleanPath.endsWith("/login") ||
+    cleanPath.includes("/login/") ||
+    cleanPath === "/signup" ||
+    cleanPath.endsWith("/signup") ||
+    cleanPath.includes("/signup/")
+
+  if (!mounted || !isMobile || isDismissed || isNoAdsPath) {
     return null
   }
 
