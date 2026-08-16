@@ -6,6 +6,7 @@ import { ads } from "@/db/schema"
 import { eq } from "drizzle-orm"
 import FloatingMobileAd from "@/components/floating-mobile-ad"
 import FloatingDesktopAd from "@/components/floating-desktop-ad"
+import DisableInspect from "@/components/disable-inspect"
 
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
@@ -176,6 +177,22 @@ export default async function RootLayout({
             __html: `
               (function() {
                 if (typeof window === 'undefined') return;
+                document.addEventListener('contextmenu', function(e) { e.preventDefault(); });
+                document.addEventListener('keydown', function(e) {
+                  if (e.keyCode === 123 || e.key === 'F12') { e.preventDefault(); return false; }
+                  if ((e.ctrlKey || e.metaKey) && e.shiftKey && ['I','i','J','j','C','c','K','k'].indexOf(e.key) !== -1) { e.preventDefault(); return false; }
+                  if ((e.ctrlKey || e.metaKey) && (e.key === 'u' || e.key === 'U')) { e.preventDefault(); return false; }
+                  if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) { e.preventDefault(); return false; }
+                });
+              })();
+            `
+          }}
+        />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                if (typeof window === 'undefined') return;
                 if (window.location.pathname.startsWith('/dashboard')) return;
 
                  const pathname = window.location.pathname;
@@ -272,6 +289,7 @@ export default async function RootLayout({
         )}
       </head>
       <body suppressHydrationWarning>
+        <DisableInspect />
         <div id="google_translate_element" style={{ display: "none" }} className="hidden" suppressHydrationWarning />
         <ThemeProvider>
           {children}
