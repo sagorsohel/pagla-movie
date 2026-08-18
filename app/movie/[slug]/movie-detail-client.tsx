@@ -622,69 +622,71 @@ export function MovieDetailClient({
 
       {/* Movie Details & Actions Container */}
       <div className="w-full max-w-[1076px] mx-auto px-4 pt-4 pb-8 space-y-6">
-        {/* Action Row */}
-        <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 pt-2 select-none">
-          {/* Play Button */}
-          <button
-            onClick={handlePlayMovie}
-            className="flex items-center justify-center gap-2 bg-white hover:bg-slate-200 text-black font-extrabold py-2.5 px-6 sm:py-3 sm:px-8 rounded-full text-xs sm:text-sm cursor-pointer shadow-lg transition transform hover:scale-105 active:scale-95 duration-150"
-          >
-            <PlayIcon className="w-4 h-4 fill-current" /> Watch Now
-          </button>
-
-          {/* Visit Offer Button (if redirect/referral available) */}
-          {movie.referralUrl && (
-            <a
-              href={movie.referralUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center justify-center gap-1.5 bg-slate-900/60 hover:bg-slate-900 text-cyan-400 hover:text-cyan-300 border border-slate-800 font-bold py-2.5 px-5 sm:py-3 sm:px-6 rounded-full text-xs sm:text-sm cursor-pointer transition backdrop-blur-xs transform hover:scale-105 active:scale-95 duration-150"
+        {/* Action Row - hidden when video is playing */}
+        {!isPlaying && (
+          <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 pt-2 select-none">
+            {/* Play Button */}
+            <button
+              onClick={handlePlayMovie}
+              className="flex items-center justify-center gap-2 bg-white hover:bg-slate-200 text-black font-extrabold py-2.5 px-6 sm:py-3 sm:px-8 rounded-full text-xs sm:text-sm cursor-pointer shadow-lg transition transform hover:scale-105 active:scale-95 duration-150"
             >
-              Visit Offer <ExternalLinkIcon className="w-3.5 h-3.5" />
-            </a>
-          )}
+              <PlayIcon className="w-4 h-4 fill-current" /> Watch Now
+            </button>
 
-          {/* Watch Trailer / Play Icon */}
-          <button
-            onClick={handlePlayMovie}
-            title={t.watchTrailer}
-            className="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-slate-700/60 bg-slate-900/40 hover:bg-slate-850 hover:border-slate-500 text-white cursor-pointer transition transform hover:scale-105 active:scale-95"
-          >
-            <PlayIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-          </button>
+            {/* Visit Offer Button (if redirect/referral available) */}
+            {movie.referralUrl && (
+              <a
+                href={movie.referralUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center justify-center gap-1.5 bg-slate-900/60 hover:bg-slate-900 text-cyan-400 hover:text-cyan-300 border border-slate-800 font-bold py-2.5 px-5 sm:py-3 sm:px-6 rounded-full text-xs sm:text-sm cursor-pointer transition backdrop-blur-xs transform hover:scale-105 active:scale-95 duration-150"
+              >
+                Visit Offer <ExternalLinkIcon className="w-3.5 h-3.5" />
+              </a>
+            )}
 
-          {/* Plus Icon */}
-          <button
-            title={t.addToWatchlist}
-            className="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-slate-700/60 bg-slate-900/40 hover:bg-slate-850 hover:border-slate-500 text-white cursor-pointer transition transform hover:scale-105 active:scale-95"
-          >
-            <PlusIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-          </button>
+            {/* Watch Trailer / Play Icon */}
+            <button
+              onClick={handlePlayMovie}
+              title={t.watchTrailer}
+              className="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-slate-700/60 bg-slate-900/40 hover:bg-slate-850 hover:border-slate-500 text-white cursor-pointer transition transform hover:scale-105 active:scale-95"
+            >
+              <PlayIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            </button>
 
-          {/* Thumbs Up Icon */}
-          <button
-            title={t.like}
-            className="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-slate-700/60 bg-slate-900/40 hover:bg-slate-850 hover:border-slate-500 text-white cursor-pointer transition transform hover:scale-105 active:scale-95"
-          >
-            <ThumbsUpIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-          </button>
+            {/* Plus Icon */}
+            <button
+              title={t.addToWatchlist}
+              className="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-slate-700/60 bg-slate-900/40 hover:bg-slate-850 hover:border-slate-500 text-white cursor-pointer transition transform hover:scale-105 active:scale-95"
+            >
+              <PlusIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            </button>
 
-          {/* Thumbs Down Icon */}
-          <button
-            title={t.dislike}
-            className="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-slate-700/60 bg-slate-900/40 hover:bg-slate-850 hover:border-slate-500 text-white cursor-pointer transition transform hover:scale-105 active:scale-95"
-          >
-            <ThumbsDownIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-          </button>
+            {/* Thumbs Up Icon */}
+            <button
+              title={t.like}
+              className="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-slate-700/60 bg-slate-900/40 hover:bg-slate-850 hover:border-slate-500 text-white cursor-pointer transition transform hover:scale-105 active:scale-95"
+            >
+              <ThumbsUpIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            </button>
 
-          {/* Share Icon */}
-          <button
-            title={t.share}
-            className="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-slate-700/60 bg-slate-900/40 hover:bg-slate-850 hover:border-slate-500 text-white cursor-pointer transition transform hover:scale-105 active:scale-95"
-          >
-            <Share2Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-          </button>
-        </div>
+            {/* Thumbs Down Icon */}
+            <button
+              title={t.dislike}
+              className="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-slate-700/60 bg-slate-900/40 hover:bg-slate-850 hover:border-slate-500 text-white cursor-pointer transition transform hover:scale-105 active:scale-95"
+            >
+              <ThumbsDownIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            </button>
+
+            {/* Share Icon */}
+            <button
+              title={t.share}
+              className="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-slate-700/60 bg-slate-900/40 hover:bg-slate-850 hover:border-slate-500 text-white cursor-pointer transition transform hover:scale-105 active:scale-95"
+            >
+              <Share2Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            </button>
+          </div>
+        )}
 
         {/* Metadata Grid */}
         <div className="grid md:grid-cols-3 gap-8 pt-6 border-t border-slate-900/40 z-10">
@@ -1205,16 +1207,7 @@ export function MovieDetailClient({
             </div>
           </div>
 
-          {/* Close button */}
-          <button
-            onClick={() => {
-              setShowAuthModal(false)
-              handleClosePlayer()
-            }}
-            className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-slate-900 text-slate-500 hover:text-slate-300 transition cursor-pointer"
-          >
-            <X className="w-4 h-4" />
-          </button>
+
 
         </div>
       </div>
