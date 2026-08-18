@@ -10,13 +10,15 @@ function SignupContent() {
   // Format slug for title (replace hyphens with spaces or keep clean slug)
   const displaySlug = rawMovieSlug
     ? rawMovieSlug.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())
-    : "Movie"
+    : ""
 
   useEffect(() => {
     // Set dynamic browser window/tab title
-    const titleText = rawMovieSlug ? `Sign Up for ${rawMovieSlug}` : "Sign Up"
+    const titleText = displaySlug
+      ? `${displaySlug} - Sign Up - CineMovies - Watch Unlimited Movies & TV Shows in 4K UHD`
+      : "Sign Up - CineMovies - Watch Unlimited Movies & TV Shows in 4K UHD"
     document.title = titleText
-  }, [rawMovieSlug])
+  }, [displaySlug])
 
   useEffect(() => {
     let timeoutId: NodeJS.Timeout

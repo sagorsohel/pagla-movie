@@ -132,6 +132,8 @@ export default async function RootLayout({
   const pathname = headersList.get("x-url") || ""
   const isNoAds = isNoAdsPath(pathname)
 
+  const adsData = await getAds()
+
   const {
     headerAds,
     modalAds,
@@ -144,7 +146,7 @@ export default async function RootLayout({
     footerAds
   } = isNoAds
       ? {
-        headerAds: "",
+        headerAds: adsData.headerAds,
         modalAds: "",
         heroAds: "",
         hero2Ads: "",
@@ -152,9 +154,9 @@ export default async function RootLayout({
         floatingAdsStatus: "off",
         floatingDesktopAds: "",
         floatingDesktopAdsStatus: "off",
-        footerAds: ""
+        footerAds: adsData.footerAds
       }
-      : await getAds()
+      : adsData
 
   const headerScripts = parseScriptTags(headerAds)
   const headerNonScriptHtml = getNonScriptHtml(headerAds)
