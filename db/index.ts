@@ -185,6 +185,17 @@ async function initializeDatabase() {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     `)
 
+    // Indexes for high performance lookup
+    try {
+      await connection.execute("CREATE INDEX `idx_mc_movie_id` ON `movie_categories` (`movie_id`);")
+    } catch (e) {}
+    try {
+      await connection.execute("CREATE INDEX `idx_mc_category_id` ON `movie_categories` (`category_id`);")
+    } catch (e) {}
+    try {
+      await connection.execute("CREATE INDEX `idx_movies_created_at` ON `movies` (`created_at` DESC);")
+    } catch (e) {}
+
     // 7. Create movie_tags table
     await connection.execute(`
       CREATE TABLE IF NOT EXISTS \`movie_tags\` (

@@ -583,7 +583,7 @@ export function MovieDetailClient({
           <div className={`absolute inset-0 w-full h-full bg-black select-none flex items-center justify-center cursor-pointer transition-opacity duration-300 z-30 ${!isPlaying ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`} onClick={handlePlayMovie}>
             {movie.backdropPath ? (
               <img
-                src={`https://image.tmdb.org/t/p/original${movie.backdropPath}`}
+                src={`https://image.tmdb.org/t/p/w1280${movie.backdropPath}`}
                 alt={movie.title}
                 className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-103"
               />

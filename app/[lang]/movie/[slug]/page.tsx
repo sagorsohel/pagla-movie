@@ -1,4 +1,5 @@
 import * as React from "react"
+import { cache } from "react"
 import type { Metadata } from "next"
 import { db } from "@/db"
 import { movies, categories, movieCategories } from "@/db/schema"
@@ -9,30 +10,26 @@ import { type Locale, LANGUAGES } from "@/lib/translations"
 
 export const revalidate = 86400 // Incremental Static Regeneration (ISR) - cache page for 24 hours
 
+// Per-request cached movie lookup (deduplicates generateMetadata & MovieDetailPage queries)
+const getMovieBySlug = cache(async (slug: string) => {
+  if (!slug) return null
+  let [movieData] = await db.select().from(movies).where(eq(movies.slug, slug)).limit(1)
+  if (!movieData) {
+    const movieId = parseInt(slug)
+    if (!isNaN(movieId)) {
+      ;[movieData] = await db.select().from(movies).where(eq(movies.id, movieId)).limit(1)
+    }
+  }
+  return movieData || null
+})
+
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ lang: string; slug: string }>
 }): Promise<Metadata> {
   const { slug } = await params
-  if (!slug) return {}
-
-  let [movieData] = await db
-    .select({ title: movies.title, overview: movies.overview, posterPath: movies.posterPath })
-    .from(movies)
-    .where(eq(movies.slug, slug))
-    .limit(1)
-
-  if (!movieData) {
-    const movieId = parseInt(slug)
-    if (!isNaN(movieId)) {
-      ;[movieData] = await db
-        .select({ title: movies.title, overview: movies.overview, posterPath: movies.posterPath })
-        .from(movies)
-        .where(eq(movies.id, movieId))
-        .limit(1)
-    }
-  }
+  const movieData = await getMovieBySlug(slug)
 
   if (!movieData) {
     return {
@@ -64,17 +61,10 @@ export default async function MovieDetailPage({
     notFound()
   }
 
-  // Resolve language and fallback to en if not supported
   const locale: Locale = LANGUAGES.some(l => l.code === lang) ? (lang as Locale) : "en"
 
-  // 1. Fetch the movie details by slug (fallback to ID if not found)
-  let [movieData] = await db.select().from(movies).where(eq(movies.slug, slug)).limit(1)
-  if (!movieData) {
-    const movieId = parseInt(slug)
-    if (!isNaN(movieId)) {
-      ;[movieData] = await db.select().from(movies).where(eq(movies.id, movieId)).limit(1)
-    }
-  }
+  // 1. Fetch movie details via deduplicated per-request cache
+  const movieData = await getMovieBySlug(slug)
 
   if (!movieData) {
     notFound()
@@ -82,30 +72,45 @@ export default async function MovieDetailPage({
 
   const movieId = movieData.id
 
-  // 2. Fetch categories for this movie
-  const movieCats = await db
-    .select({
-      id: categories.id,
-      name: categories.name,
-    })
-    .from(movieCategories)
-    .innerJoin(categories, eq(movieCategories.categoryId, categories.id))
-    .where(eq(movieCategories.movieId, movieId))
+  // 2. Concurrently fetch categories and recent movies (with pruned columns)
+  const [movieCats, allMovies] = await Promise.all([
+    db
+      .select({
+        id: categories.id,
+        name: categories.name,
+      })
+      .from(movieCategories)
+      .innerJoin(categories, eq(movieCategories.categoryId, categories.id))
+      .where(eq(movieCategories.movieId, movieId)),
 
-  // 3. Fetch recent 30 movies to show in "Related" row (optimized database load)
-  const allMovies = await db.select().from(movies).orderBy(desc(movies.createdAt)).limit(30)
+    db
+      .select({
+        id: movies.id,
+        title: movies.title,
+        slug: movies.slug,
+        posterPath: movies.posterPath,
+        releaseDate: movies.releaseDate,
+        voteAverage: movies.voteAverage,
+      })
+      .from(movies)
+      .orderBy(desc(movies.createdAt))
+      .limit(30),
+  ])
 
-  // Fetch movie category links only for the loaded recent movies
+  // 3. Fetch category links for the loaded recent movies
   const recentMovieIds = allMovies.map((m: any) => m.id)
-  const allMovieCats = recentMovieIds.length > 0 ? await db
-    .select({
-      movieId: movieCategories.movieId,
-      categoryId: categories.id,
-      categoryName: categories.name,
-    })
-    .from(movieCategories)
-    .innerJoin(categories, eq(movieCategories.categoryId, categories.id))
-    .where(inArray(movieCategories.movieId, recentMovieIds)) : []
+  const allMovieCats =
+    recentMovieIds.length > 0
+      ? await db
+          .select({
+            movieId: movieCategories.movieId,
+            categoryId: categories.id,
+            categoryName: categories.name,
+          })
+          .from(movieCategories)
+          .innerJoin(categories, eq(movieCategories.categoryId, categories.id))
+          .where(inArray(movieCategories.movieId, recentMovieIds))
+      : []
 
   const categoryMap: Record<number, { id: number; name: string }[]> = {}
   allMovieCats.forEach((mc: any) => {
