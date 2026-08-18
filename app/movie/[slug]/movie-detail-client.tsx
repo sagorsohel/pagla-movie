@@ -154,6 +154,12 @@ export function MovieDetailClient({
   }, [])
 
   useEffect(() => {
+    if (movie?.title) {
+      document.title = `${movie.title} - CineMovies - Watch Unlimited Movies & TV Shows in 4K UHD`
+    }
+  }, [movie?.title])
+
+  useEffect(() => {
     const handleYTMessage = (event: MessageEvent) => {
       try {
         if (!event.origin.includes("youtube.com")) return

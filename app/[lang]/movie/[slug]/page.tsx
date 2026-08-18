@@ -1,4 +1,5 @@
 import * as React from "react"
+import type { Metadata } from "next"
 import { db } from "@/db"
 import { movies, categories, movieCategories } from "@/db/schema"
 import { eq, desc, inArray } from "drizzle-orm"
@@ -7,6 +8,50 @@ import { MovieDetailClient } from "../../../movie/[slug]/movie-detail-client"
 import { type Locale, LANGUAGES } from "@/lib/translations"
 
 export const revalidate = 86400 // Incremental Static Regeneration (ISR) - cache page for 24 hours
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ lang: string; slug: string }>
+}): Promise<Metadata> {
+  const { slug } = await params
+  if (!slug) return {}
+
+  let [movieData] = await db
+    .select({ title: movies.title, overview: movies.overview, posterPath: movies.posterPath })
+    .from(movies)
+    .where(eq(movies.slug, slug))
+    .limit(1)
+
+  if (!movieData) {
+    const movieId = parseInt(slug)
+    if (!isNaN(movieId)) {
+      ;[movieData] = await db
+        .select({ title: movies.title, overview: movies.overview, posterPath: movies.posterPath })
+        .from(movies)
+        .where(eq(movies.id, movieId))
+        .limit(1)
+    }
+  }
+
+  if (!movieData) {
+    return {
+      title: "CineMovies - Watch Unlimited Movies & TV Shows in 4K UHD",
+    }
+  }
+
+  const title = `${movieData.title} - CineMovies - Watch Unlimited Movies & TV Shows in 4K UHD`
+
+  return {
+    title,
+    description: movieData.overview || undefined,
+    openGraph: {
+      title,
+      description: movieData.overview || undefined,
+      images: movieData.posterPath ? [movieData.posterPath] : undefined,
+    },
+  }
+}
 
 export default async function MovieDetailPage({
   params,
