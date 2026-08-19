@@ -226,23 +226,8 @@ export default async function RootLayout({
                    document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
                  }
 
-                 const pref = localStorage.getItem('user_lang_pref');
                 if (!pref) {
-                  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
                   let detectedLocale = 'en';
-                  if (tz.includes('Dhaka')) {
-                    detectedLocale = 'bn';
-                  } else if (tz.includes('Kolkata') || tz.includes('Calcutta') || tz.includes('Delhi')) {
-                    detectedLocale = 'hi';
-                  } else {
-                    const browserLang = navigator.language || '';
-                    if (browserLang.toLowerCase().includes('bn')) {
-                      detectedLocale = 'bn';
-                    } else if (browserLang.toLowerCase().includes('hi')) {
-                      detectedLocale = 'hi';
-                    }
-                  }
-
                   localStorage.setItem('user_lang_pref', detectedLocale);
 
                   if (detectedLocale !== pathLocale) {

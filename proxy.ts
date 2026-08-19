@@ -45,14 +45,14 @@ export async function proxy(request: NextRequest) {
   if (pathnameIsMissingLocale && !isExcludedPath) {
     const savedLang = request.cookies.get("user_lang_pref")?.value
     let targetLang = "en"
-    if (savedLang && LOCALE_CODES.includes(savedLang) && savedLang !== "bn" && savedLang !== "hi") {
+    if (savedLang && LOCALE_CODES.includes(savedLang)) {
       targetLang = savedLang
     }
 
     const redirectUrl = new URL(`/${targetLang}${pathname}`, request.url)
     redirectUrl.search = request.nextUrl.search
     const response = NextResponse.redirect(redirectUrl)
-    if (!savedLang || savedLang === "bn" || savedLang === "hi") {
+    if (!savedLang) {
       response.cookies.set("user_lang_pref", "en", { path: "/", maxAge: 31536000 })
       response.cookies.set("googtrans", "", { path: "/", expires: new Date(0) })
     }
